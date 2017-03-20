@@ -4,6 +4,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NPL", "NPL\NPL.csproj", "{9BB21DDD-1BAB-474B-8993-E698B55FB3CC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D81F5C91-D7DB-46E5-BC99-49488FB6814C} = {D81F5C91-D7DB-46E5-BC99-49488FB6814C}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Irony", "Irony\Irony.csproj", "{D81F5C91-D7DB-46E5-BC99-49488FB6814C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NPL.Test", "NPL.Test\NPL.Test.csproj", "{160E5F64-F7C0-4AA4-996E-9A14A5FF74DC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +22,14 @@ Global
 		{9BB21DDD-1BAB-474B-8993-E698B55FB3CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9BB21DDD-1BAB-474B-8993-E698B55FB3CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9BB21DDD-1BAB-474B-8993-E698B55FB3CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D81F5C91-D7DB-46E5-BC99-49488FB6814C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D81F5C91-D7DB-46E5-BC99-49488FB6814C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D81F5C91-D7DB-46E5-BC99-49488FB6814C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D81F5C91-D7DB-46E5-BC99-49488FB6814C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{160E5F64-F7C0-4AA4-996E-9A14A5FF74DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{160E5F64-F7C0-4AA4-996E-9A14A5FF74DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{160E5F64-F7C0-4AA4-996E-9A14A5FF74DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{160E5F64-F7C0-4AA4-996E-9A14A5FF74DC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
