@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Irony.Parsing;
+using Irony;
 using NPL.Parser;
 namespace NPL.Test
 {
@@ -10,20 +11,16 @@ namespace NPL.Test
         [TestMethod]
         public void TestMethod1()
         {
-            SampleGrammar grammar = new SampleGrammar();
-            Irony.Parsing.Parser parser = new Irony.Parsing.Parser(grammar);
+            //LuaGrammar grammar = new LuaGrammar();
+            Irony.Parsing.Parser parser = new Irony.Parsing.Parser(LuaGrammar.Instance);
 
-            string code = @"1+2*3@";
+            string code = @"local a = \n local b = ";
             parser.Scanner.VsSetSource(code, 0);
+            ParseTree tree = parser.Parse(code);
 
-            int state = 0;
-            Token token = parser.Scanner.VsReadToken(ref state);
-            Token token1 = parser.Scanner.VsReadToken(ref state);
-            Token token2 = parser.Scanner.VsReadToken(ref state);
-            Token token3 = parser.Scanner.VsReadToken(ref state);
-            Token token4 = parser.Scanner.VsReadToken(ref state);
-            Token token5 = parser.Scanner.VsReadToken(ref state);
-
+            LogMessageList m = tree.ParserMessages;
+            if (m[0] != null)
+                Console.WriteLine(m[0].Message);
         }
     }
 }

@@ -14,7 +14,7 @@ using System.Windows.Media;
 namespace NPL.LanuageService
 {
     [Export(typeof(IViewTaggerProvider))]
-    [ContentType("text")]
+    [ContentType("NPL")]
     [TagType(typeof(TextMarkerTag))]
     class HighlightWordTaggerProvider : IViewTaggerProvider
     {

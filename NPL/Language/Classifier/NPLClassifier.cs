@@ -20,21 +20,23 @@ namespace NPL.Classifier
     using Microsoft.VisualStudio.Text.Tagging;
     using Microsoft.VisualStudio.Utilities;
     using Irony.Parsing;
+    using Irony;
     using NPL.Parser;
+    using System.Linq;
 
     [Export(typeof(ITaggerProvider))]
     [ContentType("NPL")]
     [TagType(typeof(ClassificationTag))]
+    [TagType(typeof(ErrorTag))]
     internal sealed class NPLClassifierProvider : ITaggerProvider
     {
-
         [Export]
         [Name("NPL")]
         [BaseDefinition("code")]
         internal static ContentTypeDefinition NPLContentType = null;
 
         [Export]
-        [FileExtension(".lua")]
+        [FileExtension(".npl")]
         [ContentType("NPL")]
         internal static FileExtensionToContentTypeDefinition NPLFileType = null;
 
@@ -47,11 +49,14 @@ namespace NPL.Classifier
         }
     }
 
-    internal sealed class NPLClassifier : ITagger<ClassificationTag>
+    internal sealed class NPLClassifier : ITagger<ClassificationTag>, ITagger<ErrorTag>
     {
         ITextBuffer _buffer;
-        IDictionary<TokenColor, IClassificationType> _nplTypes;
-
+        IDictionary<TokenType, IClassificationType> _nplTypes;
+        List<ITagSpan<ErrorTag>> _syntaxErrorTags;
+        LogMessageList _syntaxErrorMessages;
+        Parser _parser = new Parser(LuaGrammar.Instance);
+        string _currentText;
         /// <summary>
         /// Construct the classifier and define search tokens
         /// </summary>
@@ -59,43 +64,64 @@ namespace NPL.Classifier
                                IClassificationTypeRegistryService typeService)
         {
             _buffer = buffer;
-            _nplTypes = new Dictionary<TokenColor, IClassificationType>();
-            _nplTypes[TokenColor.Identifier] = typeService.GetClassificationType("Id");
-            _nplTypes[TokenColor.Keyword] = typeService.GetClassificationType("Keyword");
-            _nplTypes[TokenColor.String] = typeService.GetClassificationType("String");
-            _nplTypes[TokenColor.Comment] = typeService.GetClassificationType("Comment");
-            _nplTypes[TokenColor.Number] = typeService.GetClassificationType("Number");
-            _nplTypes[TokenColor.Text] = typeService.GetClassificationType("Text");
+            _buffer.Changed += TextChanged;
+            _currentText = _buffer.CurrentSnapshot.GetText();
+            _syntaxErrorTags = new List<ITagSpan<ErrorTag>>();
+            _nplTypes = new Dictionary<TokenType, IClassificationType>();
+            _nplTypes[TokenType.Identifier] = typeService.GetClassificationType("Id");
+            _nplTypes[TokenType.Keyword] = typeService.GetClassificationType("Keyword");
+            _nplTypes[TokenType.String] = typeService.GetClassificationType("String");
+            _nplTypes[TokenType.LineComment] = typeService.GetClassificationType("Comment");
+            _nplTypes[TokenType.Comment] = typeService.GetClassificationType("Comment");
+            _nplTypes[TokenType.Delimiter] = typeService.GetClassificationType("Text");
+            _nplTypes[TokenType.Literal] = typeService.GetClassificationType("Text");
+            _nplTypes[TokenType.Operator] = typeService.GetClassificationType("Text");
+            _nplTypes[TokenType.WhiteSpace] = typeService.GetClassificationType("Text");
+            _nplTypes[TokenType.Unknown] = typeService.GetClassificationType("Text");
         }
 
-        public event EventHandler<SnapshotSpanEventArgs> TagsChanged
+        private void TextChanged(object sender, TextContentChangedEventArgs e)
         {
-            add { }
-            remove { }
+            _syntaxErrorTags.Clear();
+            string text = _buffer.CurrentSnapshot.GetText();
+            if (_currentText.Equals(text))
+                return;
+            _currentText = text;
+            //string line = _buffer.CurrentSnapshot.GetLineFromPosition(_buffer.CurrentSnapshot.);
+            _syntaxErrorMessages = _parser.Parse(_buffer.CurrentSnapshot.GetText()).ParserMessages;
+            foreach (LogMessage syntaxErrorMessage in _syntaxErrorMessages)
+            {
+                _syntaxErrorTags.Add(new TagSpan<ErrorTag>(new SnapshotSpan(_buffer.CurrentSnapshot, syntaxErrorMessage.Location.Position, 2), 
+                    new ErrorTag("syntax error", syntaxErrorMessage.Message)));
+            }
+
+            if(TagsChanged != null)
+                TagsChanged(this, new SnapshotSpanEventArgs(new SnapshotSpan(_buffer.CurrentSnapshot, new Span(0, _buffer.CurrentSnapshot.Length))));
         }
+
+        public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
 
         /// <summary>
         /// Search the given span for any instances of classified tags
         /// </summary>
         public IEnumerable<ITagSpan<ClassificationTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
-            Irony.Parsing.Parser parser = new Irony.Parsing.Parser(LuaGrammar.Instance);
             foreach (SnapshotSpan curSpan in spans)
             {
                 ITextSnapshotLine containingLine = curSpan.Start.GetContainingLine();
-                parser.Scanner.VsSetSource(containingLine.GetText(), 0);
-                //ParseTree tree = parser.Parse(containingLine.GetText());
-                //ParseTreeNode root = tree.Root;
-                //var node = root.AstNode;
-                int state = 0;
-                Token token = parser.Scanner.VsReadToken(ref state);
-                while(token != null)
+                TokenList tokens = _parser.Parse(containingLine.GetText()).Tokens;
+                foreach(Token token in tokens)
                 {
                     yield return
-                        new TagSpan<ClassificationTag>(new SnapshotSpan(curSpan.Snapshot, new Span(curSpan.Start.Position + token.Location.Position, token.Length)), new ClassificationTag(_nplTypes[token.EditorInfo.Color]));
-                    token = parser.Scanner.VsReadToken(ref state);
+                        new TagSpan<ClassificationTag>(new SnapshotSpan(curSpan.Snapshot, new Span(curSpan.Start.Position + token.Location.Position, token.Length)), new ClassificationTag(_nplTypes[token.EditorInfo.Type]));
                 }
             }
+        }
+
+        IEnumerable<ITagSpan<ErrorTag>> ITagger<ErrorTag>.GetTags(NormalizedSnapshotSpanCollection spans)
+        {
+            int start = spans[0].Start.Position, end = spans[spans.Count - 1].End.Position;
+            return _syntaxErrorTags.Where(ts => ts.Span.End >= start && ts.Span.Start <= end).OfType<ITagSpan<ErrorTag>>();
         }
     }
 }

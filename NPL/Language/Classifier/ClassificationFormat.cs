@@ -35,7 +35,7 @@ namespace NPL.Classifier
         public NPLKeywordFormat()
         {
             DisplayName = "Keyword"; //human readable version of the name
-            ForegroundColor = Colors.Red;
+            ForegroundColor = Colors.BlueViolet;
         }
     }
 
@@ -57,7 +57,7 @@ namespace NPL.Classifier
         public NPLIdentifierFormat()
         {
             DisplayName = "Id"; //human readable version of the name
-            ForegroundColor = Colors.White;
+            ForegroundColor = Colors.Black;
         }
     }
 
@@ -123,7 +123,7 @@ namespace NPL.Classifier
         public NPLTextFormat()
         {
             DisplayName = "Text"; //human readable version of the name
-            ForegroundColor = Colors.Blue;
+            ForegroundColor = Colors.Black;
         }
     }
 
@@ -145,7 +145,7 @@ namespace NPL.Classifier
         public NPLP()
         {
             DisplayName = "Number"; //human readable version of the name
-            ForegroundColor = Colors.White;
+            ForegroundColor = Colors.GreenYellow;
         }
     }
     #endregion //Format definition

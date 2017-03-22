@@ -14,31 +14,12 @@ using Microsoft.VisualStudioTools;
 
 namespace NPLTools.Project
 {
-    /// <summary>
-    /// This is the class that implements the package exposed by this assembly.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// The minimum requirement for a class to be considered a valid package for Visual Studio
-    /// is to implement the IVsPackage interface and register itself with the shell.
-    /// This package uses the helper classes defined inside the Managed Package Framework (MPF)
-    /// to do it: it derives from the Package class that provides the implementation of the
-    /// IVsPackage interface and uses the registration attributes defined in the framework to
-    /// register itself and its components with the shell. These attributes tell the pkgdef creation
-    /// utility what data to put into .pkgdef file.
-    /// </para>
-    /// <para>
-    /// To get loaded into VS, the package must be referred by &lt;Asset Type="Microsoft.VisualStudio.VsPackage" ...&gt; in .vsixmanifest file.
-    /// </para>
-    /// </remarks>
     [PackageRegistration(UseManagedResourcesOnly = true)]
-    [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)] // Info on this package for Help/About
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
     [ProvideProjectFactory(typeof(NPLProjectFactory), null,
     "NPL Project Files (*.nplproj);*.nplproj", "nplproj", "nplproj",
     ".\\NullPath", LanguageVsTemplate = "NPL")]
     [ProvideProjectItem(typeof(NPLProjectFactory), "NPL Items", ".\\NullPath", 500)]
-    [Guid(Guids.guidNPLProjectPkgString)]
+    [Guid(NPLProjectPackageGuidString)]
     [ProvideObject(typeof(NPLPropertyPage))]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     public sealed class NPLProjectPackage : CommonProjectPackage
@@ -46,7 +27,7 @@ namespace NPLTools.Project
         /// <summary>
         /// NPLProjectPackage GUID string.
         /// </summary>
-        public const string PackageGuidString = "341ba1ac-a1ce-4ab3-b281-ae5dc002f09a";
+        public const string NPLProjectPackageGuidString = "341ba1ac-a1ce-4ab3-b281-ae5dc002f09a";
 
         public string nplExePath;
 
