@@ -58,6 +58,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Guids.cs" />
     <Compile Include="Language\Classifier\ClassificationFormat.cs" />
     <Compile Include="Language\Classifier\ClassificationType.cs" />
     <Compile Include="Language\Classifier\HighlightWordTag.cs" />
@@ -70,6 +71,9 @@
     <Compile Include="Language\Classifier\Ook\OokClassifier.cs" />
     <Compile Include="Language\Classifier\Ook\OokTokenTag.cs" />
     <Compile Include="Language\Classifier\Ook\OokTokenTypes.cs" />
+    <Compile Include="Language\NPLEditorFactory.cs" />
+    <Compile Include="NPLConstants.cs" />
+    <Compile Include="Language\NPLLanguageInfo.cs" />
     <Compile Include="NPLPackage.cs" />
     <Compile Include="Parser\LuaBlockCommentTerminal.cs" />
     <Compile Include="Parser\LuaGrammar.cs" />
@@ -94,6 +98,7 @@
       <DependentUpon>NPLPropertyPageControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ProvideEditorExtension2Attribute.cs" />
     <Compile Include="Tests\ParserTest.cs" />
     <Compile Include="Tests\SampleGrammar.cs" />
   </ItemGroup>

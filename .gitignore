@@ -1,0 +1,11 @@
+Backup
+*.htm
+packages
+TestResults
+obj
+.vs
+/NPL.Test/bin
+/bin
+/NPL/bin
+*.cd
+*.user

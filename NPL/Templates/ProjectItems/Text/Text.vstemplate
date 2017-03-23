@@ -1,0 +1,13 @@
+﻿<VSTemplate Type="Item" Version="2.0.0"
+    xmlns="http://schemas.microsoft.com/developer/vstemplate/2005">
+  <TemplateData>
+    <Name>Text File</Name>
+    <Description>Text</Description>
+    <Icon>Text.ico</Icon>
+    <ProjectType>NPL</ProjectType>
+    <DefaultName>Text.txt</DefaultName>
+  </TemplateData>
+  <TemplateContent>
+    <ProjectItem>Text.txt</ProjectItem>
+  </TemplateContent>
+</VSTemplate>

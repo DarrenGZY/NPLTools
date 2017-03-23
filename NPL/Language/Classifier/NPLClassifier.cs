@@ -82,6 +82,10 @@ namespace NPL.Classifier
 
         private void TextChanged(object sender, TextContentChangedEventArgs e)
         {
+            if(e.After != _buffer.CurrentSnapshot)
+            {
+                return;
+            }
             _syntaxErrorTags.Clear();
             string text = _buffer.CurrentSnapshot.GetText();
             if (_currentText.Equals(text))
