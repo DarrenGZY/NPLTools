@@ -1,29 +1,19 @@
-﻿//***************************************************************************
-//
-//    Copyright (c) Microsoft Corporation. All rights reserved.
-//    This code is licensed under the Visual Studio SDK license terms.
-//    THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
-//    ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY
-//    IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR
-//    PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
-//
-//***************************************************************************
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Text.Classification;
+using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.Text.Tagging;
+using Microsoft.VisualStudio.Utilities;
+using Irony.Parsing;
+using Irony;
+using System.Linq;
+using NPL.Parser;
+using NPLTools.Language.Editor;
 
 namespace NPL.Classifier
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel.Composition;
-    using Microsoft.VisualStudio.Text;
-    using Microsoft.VisualStudio.Text.Classification;
-    using Microsoft.VisualStudio.Text.Editor;
-    using Microsoft.VisualStudio.Text.Tagging;
-    using Microsoft.VisualStudio.Utilities;
-    using Irony.Parsing;
-    using Irony;
-    using NPL.Parser;
-    using System.Linq;
-
     [Export(typeof(ITaggerProvider))]
     [ContentType("NPL")]
     [TagType(typeof(ClassificationTag))]
@@ -55,7 +45,7 @@ namespace NPL.Classifier
         IDictionary<TokenType, IClassificationType> _nplTypes;
         List<ITagSpan<ErrorTag>> _syntaxErrorTags;
         LogMessageList _syntaxErrorMessages;
-        Parser _parser = new Parser(LuaGrammar.Instance);
+        Irony.Parsing.Parser _parser = new Irony.Parsing.Parser(LuaGrammar.Instance);
         string _currentText;
         /// <summary>
         /// Construct the classifier and define search tokens
@@ -64,7 +54,7 @@ namespace NPL.Classifier
                                IClassificationTypeRegistryService typeService)
         {
             _buffer = buffer;
-            _buffer.Changed += TextChanged;
+            //_buffer.Changed += TextChanged;
             _currentText = _buffer.CurrentSnapshot.GetText();
             _syntaxErrorTags = new List<ITagSpan<ErrorTag>>();
             _nplTypes = new Dictionary<TokenType, IClassificationType>();
@@ -78,29 +68,21 @@ namespace NPL.Classifier
             _nplTypes[TokenType.Operator] = typeService.GetClassificationType("Text");
             _nplTypes[TokenType.WhiteSpace] = typeService.GetClassificationType("Text");
             _nplTypes[TokenType.Unknown] = typeService.GetClassificationType("Text");
+            NPLTextViewCreationListener.TextContentChanged += TextContentChanged;
         }
 
-        private void TextChanged(object sender, TextContentChangedEventArgs e)
+        private void TextContentChanged(object sender, NPLTextContentChangedEventArgs e)
         {
-            if(e.After != _buffer.CurrentSnapshot)
-            {
-                return;
-            }
             _syntaxErrorTags.Clear();
-            string text = _buffer.CurrentSnapshot.GetText();
-            if (_currentText.Equals(text))
-                return;
-            _currentText = text;
-            //string line = _buffer.CurrentSnapshot.GetLineFromPosition(_buffer.CurrentSnapshot.);
-            _syntaxErrorMessages = _parser.Parse(_buffer.CurrentSnapshot.GetText()).ParserMessages;
+            _syntaxErrorMessages = _parser.Parse(e.Snapshot.GetText()).ParserMessages;
             foreach (LogMessage syntaxErrorMessage in _syntaxErrorMessages)
             {
-                _syntaxErrorTags.Add(new TagSpan<ErrorTag>(new SnapshotSpan(_buffer.CurrentSnapshot, syntaxErrorMessage.Location.Position, 2), 
+                _syntaxErrorTags.Add(new TagSpan<ErrorTag>(new SnapshotSpan(e.Snapshot, Math.Min(e.Snapshot.Length, syntaxErrorMessage.Location.Position) - 1, 1),
                     new ErrorTag("syntax error", syntaxErrorMessage.Message)));
             }
 
-            if(TagsChanged != null)
-                TagsChanged(this, new SnapshotSpanEventArgs(new SnapshotSpan(_buffer.CurrentSnapshot, new Span(0, _buffer.CurrentSnapshot.Length))));
+            if (TagsChanged != null)
+                TagsChanged(this, new SnapshotSpanEventArgs(new SnapshotSpan(e.Snapshot, new Span(0, e.Snapshot.Length))));
         }
 
         public event EventHandler<SnapshotSpanEventArgs> TagsChanged;

@@ -40,6 +40,8 @@ namespace NPLTools
     //[ProvideAutoLoad(UIContextGuids80.NoSolution)]
     public sealed class NPLPackage : CommonPackage
     {
+        public static NPLPackage Instance;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="NPLPackage"/> class.
         /// </summary>
@@ -60,6 +62,8 @@ namespace NPLTools
         protected override void Initialize()
         {
             base.Initialize();
+            if (Instance == null)
+                Instance = new NPLPackage();
             //this.OnIdle += NPLPackage_OnIdle;
         }
 
