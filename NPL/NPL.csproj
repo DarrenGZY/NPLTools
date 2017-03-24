@@ -59,6 +59,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Guids.cs" />
+    <Compile Include="Language\BraceMatching\BraceMatching.cs" />
     <Compile Include="Language\Classifier\ClassificationFormat.cs" />
     <Compile Include="Language\Classifier\ClassificationType.cs" />
     <Compile Include="Language\Classifier\NPLClassifier.cs" />
@@ -70,14 +71,15 @@
     <Compile Include="Language\Classifier\Ook\OokTokenTypes.cs" />
     <Compile Include="Language\Editor\NPLTextViewCreationListener.cs" />
     <Compile Include="Language\NPLEditorFactory.cs" />
+    <Compile Include="Language\Outlining\OutliningTagger.cs" />
     <Compile Include="NPLConstants.cs" />
     <Compile Include="Language\NPLLanguageInfo.cs" />
     <Compile Include="NPLPackage.cs" />
-    <Compile Include="Parser\LuaBlockCommentTerminal.cs" />
-    <Compile Include="Parser\LuaGrammar.cs" />
-    <Compile Include="Parser\LuaLongStringTerminal.cs" />
-    <Compile Include="Parser\LuaStringLiteral.cs" />
-    <Compile Include="Parser\LuaTerminalNames.cs" />
+    <Compile Include="Grammar\LuaBlockCommentTerminal.cs" />
+    <Compile Include="Grammar\LuaGrammar.cs" />
+    <Compile Include="Grammar\LuaLongStringTerminal.cs" />
+    <Compile Include="Grammar\LuaStringLiteral.cs" />
+    <Compile Include="Grammar\LuaTerminalNames.cs" />
     <Compile Include="Project\Guids.cs" />
     <Compile Include="Project\ILuaProject.cs" />
     <Compile Include="Project\LuaConstants.cs" />

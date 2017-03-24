@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Irony.Parsing;
-namespace NPL.Parser
+namespace NPLTools.Grammar
 {
     class LuaStringLiteral : StringLiteral
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Irony.Parsing;
 
-namespace NPL.Parser
+namespace NPLTools.Grammar
 {
     [Language("Lua", "5.1", "Lua Script Language")]
     public class LuaGrammar : Irony.Parsing.Grammar
@@ -21,6 +21,7 @@ namespace NPL.Parser
         private LuaGrammar() :
             base(true)
         {
+            //LanguageFlags |= LanguageFlags.CreateAst;
             #region Declare Terminals Here
             StringLiteral STRING = CreateLuaString(LuaTerminalNames.String);
             NumberLiteral NUMBER = CreateLuaNumber(LuaTerminalNames.Number);

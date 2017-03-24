@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.Utilities;
 using Irony.Parsing;
 using Irony;
 using System.Linq;
-using NPL.Parser;
+using NPLTools.Grammar;
 using NPLTools.Language.Editor;
 
 namespace NPL.Classifier

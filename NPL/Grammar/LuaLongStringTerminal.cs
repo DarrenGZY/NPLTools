@@ -5,8 +5,8 @@ using System.Text;
 using Irony.Parsing;
 using System.Text.RegularExpressions;
 
-namespace NPL.Parser
-{
+namespace NPLTools.Grammar
+{ 
     class LuaLongStringTerminal : Terminal
     {
         public LuaLongStringTerminal(string name)
