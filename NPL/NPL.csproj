@@ -64,11 +64,8 @@
     <Compile Include="Language\Classifier\ClassificationType.cs" />
     <Compile Include="Language\Classifier\NPLClassifier.cs" />
     <Compile Include="Language\Classifier\NPLSyntaxErrorCheck.cs" />
-    <Compile Include="Language\Classifier\Ook\ClassificationFormat.cs" />
-    <Compile Include="Language\Classifier\Ook\ClassificationType.cs" />
-    <Compile Include="Language\Classifier\Ook\OokClassifier.cs" />
-    <Compile Include="Language\Classifier\Ook\OokTokenTag.cs" />
-    <Compile Include="Language\Classifier\Ook\OokTokenTypes.cs" />
+    <Compile Include="Language\Editor\EditorCommandFilter.cs" />
+    <Compile Include="Language\Editor\EditorExtensions.cs" />
     <Compile Include="Language\Editor\NPLTextViewCreationListener.cs" />
     <Compile Include="Language\NPLEditorFactory.cs" />
     <Compile Include="Language\Outlining\OutliningTagger.cs" />
