@@ -1,10 +1,8 @@
-﻿#region
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using Irony.Ast;
 using Irony.Parsing;
 using Irony.Interpreter.Ast;
-#endregion
 
 namespace NPLTools.IronyParser.Ast
 {

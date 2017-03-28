@@ -26,6 +26,8 @@ namespace NPLTools.IronyParser.Ast
             {
                 AddChild(String.Empty, child);
             }
+
+            AsString = "Block";
         }
     }
 

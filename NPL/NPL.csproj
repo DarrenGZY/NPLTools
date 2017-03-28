@@ -64,6 +64,7 @@
     <Compile Include="Grammar\LuaStringLiteral.cs" />
     <Compile Include="Grammar\LuaTerminalNames.cs" />
     <Compile Include="Guids.cs" />
+    <Compile Include="IronyParser\Ast\BaseNode.cs" />
     <Compile Include="IronyParser\Ast\LuaBlockNode.cs" />
     <Compile Include="IronyParser\Ast\LiteralValueNode.cs" />
     <Compile Include="IronyParser\Ast\LuaAssignmentNode.cs" />

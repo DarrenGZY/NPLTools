@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace NPLTools.Grammar.Ast
+namespace NPLTools.IronyParser.Ast
 {
-    class FunctionBody : Node
+    class LiteralValueNode
     {
     }
 }

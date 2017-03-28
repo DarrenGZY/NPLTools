@@ -130,7 +130,7 @@ namespace NPLTools.IronyParser
 
             var FunctionCall = new NonTerminal("function call", typeof (LuaFunctionCallNode));
             var Function = new NonTerminal("anonymous function definition", typeof (LuaFunctionDefNode));
-            var FuncBody = new NonTerminal("function body", typeof (LuaBlockNode));
+            //var FuncBody = new NonTerminal("function body", typeof (LuaBlockNode));
             var ParList = new NonTerminal("parlist", typeof (LuaParmListNode));
 
             var LocalVariableDeclaration = new NonTerminal("local variable declaration", typeof(LuaLocalDeclaration));
@@ -196,7 +196,7 @@ namespace NPLTools.IronyParser
             //     for Name `=´ exp `,´ exp [`,´ exp] do block end | 
             //     for namelist in explist do block end | 
             //     function funcname funcbody | 
-            FunctionDeclaration.Rule = FUNCTION + FuncName + FunctionParameters + FuncBody;
+            FunctionDeclaration.Rule = FUNCTION + FuncName + FunctionParameters + Block + END;
 
             //     local function Name funcbody | 
             LocalFunctionDeclaration.Rule = LOCAL + FunctionDeclaration;
@@ -269,11 +269,11 @@ namespace NPLTools.IronyParser
             Args.Rule = ArgsParameters | TableConstructor | STRING | LONGSTRING;
 
             //function ::= function funcbody
-            Function.Rule = FUNCTION + FunctionParameters + FuncBody;
+            Function.Rule = FUNCTION + FunctionParameters + Block + END;
 
             //funcbody ::= `(´ [parlist] `)´ block end
             FunctionParameters.Rule = "(" + ParList + ")" | "(" + ")";
-            FuncBody.Rule = Block + END;
+            //FuncBody.Rule = Block + END;
 
             //parlist ::= namelist [`,´ `...´] | `...´
             EllipsisOpt.Rule = Empty | ToTerm(",") + ELLIPSIS;

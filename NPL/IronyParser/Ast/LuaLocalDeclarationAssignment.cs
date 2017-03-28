@@ -9,7 +9,7 @@ using Irony.Parsing;
 
 namespace NPLTools.IronyParser.Ast
 {
-    public class LuaLocalDeclarationAssignment : AstNode
+    public class LuaLocalDeclarationAssignment : BaseNode
     {
         public AstNodeList VariableList { get; set; }
         public AstNodeList ExpressionList { get; set; }
@@ -24,12 +24,12 @@ namespace NPLTools.IronyParser.Ast
         {
             base.Init(context, treeNode);
 
-            //LuaLocalDeclaration declaration = treeNode.ChildNodes[0].AstNode as LuaLocalDeclaration;
-            //VariableList = declaration.VariableList;
+            LuaLocalDeclaration declaration = treeNode.ChildNodes[0].AstNode as LuaLocalDeclaration;
+            VariableList = declaration.VariableList;
             
-            foreach (ParseTreeNode variable in treeNode.ChildNodes[0].ChildNodes[1].ChildNodes)
+            foreach (AstNode variable in VariableList)
             {
-                VariableList.Add(AddChild(String.Empty, variable));
+                AddChild(variable.Role, variable);
             }
 
             foreach (ParseTreeNode expression in treeNode.ChildNodes[2].ChildNodes)
@@ -37,5 +37,7 @@ namespace NPLTools.IronyParser.Ast
                 ExpressionList.Add(AddChild(String.Empty, expression));
             }
         }
+
+
     }
 }

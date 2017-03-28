@@ -1,23 +1,8 @@
-﻿#region License
-/* **********************************************************************************
- * Copyright (c) Roman Ivantsov
- * This source code is subject to terms and conditions of the MIT License
- * for Irony. A copy of the license can be found in the License.txt file
- * at the root of this distribution. 
- * By using this source code in any fashion, you are agreeing to be bound by the terms of the 
- * MIT License.
- * You must not remove this notice from this software.
- * **********************************************************************************/
-#endregion
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using Irony.Ast;
 using Irony.Interpreter.Ast;
-using Irony.Interpreter;
 using Irony.Parsing;
 
 namespace NPLTools.IronyParser.Ast
@@ -33,16 +18,16 @@ namespace NPLTools.IronyParser.Ast
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
-            //child #0 is usually a keyword like "local" or "local function"
+            // child #0 is usually a keyword like "local" or "local function"
+            // child #i is the keyword "end"
             int i = treeNode.ChildNodes.Count-1;
 
             Debug.Assert(i>1);
-            var anon = treeNode.ChildNodes[i - 2];
+            var anon = treeNode.ChildNodes[i - 3];
             
             if (anon != null && anon.Token != null && anon.Token.KeyTerm != null)
             {
                 NameNode = new LuaFuncIdentifierNode().InitAnonymous();; 
-                
             }
             else
             {
@@ -50,8 +35,8 @@ namespace NPLTools.IronyParser.Ast
             }
             var name = NameNode.AsString;
 
-            Parameters = AddChild("Parameters", treeNode.ChildNodes[i-1]);
-            Body = AddChild("Body", treeNode.ChildNodes[i]);
+            Parameters = AddChild("Parameters", treeNode.ChildNodes[i-2]);
+            Body = AddChild("Body", treeNode.ChildNodes[i-1]);
             
             AsString = "<Function " + name + ">";
         }

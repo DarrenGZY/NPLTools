@@ -1,8 +1,6 @@
-﻿#region
-using Irony.Ast;
+﻿using Irony.Ast;
 using Irony.Parsing;
 using Irony.Interpreter.Ast;
-#endregion
 
 namespace NPLTools.IronyParser.Ast{
     public class LuaFuncIdentifierNode : AstNode {
