@@ -1,19 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using Irony.Parsing;
 using System.Text.RegularExpressions;
 
-namespace NPLTools.Grammar
+namespace NPLTools.IronyParser.Parser
 {
-    public class LuaCommentTerminal : Terminal
+    /// <summary>
+    /// From Lua 5.1 Reference Manual...
+    /// A comment starts with a double hyphen (--) anywhere outside a string. If the text immediately 
+    /// after -- is not an opening long bracket, the comment is a short comment, which runs until the 
+    /// end of the line. Otherwise, it is a long comment, which runs until the corresponding closing 
+    /// long bracket. Long comments are frequently used to disable code temporarily.
+    /// </summary>
+    /// <seealso cref="http://www.lua.org/manual/5.1/manual.html#2.1"/>
+    class LuaCommentTerminal : Terminal
     {
         public LuaCommentTerminal(string name)
             : base(name, TokenCategory.Comment)
         {
-            Priority = TerminalPriority.High;
-            this.SetFlag(TermFlags.IsMultiline);
+            Priority = TerminalPriority.High; //assign max priority
         }
 
         public string StartSymbol = "--";
@@ -22,10 +26,11 @@ namespace NPLTools.Grammar
         public override void Init(GrammarData grammarData) 
         {
             base.Init(grammarData);
+            SetFlag(TermFlags.IsMultiline);
             
             if (this.EditorInfo == null) 
             {
-               this.EditorInfo = new TokenEditorInfo(TokenType.Comment, TokenColor.Comment, TokenTriggers.None);
+                this.EditorInfo = new TokenEditorInfo(TokenType.Comment, TokenColor.Comment, TokenTriggers.None);
             }
         }
 
@@ -39,6 +44,7 @@ namespace NPLTools.Grammar
             } 
             else 
             {
+                //we are starting from scratch
                 byte commentLevel = 0;
                 if (!BeginMatch(context, source, ref commentLevel)) 
                     return null;
@@ -52,7 +58,7 @@ namespace NPLTools.Grammar
             if (context.Mode == ParseMode.VsLineScan)
                 return CreateIncompleteToken(context, source);
 
-            return context.CreateErrorToken("unclosed comment");
+            return context.CreateErrorToken("Unclosed comment block");
         }
 
         private Token CreateIncompleteToken(ParsingContext context, ISourceStream source)
@@ -66,9 +72,11 @@ namespace NPLTools.Grammar
 
         private bool BeginMatch(ParsingContext context, ISourceStream source, ref byte commentLevel)
         {
+            //Check starting symbol
             if (!source.MatchSymbol(StartSymbol)) 
                 return false;
 
+            //Found starting --, now determine whether this is a long comment.
             string text = source.Text.Substring(source.PreviewPosition + StartSymbol.Length);
             var match = Regex.Match(text, @"^\[(=*)\[");
             if(match.Value != string.Empty)
@@ -76,6 +84,7 @@ namespace NPLTools.Grammar
                 commentLevel = (byte)(match.Groups[1].Value.Length + 1);
             }
 
+            //Increment position of comment so we don't rescan the same text.
             source.PreviewPosition += StartSymbol.Length + commentLevel;
            
             return true;
@@ -101,7 +110,7 @@ namespace NPLTools.Grammar
 
             while (!source.EOF())
             {      
-               string text = source.Text.Substring(source.PreviewPosition);
+                string text = source.Text.Substring(source.PreviewPosition);
                 var matches = Regex.Matches(text, @"\](=*)\]");
                 foreach (Match match in matches)
                 {
@@ -111,6 +120,7 @@ namespace NPLTools.Grammar
 
                         if (context.VsLineScanState.Value != 0)
                         {
+                            //We are using line-mode and begin terminal was on previous line.
                             SourceLocation tokenStart = new SourceLocation();
                             tokenStart.Position = 0;
 
@@ -128,8 +138,9 @@ namespace NPLTools.Grammar
 
                 source.PreviewPosition++;
             }
-            
-			context.VsLineScanState.TokenSubType = commentLevel;
+            //The full match wasn't found, store the state for future parsing.
+            //   context.VsLineScanState.TerminalIndex = this.MultilineIndex;
+            context.VsLineScanState.TokenSubType = commentLevel;
             return null;
         }
 
@@ -140,3 +151,5 @@ namespace NPLTools.Grammar
         #endregion
     }
 }
+
+

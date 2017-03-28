@@ -58,30 +58,31 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Grammar\Ast\Arguments.cs" />
-    <Compile Include="Grammar\Ast\Assignment.cs" />
-    <Compile Include="Grammar\Ast\Block.cs" />
-    <Compile Include="Grammar\Ast\Chunk.cs" />
-    <Compile Include="Grammar\Ast\Expression.cs" />
-    <Compile Include="Grammar\Ast\Field.cs" />
-    <Compile Include="Grammar\Ast\Function.cs" />
-    <Compile Include="Grammar\Ast\FunctionBody.cs" />
-    <Compile Include="Grammar\Ast\FunctionCall.cs" />
-    <Compile Include="Grammar\Ast\FunctionName.cs" />
-    <Compile Include="Grammar\Ast\Identifier.cs" />
-    <Compile Include="Grammar\Ast\Keyword.cs" />
-    <Compile Include="Grammar\Ast\LastStatement.cs" />
-    <Compile Include="Grammar\Ast\Literal.cs" />
-    <Compile Include="Grammar\Ast\NameList.cs" />
-    <Compile Include="Grammar\Ast\Node.cs" />
-    <Compile Include="Grammar\Ast\Operator.cs" />
-    <Compile Include="Grammar\Ast\ParameterList.cs" />
-    <Compile Include="Grammar\Ast\Statement.cs" />
-    <Compile Include="Grammar\Ast\TableConstructor.cs" />
-    <Compile Include="Grammar\Ast\Variable.cs" />
-    <Compile Include="Grammar\Ast\VariableList.cs" />
-    <Compile Include="Grammar\LuaGrammarWithAst.cs" />
+    <Compile Include="Grammar\LuaBlockCommentTerminal.cs" />
+    <Compile Include="Grammar\LuaGrammar.cs" />
+    <Compile Include="Grammar\LuaLongStringTerminal.cs" />
+    <Compile Include="Grammar\LuaStringLiteral.cs" />
+    <Compile Include="Grammar\LuaTerminalNames.cs" />
     <Compile Include="Guids.cs" />
+    <Compile Include="IronyParser\Ast\LuaBlockNode.cs" />
+    <Compile Include="IronyParser\Ast\LiteralValueNode.cs" />
+    <Compile Include="IronyParser\Ast\LuaAssignmentNode.cs" />
+    <Compile Include="IronyParser\Ast\LuaChunkNode.cs" />
+    <Compile Include="IronyParser\Ast\LuaField.cs" />
+    <Compile Include="IronyParser\Ast\LuaFuncIdentifierNode.cs" />
+    <Compile Include="IronyParser\Ast\LuaFunctionCallNode.cs" />
+    <Compile Include="IronyParser\Ast\LuaFunctionDefNode.cs" />
+    <Compile Include="IronyParser\Ast\LuaIdentfierNodeList.cs" />
+    <Compile Include="IronyParser\Ast\LuaIfNode.cs" />
+    <Compile Include="IronyParser\Ast\LuaLocalDeclaration.cs" />
+    <Compile Include="IronyParser\Ast\LuaLocalDeclarationAssignment.cs" />
+    <Compile Include="IronyParser\Ast\LuaParmListNode.cs" />
+    <Compile Include="IronyParser\Ast\LuaTable.cs" />
+    <Compile Include="IronyParser\Ast\LuaUnaryOperationNode.cs" />
+    <Compile Include="IronyParser\LuaGrammer.cs" />
+    <Compile Include="IronyParser\Parser\LuaBlockCommentTerminal.cs" />
+    <Compile Include="IronyParser\Parser\LuaLongStringTerminal.cs" />
+    <Compile Include="IronyParser\Parser\LuaStringLiteral.cs" />
     <Compile Include="Language\BraceMatching\BraceMatching.cs" />
     <Compile Include="Language\Classifier\ClassificationFormat.cs" />
     <Compile Include="Language\Classifier\ClassificationType.cs" />
@@ -96,11 +97,6 @@
     <Compile Include="NPLConstants.cs" />
     <Compile Include="Language\NPLLanguageInfo.cs" />
     <Compile Include="NPLPackage.cs" />
-    <Compile Include="Grammar\LuaBlockCommentTerminal.cs" />
-    <Compile Include="Grammar\LuaGrammar.cs" />
-    <Compile Include="Grammar\LuaLongStringTerminal.cs" />
-    <Compile Include="Grammar\LuaStringLiteral.cs" />
-    <Compile Include="Grammar\LuaTerminalNames.cs" />
     <Compile Include="Project\Guids.cs" />
     <Compile Include="Project\ILuaProject.cs" />
     <Compile Include="Project\LuaConstants.cs" />
@@ -125,6 +121,7 @@
     <Compile Include="Tests\SampleGrammar.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="Tests\test.lua" />
     <ZipItem Include="Templates\ProjectItems\Text\Text.txt" />
     <ZipItem Include="Templates\ProjectItems\XML\XML.vstemplate" />
@@ -333,6 +330,10 @@
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable, Version=1.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Collections.Immutable.1.3.1\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -342,6 +343,10 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
+    <Reference Include="Validation, Version=2.2.0.0, Culture=neutral, PublicKeyToken=2fc06f0d701809a7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Validation.2.2.8\lib\dotnet\Validation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="VSLangProj, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>

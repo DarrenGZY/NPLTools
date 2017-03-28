@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using Irony.Parsing;
 using System.Text.RegularExpressions;
 
-namespace NPLTools.Grammar
-{ 
+namespace NPLTools.IronyParser.Parser
+{
     class LuaLongStringTerminal : Terminal
     {
         public LuaLongStringTerminal(string name)
             : base(name, TokenCategory.Content)
         {
-            this.SetFlag(TermFlags.IsMultiline);
+          
         }
 
         public string StartSymbol = "[";
@@ -21,10 +18,11 @@ namespace NPLTools.Grammar
         public override void Init(GrammarData grammarData) 
         {
             base.Init(grammarData);
+            SetFlag(TermFlags.IsMultiline);
             
             if (this.EditorInfo == null) 
             {
-               this.EditorInfo = new TokenEditorInfo(TokenType.String, TokenColor.String, TokenTriggers.None);
+                this.EditorInfo = new TokenEditorInfo(TokenType.String, TokenColor.String, TokenTriggers.None);
             }
         }
 
@@ -38,6 +36,7 @@ namespace NPLTools.Grammar
             } 
             else 
             {
+                //we are starting from scratch
                 byte level = 0;
                 if (!BeginMatch(context, source, ref level)) 
                     return null;
@@ -51,9 +50,7 @@ namespace NPLTools.Grammar
             if (context.Mode == ParseMode.VsLineScan)
                 return CreateIncompleteToken(context, source);
 
-            this.Category = TokenCategory.Error;
-            
-			return context.CreateErrorToken("unclosed comment block!");
+            return context.CreateErrorToken("Unclosed comment block");
         }
 
         private Token CreateIncompleteToken(ParsingContext context, ISourceStream source)
@@ -67,9 +64,11 @@ namespace NPLTools.Grammar
 
         private bool BeginMatch(ParsingContext context, ISourceStream source, ref byte level)
         {
+            //Check starting symbol
             if (!source.MatchSymbol(StartSymbol)) 
                 return false;
 
+            //Found starting --, now determine whether this is a long comment.
             string text = source.Text.Substring(source.PreviewPosition + StartSymbol.Length);
             var match = Regex.Match(text, @"^(=*)\[");
             if(match.Value != string.Empty)
@@ -94,6 +93,7 @@ namespace NPLTools.Grammar
 
                     if (context.VsLineScanState.Value != 0)
                     {
+                        //We are using line-mode and begin terminal was on previous line.
                         SourceLocation tokenStart = new SourceLocation();
                         tokenStart.Position = 0;
 
@@ -109,6 +109,7 @@ namespace NPLTools.Grammar
                 }
             }
 
+            //The full match wasn't found, store the state for future parsing.
             context.VsLineScanState.TerminalIndex = this.MultilineIndex;
             context.VsLineScanState.TokenSubType = level;
             return null;
@@ -122,3 +123,5 @@ namespace NPLTools.Grammar
         #endregion
     }
 }
+
+

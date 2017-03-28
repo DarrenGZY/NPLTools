@@ -1,6 +1,6 @@
 ﻿using Irony.Parsing;
 using Microsoft.VisualStudio.Text.Editor;
-using NPLTools.Grammar;
+//using NPLTools.Grammar;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,8 +25,8 @@ namespace NPLTools.Language.Editor
             indentations = new int[lineNumber];
 
             string text = view.TextSnapshot.GetText();
-            Parser parser = new Parser(LuaGrammar.Instance);
-            ParseTree syntaxTree = parser.Parse(text);
+            //Parser parser = new Parser(LuaGrammar.Instance);
+            //ParseTree syntaxTree = parser.Parse(text);
 
 
         }

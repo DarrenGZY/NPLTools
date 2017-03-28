@@ -1,15 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
 using Irony.Parsing;
-namespace NPLTools.Grammar
+
+namespace NPLTools.IronyParser.Parser
 {
-    class LuaStringLiteral : StringLiteral
+    internal class LuaStringLiteral : StringLiteral
     {
         public LuaStringLiteral(string name)
             : base(name)
         {
-            this.AddStartEnd("'", StringOptions.AllowsAllEscapes);
-            this.AddStartEnd("\"", StringOptions.AllowsAllEscapes);
+            AddStartEnd("'", StringOptions.AllowsAllEscapes);
+            AddStartEnd("\"", StringOptions.AllowsAllEscapes);
+        }
+
+        protected override bool ReadBody(ISourceStream source, CompoundTokenDetails details)
+        {
+            int nlPos = source.Text.IndexOf('\n', source.PreviewPosition);
+            if (source.Text[nlPos - 1] == '\\')
+                details.Flags += (short) StringOptions.AllowsLineBreak;
+
+            return base.ReadBody(source, details);
         }
 
         protected override string HandleSpecialEscape(string segment, CompoundTokenDetails details)
@@ -20,14 +29,14 @@ namespace NPLTools.Grammar
             {
                 case 'a':
                 case 'b':
-                case 'f': 
+                case 'f':
                 case 'n':
                 case 'r':
-                case 't': 
+                case 't':
                 case 'v':
-                case '\\': 
-                case '"': 
-                case '\'': 
+                case '\\':
+                case '"':
+                case '\'':
                     break;
 
                 case '0':
@@ -35,17 +44,16 @@ namespace NPLTools.Grammar
                 case '2':
                     {
                         bool success = false;
-                        if (segment.Length >=3)
+                        if (segment.Length >= 3)
                         {
+                            //Verify that a numeric escape is 3 characters
                             string value = segment.Substring(0, 3);
                             int dummy = 0;
                             success = Int32.TryParse(value, out dummy);
-                        
                         }
-                        
-                        if(!success)
-                            details.Error = "Invalid escape sequence: \000 must be a valid number.";
 
+                        if (!success)
+                            details.Error = "Invalid escape sequence: \000 must be a valid number.";
                     }
                     break;
             }
@@ -53,4 +61,4 @@ namespace NPLTools.Grammar
             return segment;
         }
     }
-} 
+}

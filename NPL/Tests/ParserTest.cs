@@ -11,11 +11,11 @@ namespace NPLTools.Tests
     {
         static int Main(string[] args)
         {
-            SampleGrammar grammar = new SampleGrammar();
-            Irony.Parsing.Parser parser = new Irony.Parsing.Parser(grammar);
+            //SampleGrammar grammar = new SampleGrammar();
+            //Irony.Parsing.Parser parser = new Irony.Parsing.Parser(grammar);
 
-            string code = @"1+2*3";
-            ParseTree tree = parser.Parse(code);
+            //string code = @"1+2*3";
+            //ParseTree tree = parser.Parse(code);
             return 0;
         }
         
