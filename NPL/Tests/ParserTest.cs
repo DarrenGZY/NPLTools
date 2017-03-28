@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Irony.Parsing;
 using Irony.Ast;
-namespace NPL.Parser
+namespace NPLTools.Tests
 {
     class ParserTest
     {

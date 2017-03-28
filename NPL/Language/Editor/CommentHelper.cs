@@ -86,7 +86,7 @@ namespace NPLTools.Language.Editor
         }
 
         /// <summary>
-        /// Adds comment characters (#) to the start of each line.  If there is a selection the comment is applied
+        /// Adds comment characters (--) to the start of each line.  If there is a selection the comment is applied
         /// to each selected line.  Otherwise the comment is applied to the current line.
         /// </summary>
         /// <param name="view"></param>
@@ -143,7 +143,7 @@ namespace NPLTools.Language.Editor
         }
 
         /// <summary>
-        /// Removes a comment character (#) from the start of each line.  If there is a selection the character is
+        /// Removes a comment character (--) from the start of each line.  If there is a selection the character is
         /// removed from each selected line.  Otherwise the character is removed from the current line.  Uncommented
         /// lines are ignored.
         /// </summary>

@@ -58,6 +58,29 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Grammar\Ast\Arguments.cs" />
+    <Compile Include="Grammar\Ast\Assignment.cs" />
+    <Compile Include="Grammar\Ast\Block.cs" />
+    <Compile Include="Grammar\Ast\Chunk.cs" />
+    <Compile Include="Grammar\Ast\Expression.cs" />
+    <Compile Include="Grammar\Ast\Field.cs" />
+    <Compile Include="Grammar\Ast\Function.cs" />
+    <Compile Include="Grammar\Ast\FunctionBody.cs" />
+    <Compile Include="Grammar\Ast\FunctionCall.cs" />
+    <Compile Include="Grammar\Ast\FunctionName.cs" />
+    <Compile Include="Grammar\Ast\Identifier.cs" />
+    <Compile Include="Grammar\Ast\Keyword.cs" />
+    <Compile Include="Grammar\Ast\LastStatement.cs" />
+    <Compile Include="Grammar\Ast\Literal.cs" />
+    <Compile Include="Grammar\Ast\NameList.cs" />
+    <Compile Include="Grammar\Ast\Node.cs" />
+    <Compile Include="Grammar\Ast\Operator.cs" />
+    <Compile Include="Grammar\Ast\ParameterList.cs" />
+    <Compile Include="Grammar\Ast\Statement.cs" />
+    <Compile Include="Grammar\Ast\TableConstructor.cs" />
+    <Compile Include="Grammar\Ast\Variable.cs" />
+    <Compile Include="Grammar\Ast\VariableList.cs" />
+    <Compile Include="Grammar\LuaGrammarWithAst.cs" />
     <Compile Include="Guids.cs" />
     <Compile Include="Language\BraceMatching\BraceMatching.cs" />
     <Compile Include="Language\Classifier\ClassificationFormat.cs" />
@@ -65,7 +88,8 @@
     <Compile Include="Language\Classifier\NPLClassifier.cs" />
     <Compile Include="Language\Classifier\NPLSyntaxErrorCheck.cs" />
     <Compile Include="Language\Editor\EditorCommandFilter.cs" />
-    <Compile Include="Language\Editor\EditorExtensions.cs" />
+    <Compile Include="Language\Editor\CommentHelper.cs" />
+    <Compile Include="Language\Editor\FormatHelper.cs" />
     <Compile Include="Language\Editor\NPLTextViewCreationListener.cs" />
     <Compile Include="Language\NPLEditorFactory.cs" />
     <Compile Include="Language\Outlining\OutliningTagger.cs" />
@@ -96,6 +120,7 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProvideEditorExtension2Attribute.cs" />
+    <Compile Include="Tests\AssignGrammar.cs" />
     <Compile Include="Tests\ParserTest.cs" />
     <Compile Include="Tests\SampleGrammar.cs" />
   </ItemGroup>
@@ -345,6 +370,10 @@
     <VSCTCompile Include="NPL.vsct" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Irony.Interpreter\Irony.Interpreter.csproj">
+      <Project>{321a7f5d-00c2-4095-9970-075cdee8c139}</Project>
+      <Name>Irony.Interpreter</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Irony\Irony.csproj">
       <Project>{d81f5c91-d7db-46e5-bc99-49488fb6814c}</Project>
       <Name>Irony</Name>

@@ -54,6 +54,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Irony.Interpreter\Irony.Interpreter.csproj">
+      <Project>{321a7f5d-00c2-4095-9970-075cdee8c139}</Project>
+      <Name>Irony.Interpreter</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Irony\Irony.csproj">
       <Project>{d81f5c91-d7db-46e5-bc99-49488fb6814c}</Project>
       <Name>Irony</Name>

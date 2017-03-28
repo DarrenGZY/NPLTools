@@ -3,7 +3,10 @@ using System.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Irony.Parsing;
 using Irony;
-using NPL.Parser;
+using NPLTools.Tests;
+using NPLTools.Grammar;
+using NPLTools.Grammar.Ast;
+
 namespace NPL.Test
 {
     [TestClass]
@@ -13,11 +16,13 @@ namespace NPL.Test
         public void TestMethod1()
         {
             //LuaGrammar grammar = new LuaGrammar();
-            Irony.Parsing.Parser parser = new Irony.Parsing.Parser(LuaGrammar.Instance);
+            Irony.Parsing.Parser parser = new Irony.Parsing.Parser(LuaGrammarWithAst.Instance);
 
-            string code = @"if 1 then print() end";
-            //parser.Scanner.VsSetSource(code, 0);
+            string code = @"local a = 1";
             ParseTree tree = parser.Parse(code);
+
+            Assignment node = tree.Root.AstNode as Assignment;
+            Node vars = node.VariableList;
             PrintTree(tree);
             //tree.
             ParseTreeNode root = tree.Root;

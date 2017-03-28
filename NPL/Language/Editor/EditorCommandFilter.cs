@@ -33,7 +33,7 @@ namespace NPLTools.Language.Editor
                         CommentHelper.CommentOrUncommentBlock(TextView, false);
                         break;
                     case VSConstants.VSStd2KCmdID.FORMATSELECTION:
-                        Debug.WriteLine("Format Selection Command");
+                        FormatHelper.FormatBlock(TextView);
                         break;
                 }
             }
