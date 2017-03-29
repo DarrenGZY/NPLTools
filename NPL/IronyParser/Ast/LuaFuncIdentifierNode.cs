@@ -7,13 +7,9 @@ namespace NPLTools.IronyParser.Ast{
         private static int anonID = 0;
         private string name = "";
 
-
-
         internal LuaFuncIdentifierNode InitAnonymous() {
             name = "anonfunc" + anonID++;
-
             AsString = name;
-
             return this;
         }
 

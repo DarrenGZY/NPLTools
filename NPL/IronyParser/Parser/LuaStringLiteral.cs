@@ -12,14 +12,14 @@ namespace NPLTools.IronyParser.Parser
             AddStartEnd("\"", StringOptions.AllowsAllEscapes);
         }
 
-        protected override bool ReadBody(ISourceStream source, CompoundTokenDetails details)
-        {
-            int nlPos = source.Text.IndexOf('\n', source.PreviewPosition);
-            if (source.Text[nlPos - 1] == '\\')
-                details.Flags += (short) StringOptions.AllowsLineBreak;
+        //protected override bool ReadBody(ISourceStream source, CompoundTokenDetails details)
+        //{
+        //    int nlPos = source.Text.IndexOf('\n', source.PreviewPosition);
+        //    if (source.Text[nlPos - 1] == '\\')
+        //        details.Flags += (short) StringOptions.AllowsLineBreak;
 
-            return base.ReadBody(source, details);
-        }
+        //    return base.ReadBody(source, details);
+        //}
 
         protected override string HandleSpecialEscape(string segment, CompoundTokenDetails details)
         {

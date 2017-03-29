@@ -31,11 +31,6 @@ namespace NPLTools.IronyParser.Ast
         }
     }
 
-    public class ExpressionListNode : AstNode
-    {
-
-    }
-
     public class BinaryOperationNode : AstNode
     {
 

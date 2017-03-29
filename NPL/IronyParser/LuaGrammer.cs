@@ -25,7 +25,6 @@ namespace NPLTools.IronyParser
             // This includes both single-line and block comments
             var Comment = new LuaCommentTerminal("block-comment");
 
-
             //  Regular Operators
 
             //  Member Select Operators
@@ -65,17 +64,19 @@ namespace NPLTools.IronyParser
             KeyTerm FUNCTION = Keyword("function");
             KeyTerm RETURN = Keyword("return");
             KeyTerm BREAK = Keyword("break");
-
-            var NIL = new ConstantTerminal("nil", typeof(LuaBlockNode));
-            var FALSE = new ConstantTerminal("false", typeof(LuaBlockNode));
-            var TRUE = new ConstantTerminal("true", typeof(LuaBlockNode));
+            KeyTerm NIL = LiteralKeyword("nil");
+            KeyTerm FALSE = LiteralKeyword("false");
+            KeyTerm TRUE = LiteralKeyword("true");
+            //var NIL = new ConstantTerminal("nil", typeof(LuaLiteralNode));
+            //var FALSE = new ConstantTerminal("false", typeof(LuaLiteralNode));
+            //var TRUE = new ConstantTerminal("true", typeof(LuaLiteralNode));
 
             KeyTerm ELLIPSIS = Keyword("...");
 
             #endregion
 
             var Name = new IdentifierTerminal("identifier");
-            Name.AstConfig.NodeType = typeof(LuaBlockNode);
+            Name.AstConfig.NodeType = typeof(LuaIdentifierNode);
             #endregion
 
             #region Declare Transient NonTerminals Here
@@ -119,14 +120,13 @@ namespace NPLTools.IronyParser
             // These non-terminals will all require AST types. Anything that isnt really a language construct should be
             // refactored into a transient
 
-
             var Chunk = new NonTerminal("chunk", typeof (LuaChunkNode));
             var Block = new NonTerminal("block", typeof (LuaBlockNode)); // probably should be transient
 
             var FuncName = new NonTerminal("function name", typeof (LuaFuncIdentifierNode));
             var VarList = new NonTerminal("var list", typeof (LuaIdentifierNodeList));
             var NameList = new NonTerminal("name list", typeof (LuaIdentifierNodeList));
-            var ExprList = new NonTerminal("expr list", typeof (ExpressionListNode));
+            var ExprList = new NonTerminal("expr list", typeof (LuaExpressionNodeList));
 
             var FunctionCall = new NonTerminal("function call", typeof (LuaFunctionCallNode));
             var Function = new NonTerminal("anonymous function definition", typeof (LuaFunctionDefNode));
@@ -136,7 +136,7 @@ namespace NPLTools.IronyParser
             var LocalVariableDeclaration = new NonTerminal("local variable declaration", typeof(LuaLocalDeclaration));
             var LocalVariableDeclarationWithAssignment = new NonTerminal("local variable declaration with assignment", typeof(LuaLocalDeclarationAssignment));
             var TableConstructor = new NonTerminal("table constructor", typeof(LuaTable));
-            var FieldList = new NonTerminal("field list", typeof(ExpressionListNode));
+            var FieldList = new NonTerminal("field list", typeof(LuaExpressionNodeList));
             var Field = new NonTerminal("field", typeof(LuaField));
             var FieldSep = new NonTerminal("field seperator", typeof(LuaBlockNode));
 
@@ -355,7 +355,18 @@ namespace NPLTools.IronyParser
             term.SetFlag(TermFlags.IsKeyword, true);
             term.SetFlag(TermFlags.IsReservedWord, true);
             term.EditorInfo = new TokenEditorInfo(TokenType.Keyword, TokenColor.Keyword, TokenTriggers.None);
-            term.AstConfig.NodeType = typeof(LuaBlockNode);
+            term.AstConfig.NodeType = typeof(LuaLiteralNode);
+            return term;
+        }
+
+        public KeyTerm LiteralKeyword(string keyword)
+        {
+            KeyTerm term = ToTerm(keyword);
+            term.SetFlag(TermFlags.IsKeyword, true);
+            term.SetFlag(TermFlags.IsReservedWord, true);
+            term.SetFlag(TermFlags.NoAstNode, false);
+            term.EditorInfo = new TokenEditorInfo(TokenType.Keyword, TokenColor.Keyword, TokenTriggers.None);
+            term.AstConfig.NodeType = typeof(LuaLiteralNode);
             return term;
         }
 
@@ -376,14 +387,14 @@ namespace NPLTools.IronyParser
             term.DefaultIntTypes = new[] {TypeCode.Int32, TypeCode.Int64, NumberLiteral.TypeCodeBigInt};
             term.DefaultFloatType = TypeCode.Double; // it is default
             term.AddPrefix("0x", NumberOptions.Hex);
-            term.AstConfig.NodeType = typeof(LuaBlockNode);
+            term.AstConfig.NodeType = typeof(LuaLiteralNode);
             return term;
         }
 
         protected static StringLiteral CreateLuaString(string name)
         {
             var term = new LuaStringLiteral(name);
-            term.AstConfig.NodeType = typeof(LuaBlockNode);
+            term.AstConfig.NodeType = typeof(LuaLiteralNode);
             return term;
         }
     }

@@ -22,8 +22,6 @@ namespace NPLTools.IronyParser.Ast
             Expression = AddChild("Expr", treeNode.ChildNodes[2]);
 
             AsString = AssignmentOp + " (assignment)";
-            
-            //EvaluateRef = EvaluateSimple;
         }
     }
 }
