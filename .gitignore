@@ -9,3 +9,5 @@ obj
 /NPL/bin
 *.cd
 *.user
+/NPL/Grammar
+/NPL/LanguageModel

@@ -65,7 +65,10 @@
     <Compile Include="Grammar\LuaTerminalNames.cs" />
     <Compile Include="Guids.cs" />
     <Compile Include="IronyParser\Ast\BaseNode.cs" />
+    <Compile Include="IronyParser\Ast\LuaBinaryExpressionNode.cs" />
     <Compile Include="IronyParser\Ast\LuaBlockNode.cs" />
+    <Compile Include="IronyParser\Ast\LuaDoBlockNode.cs" />
+    <Compile Include="IronyParser\Ast\LuaForBlockNode.cs" />
     <Compile Include="IronyParser\Ast\LuaLiteralNode.cs" />
     <Compile Include="IronyParser\Ast\LuaAssignmentNode.cs" />
     <Compile Include="IronyParser\Ast\LuaChunkNode.cs" />
@@ -80,8 +83,10 @@
     <Compile Include="IronyParser\Ast\LuaLocalDeclaration.cs" />
     <Compile Include="IronyParser\Ast\LuaLocalDeclarationAssignment.cs" />
     <Compile Include="IronyParser\Ast\LuaParmListNode.cs" />
+    <Compile Include="IronyParser\Ast\LuaRepeatBlockNode.cs" />
     <Compile Include="IronyParser\Ast\LuaTable.cs" />
-    <Compile Include="IronyParser\Ast\LuaUnaryOperationNode.cs" />
+    <Compile Include="IronyParser\Ast\LuaUnaryExpressionNode.cs" />
+    <Compile Include="IronyParser\Ast\LuaWhileBlockNode.cs" />
     <Compile Include="IronyParser\LuaGrammer.cs" />
     <Compile Include="IronyParser\Parser\LuaBlockCommentTerminal.cs" />
     <Compile Include="IronyParser\Parser\LuaLongStringTerminal.cs" />

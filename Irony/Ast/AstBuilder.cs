@@ -79,7 +79,7 @@ namespace Irony.Ast {
       var term = parseNode.Term;
       if (term.Flags.IsSet(TermFlags.NoAstNode) || parseNode.AstNode != null) return; 
       //children first
-      var processChildren = !parseNode.Term.Flags.IsSet(TermFlags.AstDelayChildren) && parseNode.ChildNodes.Count > 0;
+       var processChildren = !parseNode.Term.Flags.IsSet(TermFlags.AstDelayChildren) && parseNode.ChildNodes.Count > 0;
       if (processChildren) {
         var mappedChildNodes = parseNode.GetMappedChildNodes();
         for (int i = 0; i < mappedChildNodes.Count; i++)

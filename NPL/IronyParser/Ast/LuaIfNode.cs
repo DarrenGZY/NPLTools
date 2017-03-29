@@ -11,7 +11,6 @@ namespace NPLTools.IronyParser.Ast
         public AstNode IfTrue;
         public AstNode IfFalse;
 
-
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);

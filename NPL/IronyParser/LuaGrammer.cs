@@ -135,37 +135,32 @@ namespace NPLTools.IronyParser
 
             var LocalVariableDeclaration = new NonTerminal("local variable declaration", typeof(LuaLocalDeclaration));
             var LocalVariableDeclarationWithAssignment = new NonTerminal("local variable declaration with assignment", typeof(LuaLocalDeclarationAssignment));
-            var TableConstructor = new NonTerminal("table constructor", typeof(LuaTable));
+            var TableConstructor = new NonTerminal("table constructor", typeof(LuaTableNode));
             var FieldList = new NonTerminal("field list", typeof(LuaExpressionNodeList));
             var Field = new NonTerminal("field", typeof(LuaField));
             var FieldSep = new NonTerminal("field seperator", typeof(LuaBlockNode));
 
             var IdentifierWithOptNamespace = new NonTerminal("identifier including namespace", typeof(LuaBlockNode));
 
-            var BinExp = new NonTerminal("binexp", typeof (BinaryOperationNode)) {Rule = Expr + BinOp + Expr};
-            BinExp.AstConfig.NodeType = typeof(LuaBlockNode);
-            var UniExp = new NonTerminal("uniexp", typeof (LuaUnaryOperationNode)) {Rule = UnOp + Expr};
-            UniExp.AstConfig.NodeType = typeof(LuaBlockNode);
+            var BinExp = new NonTerminal("binexp", typeof (LuaBinaryExpressionNode)) {Rule = Expr + BinOp + Expr};
+            var UniExp = new NonTerminal("uniexp", typeof (LuaUnaryExpressionNode)) {Rule = UnOp + Expr};
             var ElseIfBlock = new NonTerminal("ElseIfClause", typeof (LuaElseIfNode));
             var ElseIfBlockList = new NonTerminal("ElseIfClause*", typeof(LuaBlockNode));
             var ElseBlockOpt = new NonTerminal("ElseClause", typeof(LuaBlockNode));
 
-
             var VariableAssignment = new NonTerminal("variable assignment", typeof (LuaAssignmentNode));
 
-            var DoBlock = new NonTerminal("do block", typeof(LuaBlockNode));
-            var WhileBlock = new NonTerminal("while block", typeof(LuaBlockNode));
-            var RepeatBlock = new NonTerminal("repeat block", typeof(LuaBlockNode));
+            var DoBlock = new NonTerminal("do block", typeof(LuaDoBlockNode));
+            var WhileBlock = new NonTerminal("while block", typeof(LuaWhileBlockNode));
+            var RepeatBlock = new NonTerminal("repeat block", typeof(LuaRepeatBlockNode));
             var ConditionalBlock = new NonTerminal("conditonal block", typeof (LuaIfNode));
-            var ForBlock = new NonTerminal("for block",
-                                           FOR + Name + EQ + Expr + "," + Expr + ("," + Expr).Q() + DO + Block + END);
-            ForBlock.AstConfig.NodeType = typeof(LuaBlockNode);
-            var GenericForBlock = new NonTerminal("generic for block", FOR + NameList + IN + ExprList + DO + Block + END);
-            GenericForBlock.AstConfig.NodeType = typeof(LuaBlockNode);
+            var ForBlock = new NonTerminal("for block", typeof(LuaForBlockNode));
+            var GenericForBlock = new NonTerminal("generic for block", typeof(LuaForBlockNode));
 
             var LocalFunctionDeclaration = new NonTerminal("local function declaration", typeof(LuaBlockNode));
             var FunctionDeclaration = new NonTerminal("function declaration", typeof (LuaFunctionDefNode));
 
+            var Expr23 = new NonTerminal("expr 23", typeof(LuaExpressionNodeList));
             #endregion
 
             #region Place Rules Here
@@ -214,7 +209,8 @@ namespace NPLTools.IronyParser
             ElseIfBlock.Rule = ELSEIF + Expr + THEN + Block;
             ElseIfBlockList.Rule = MakeStarRule(ElseIfBlockList, null, ElseIfBlock);
             ConditionalBlock.Rule = IF + Expr + THEN + Block + ElseIfBlockList + ElseBlockOpt + END;
-            ForBlock.Rule = FOR + Name + EQ + Expr + "," + Expr + ("," + Expr).Q() + DO + Block + END;
+            ForBlock.Rule = FOR + Name + EQ + Expr23 + DO + Block + END;
+            Expr23.Rule = Expr + "," + Expr | Expr + "," + Expr + "," + Expr;
             GenericForBlock.Rule = FOR + NameList + IN + ExprList + DO + Block + END;
 
             Statement.Rule = VariableAssignment |

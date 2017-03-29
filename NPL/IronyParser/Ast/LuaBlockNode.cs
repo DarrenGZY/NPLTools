@@ -30,9 +30,4 @@ namespace NPLTools.IronyParser.Ast
             AsString = "Block";
         }
     }
-
-    public class BinaryOperationNode : AstNode
-    {
-
-    }
 }
