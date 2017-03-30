@@ -21,7 +21,7 @@ namespace NPLTools.IronyParser.Ast
             }
             else
             {
-                Target = AddChild("entry", treeNode.ChildNodes[0]);
+                Target = AddChild("entry", treeNode.ChildNodes[0]) as LuaNode;
                 AsString = "list field";
             }
         }

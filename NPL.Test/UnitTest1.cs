@@ -20,7 +20,7 @@ namespace NPL.Test
             //LuaGrammar grammar = new LuaGrammar();
             Irony.Parsing.Parser parser = new Irony.Parsing.Parser(new NPLTools.IronyParser.LuaGrammar());
 
-            string code = @"local a=1+2 function b() a = 2 end c = {a=1, b=2} do print() end repeat print() until true";
+            string code = @"if a==1 then print(1) elseif a==2 then print(2) elseif a==3 then print(3) else print(4) end";
             Irony.Parsing.ParseTree tree = parser.Parse(code);
             
             PrintTree(tree);

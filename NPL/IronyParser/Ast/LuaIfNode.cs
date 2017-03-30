@@ -7,17 +7,17 @@ namespace NPLTools.IronyParser.Ast
 {
     public class LuaIfNode : LuaNode
     {
-        public LuaNode Test;
-        public LuaNode IfTrue;
+        public LuaNode Expression;
+        public LuaBlockNode IfTrue;
         public LuaNode IfFalse;
 
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
 
-            Test = AddChild("Test", treeNode.ChildNodes[1]) as LuaNode;
+            Expression = AddChild("Test", treeNode.ChildNodes[1]) as LuaNode;
 
-            IfTrue = AddChild("IfTrue", treeNode.ChildNodes[3]) as LuaNode;
+            IfTrue = AddChild("IfTrue", treeNode.ChildNodes[3]) as LuaBlockNode;
 
             foreach (ParseTreeNode variable in treeNode.ChildNodes)
             {
@@ -33,10 +33,5 @@ namespace NPLTools.IronyParser.Ast
                     IfFalse = AddChild("IfFalse", variable.ChildNodes[1]) as LuaNode;
             }
         }
-    }
-
-    public class LuaElseIfNode : LuaIfNode
-    {
-        
     }
 }

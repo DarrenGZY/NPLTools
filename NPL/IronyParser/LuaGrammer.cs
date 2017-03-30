@@ -138,6 +138,7 @@ namespace NPLTools.IronyParser
             var VarList = new NonTerminal("var list", typeof (LuaIdentifierNodeList));
             var NameList = new NonTerminal("name list", typeof (LuaIdentifierNodeList));
             var ExprList = new NonTerminal("expr list", typeof (LuaExpressionNodeList));
+            var ExprListOpt = new NonTerminal("expr list opt", typeof(LuaExpressionNodeList));
 
             var FunctionCall = new NonTerminal("function call", typeof (LuaFunctionCallNode));
             var Function = new NonTerminal("anonymous function definition", typeof (LuaFunctionDefNode));
@@ -156,7 +157,7 @@ namespace NPLTools.IronyParser
             var BinExp = new NonTerminal("binexp", typeof (LuaBinaryExpressionNode)) {Rule = Expr + BinOp + Expr};
             var UniExp = new NonTerminal("uniexp", typeof (LuaUnaryExpressionNode)) {Rule = UnOp + Expr};
             var ElseIfBlock = new NonTerminal("ElseIfClause", typeof (LuaElseIfNode));
-            var ElseIfBlockList = new NonTerminal("ElseIfClause*", typeof(LuaBlockNode));
+            var ElseIfBlockList = new NonTerminal("ElseIfClause*", typeof(LuaElseIfListNode));
             var ElseBlockOpt = new NonTerminal("ElseClause", typeof(LuaBlockNode));
 
             var VariableAssignment = new NonTerminal("variable assignment", typeof (LuaAssignmentNode));
@@ -254,6 +255,7 @@ namespace NPLTools.IronyParser
 
             //explist ::= {exp `,´} exp
             ExprList.Rule = MakePlusRule(ExprList, ToTerm(","), Expr);
+            ExprListOpt.Rule = MakeStarRule(ExprListOpt, ToTerm(","), Expr);
 
             //exp ::=  nil | false | true | Number | String | `...´ | function | 
             //     prefixexp | tableconstructor | exp binop exp | unop exp 
@@ -272,19 +274,19 @@ namespace NPLTools.IronyParser
 
             //args ::=  `(´ [explist] `)´ | tableconstructor | String 
 
-            ArgsParameters.Rule = "(" + ExprList + ")" | "(" + ")";
+            ArgsParameters.Rule = "(" + ExprListOpt + ")" ;
             Args.Rule = ArgsParameters | TableConstructor | STRING | LONGSTRING;
 
             //function ::= function funcbody
             Function.Rule = FUNCTION + FunctionParameters + Block + END;
 
             //funcbody ::= `(´ [parlist] `)´ block end
-            FunctionParameters.Rule = "(" + ParList + ")" | "(" + ")";
+            FunctionParameters.Rule = "(" + ParList + ")";
             //FuncBody.Rule = Block + END;
 
             //parlist ::= namelist [`,´ `...´] | `...´
             EllipsisOpt.Rule = Empty | ToTerm(",") + ELLIPSIS;
-            ParList.Rule = NameList + EllipsisOpt | ELLIPSIS;
+            ParList.Rule = NameList + EllipsisOpt | ELLIPSIS | Empty;
 
             //tableconstructor ::= `{´ [fieldlist] `}´
   //          TableConstructor.Rule = "{" + FieldList.Q() + "}";
@@ -314,9 +316,9 @@ namespace NPLTools.IronyParser
 
             #region Define Keywords and Register Symbols
 
-            RegisterBracePair("(", ")");
-            RegisterBracePair("{", "}");
-            RegisterBracePair("[", "]");
+            //RegisterBracePair("(", ")");
+            //RegisterBracePair("{", "}");
+            //RegisterBracePair("[", "]");
 
           //  MarkPunctuation(COLON, DOT);
             MarkPunctuation(",", ";");

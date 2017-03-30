@@ -11,13 +11,13 @@ namespace NPLTools.IronyParser.Ast
 {
     public class LuaDoBlockNode : LuaNode
     {
-        public LuaNode Block { get; private set; }
+        public LuaBlockNode Block { get; private set; }
 
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
 
-            Block = treeNode.ChildNodes[1].AstNode as AstNode;
+            Block = treeNode.ChildNodes[1].AstNode as LuaBlockNode;
             AddChild("do block", Block);
         }
     }
