@@ -8,7 +8,7 @@ using Irony.Parsing;
 
 namespace NPLTools.IronyParser.Ast
 {
-    public class LuaLiteralNode : AstNode
+    public class LuaLiteralNode : LuaNode
     {
         public LuaType Type { get; private set; }
 

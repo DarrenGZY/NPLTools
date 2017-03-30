@@ -5,7 +5,7 @@ using Irony.Interpreter.Ast;
 
 namespace NPLTools.IronyParser.Ast
 {
-    public class LuaTableNode : AstNode
+    public class LuaTableNode : LuaNode
     {
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {

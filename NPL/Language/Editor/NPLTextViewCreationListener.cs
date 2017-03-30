@@ -7,6 +7,8 @@ using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.OLE.Interop;
 using System.Runtime.InteropServices;
+using Irony.Parsing;
+using Irony.Interpreter.Ast;
 
 namespace NPLTools.Language.Editor
 {
@@ -20,6 +22,9 @@ namespace NPLTools.Language.Editor
 
         public static event EventHandler<NPLTextContentChangedEventArgs> TextContentChanged;
 
+        public static AstNode AstRoot { get; private set; }
+        public static ParseTree ParseTreeRoot { get; private set; }
+
         private IWpfTextView _view;
         private System.Threading.Timer _delayRefreshTimer;
         public void VsTextViewCreated(IVsTextView textViewAdapter)
@@ -31,13 +36,6 @@ namespace NPLTools.Language.Editor
             EditorCommandFilter commandFilter = new EditorCommandFilter(_view);
             textViewAdapter.AddCommandFilter(commandFilter, out next);
             commandFilter.Next = next;
-
-            //IVsTextLines lines;
-            //textViewAdapter.GetBuffer(out lines);
-            //TextSpan[] spans = new TextSpan[1];
-            //lines.ReplaceLines(0, 0, 0, 0, Marshal.StringToHGlobalAnsi("hahaha"), 6, spans);
-            //TextBuffer tb = new TextBuffer();
-            //textViewAdapter.SetBuffer(lines);
         }
 
         private void TextBuffer_Changed(object sender, Microsoft.VisualStudio.Text.TextContentChangedEventArgs e)

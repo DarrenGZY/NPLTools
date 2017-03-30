@@ -3,7 +3,7 @@ using Irony.Parsing;
 using Irony.Interpreter.Ast;
 
 namespace NPLTools.IronyParser.Ast{
-    public class LuaFuncIdentifierNode : AstNode {
+    public class LuaFuncIdentifierNode : LuaNode {
         private static int anonID = 0;
         private string name = "";
 

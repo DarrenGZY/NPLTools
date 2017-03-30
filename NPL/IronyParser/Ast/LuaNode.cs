@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace NPLTools.IronyParser.Ast
 {
-    public class BaseNode : AstNode
+    public class LuaNode : AstNode
     {
         public void AddChild(string role, AstNode child)
         {
@@ -15,6 +15,11 @@ namespace NPLTools.IronyParser.Ast
             child.Role = role;
             child.Parent = this;
             ChildNodes.Add(child);
+        }
+
+        public virtual void AppendAsString(StringBuilder res, string indentation)
+        {
+            
         }
     }
 }

@@ -1,10 +1,11 @@
 ﻿using Irony.Ast;
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
+using System.Text;
 
 namespace NPLTools.IronyParser.Ast
 {
-    public class LuaChunkNode : AstNode
+    public class LuaChunkNode : LuaNode
     {
         public LuaBlockNode Block { get; set; }
 
@@ -18,9 +19,9 @@ namespace NPLTools.IronyParser.Ast
             AsString = "LuaChunk";
         }
 
-    }//class
-
+        public override void AppendAsString(StringBuilder res, string indentation)
+        {
+            Block.AppendAsString(res, string.Empty);
+        }
+    }
 }
-
-//namespace
-

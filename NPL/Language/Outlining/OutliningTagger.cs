@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.ComponentModel.Composition;
-using Microsoft.VisualStudio.Text.Outlining;
 using Microsoft.VisualStudio.Text.Tagging;
 using Microsoft.VisualStudio.Utilities;
 using Microsoft.VisualStudio.Text;
-using NPLTools.Grammar;
+using NPLTools.IronyParser;
 using Irony.Parsing;
 
 namespace Outlining
@@ -71,7 +68,6 @@ namespace Outlining
                 _delayRefreshTimer.Dispose();
             }
             _delayRefreshTimer = new System.Threading.Timer(ReParseCallBack, null, 500, System.Threading.Timeout.Infinite);
-
         }
 
         private void ReParseCallBack(object args)
@@ -92,7 +88,7 @@ namespace Outlining
         private void IterateTreeNode(ParseTreeNode node, List<Region> regions)
         {
             if (node == null) return;
-            if (node.Term.Name == LuaTerminalNames.NamedFunction)
+            if (node.Term.Name == "named function")
                 regions.Add(new Region(node.Span.Location.Position, node.Span.Length));
             foreach (ParseTreeNode child in node.ChildNodes)
             {

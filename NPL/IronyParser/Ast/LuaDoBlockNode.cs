@@ -9,9 +9,9 @@ using Irony.Interpreter.Ast;
 
 namespace NPLTools.IronyParser.Ast
 {
-    public class LuaDoBlockNode : BaseNode
+    public class LuaDoBlockNode : LuaNode
     {
-        public AstNode Block { get; private set; }
+        public LuaNode Block { get; private set; }
 
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {

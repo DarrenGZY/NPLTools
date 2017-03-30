@@ -8,7 +8,7 @@ using Irony.Parsing;
 
 namespace NPLTools.IronyParser.Ast
 {
-    public class LuaForBlockNode : BaseNode
+    public class LuaForBlockNode : LuaNode
     {
         public LuaIdentifierNode Identifier { get; private set; }
         // For generic loop only

@@ -5,7 +5,7 @@ using Irony.Parsing;
 
 namespace NPLTools.IronyParser.Ast
 {
-    public class LuaFunctionCallNode : AstNode
+    public class LuaFunctionCallNode : LuaNode
     {
         AstNode TargetRef = new AstNode();
         AstNode Arguments;

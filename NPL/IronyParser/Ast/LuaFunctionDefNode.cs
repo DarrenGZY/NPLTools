@@ -9,11 +9,11 @@ namespace NPLTools.IronyParser.Ast
 {
 
     //A node representing function definition
-    public class LuaFunctionDefNode : AstNode//, ICallTarget
+    public class LuaFunctionDefNode : LuaNode
     {
-        AstNode NameNode;
-        AstNode Parameters;
-        AstNode Body;
+        LuaNode NameNode;
+        LuaNode Parameters;
+        LuaNode Body;
 
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
@@ -31,12 +31,12 @@ namespace NPLTools.IronyParser.Ast
             }
             else
             {
-                NameNode = AddChild("Name", anon);
+                NameNode = AddChild("Name", anon) as LuaNode;
             }
             var name = NameNode.AsString;
 
-            Parameters = AddChild("Parameters", treeNode.ChildNodes[i-2]);
-            Body = AddChild("Body", treeNode.ChildNodes[i-1]);
+            Parameters = AddChild("Parameters", treeNode.ChildNodes[i-2]) as LuaNode;
+            Body = AddChild("Body", treeNode.ChildNodes[i-1]) as LuaNode;
             
             AsString = "<Function " + name + ">";
         }

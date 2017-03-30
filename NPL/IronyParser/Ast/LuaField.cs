@@ -4,33 +4,26 @@ using Irony.Parsing;
 
 namespace NPLTools.IronyParser.Ast
 {
-    public class LuaField :AstNode 
+    public class LuaField : LuaNode 
     {
-        public AstNode Target;
-        public AstNode Expression;
+        public LuaNode Target { get; private set; }
+        public LuaNode Expression { get; private set; }
 
-        
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
 
             if (treeNode.ChildNodes.Count > 1)
             {
-                Target = AddChild("key", treeNode.ChildNodes[0]);
-
-                Expression = AddChild("value", treeNode.ChildNodes[2]);
-
+                Target = AddChild("key", treeNode.ChildNodes[0]) as LuaNode;
+                Expression = AddChild("value", treeNode.ChildNodes[2]) as LuaNode;
                 AsString = "key/value field";
-
-                //EvaluateRef = EvaluateSimple;
             }
             else
             {
                 Target = AddChild("entry", treeNode.ChildNodes[0]);
-
                 AsString = "list field";
             }
-
         }
 
         //private void EvaluateSimple(EvaluationContext context, AstMode mode)

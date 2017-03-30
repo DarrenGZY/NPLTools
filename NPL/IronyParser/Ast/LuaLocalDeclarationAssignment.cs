@@ -9,7 +9,7 @@ using Irony.Parsing;
 
 namespace NPLTools.IronyParser.Ast
 {
-    public class LuaLocalDeclarationAssignment : BaseNode
+    public class LuaLocalDeclarationAssignment : LuaNode
     {
         public AstNodeList VariableList { get; set; }
         public AstNodeList ExpressionList { get; set; }

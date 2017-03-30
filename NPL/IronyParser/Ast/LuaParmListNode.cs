@@ -6,7 +6,7 @@ using Irony.Interpreter.Ast;
 
 namespace NPLTools.IronyParser.Ast
 {
-    public class LuaParmListNode : AstNode
+    public class LuaParmListNode : LuaNode
     {
         static void RecursiveChildTraversal(List<ParseTreeNode> leafNodes, ParseTreeNode node) {
             if (node.ChildNodes.Count == 0)

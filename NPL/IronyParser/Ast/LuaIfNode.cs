@@ -5,19 +5,19 @@ using Irony.Parsing;
 
 namespace NPLTools.IronyParser.Ast
 {
-    public class LuaIfNode : AstNode
+    public class LuaIfNode : LuaNode
     {
-        public AstNode Test;
-        public AstNode IfTrue;
-        public AstNode IfFalse;
+        public LuaNode Test;
+        public LuaNode IfTrue;
+        public LuaNode IfFalse;
 
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
 
-            Test = AddChild("Test", treeNode.ChildNodes[1]);
+            Test = AddChild("Test", treeNode.ChildNodes[1]) as LuaNode;
 
-            IfTrue = AddChild("IfTrue", treeNode.ChildNodes[3]);
+            IfTrue = AddChild("IfTrue", treeNode.ChildNodes[3]) as LuaNode;
 
             foreach (ParseTreeNode variable in treeNode.ChildNodes)
             {
@@ -30,23 +30,9 @@ namespace NPLTools.IronyParser.Ast
                 }
 
                 if (variable.ToString() == "ElseClause" && variable.ChildNodes.Count > 0)
-                    IfFalse = AddChild("IfFalse", variable.ChildNodes[1]);
+                    IfFalse = AddChild("IfFalse", variable.ChildNodes[1]) as LuaNode;
             }
         }
-
-        //public override void EvaluateNode(EvaluationContext context, AstMode mode)
-        //{
-        //    Test.Evaluate(context, AstMode.Write);
-        //    object result = context.Data.Pop();
-        //    if (context.Runtime.IsTrue(result))
-        //    {
-        //        if (IfTrue != null) IfTrue.Evaluate(context, AstMode.Read);
-        //    }
-        //    else
-        //    {
-        //        if (IfFalse != null) IfFalse.Evaluate(context, AstMode.Read);
-        //    }
-        //}
     }
 
     public class LuaElseIfNode : LuaIfNode

@@ -18,9 +18,9 @@ namespace NPL.Test
         public void TestMethod1()
         {
             //LuaGrammar grammar = new LuaGrammar();
-            Irony.Parsing.Parser parser = new Irony.Parsing.Parser(new NPLTools.IronyParser.Grammar());
+            Irony.Parsing.Parser parser = new Irony.Parsing.Parser(new NPLTools.IronyParser.LuaGrammar());
 
-            string code = @"do print() end repeat print() until true";
+            string code = @"local a=1+2 function b() a = 2 end c = {a=1, b=2} do print() end repeat print() until true";
             Irony.Parsing.ParseTree tree = parser.Parse(code);
             
             PrintTree(tree);

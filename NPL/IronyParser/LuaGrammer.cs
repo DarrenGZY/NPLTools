@@ -10,9 +10,20 @@ using Irony.Parsing;
 namespace NPLTools.IronyParser
 {
     [Language("Lua", "5.1", "Lua Script Language")]
-    public class Grammar : Irony.Parsing.Grammar
+    public class LuaGrammar : Irony.Parsing.Grammar
     {
-        public Grammar() :
+        private static LuaGrammar _instance;
+        public static LuaGrammar Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new LuaGrammar();
+                return _instance;
+            }
+        }
+
+        public LuaGrammar() :
             base(true)
         {
             #region Declare Terminals Here

@@ -55,7 +55,7 @@ namespace NPLTools.Language.Editor
                 // TODO: select multiple spans?
                 // Select the full region we just commented, do not select if in projection buffer 
                 // (the selection might span non-language buffer regions)
-                if (view.TextBuffer.IsPythonContent())
+                if (view.TextBuffer.IsNPLContent())
                 {
                     UpdateSelection(view, start, end);
                 }
@@ -65,12 +65,12 @@ namespace NPLTools.Language.Editor
             return false;
         }
 
-        internal static bool IsPythonContent(this ITextBuffer buffer)
+        internal static bool IsNPLContent(this ITextBuffer buffer)
         {
             return buffer.ContentType.IsOfType("NPL");
         }
 
-        internal static bool IsPythonContent(this ITextSnapshot buffer)
+        internal static bool IsNPLContent(this ITextSnapshot buffer)
         {
             return buffer.ContentType.IsOfType("NPL");
         }
@@ -80,7 +80,7 @@ namespace NPLTools.Language.Editor
             return view.BufferGraph.MapDownToFirstMatch(
                point,
                PointTrackingMode.Positive,
-               IsPythonContent,
+               IsNPLContent,
                PositionAffinity.Successor
             );
         }

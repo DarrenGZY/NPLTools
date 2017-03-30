@@ -4,7 +4,7 @@ using Irony.Interpreter.Ast;
 
 namespace NPLTools.IronyParser.Ast {
 
-    public class LuaUnaryExpressionNode : AstNode {
+    public class LuaUnaryExpressionNode : LuaNode {
         public string Op;
         public string UnaryOp; 
         public AstNode Argument;
