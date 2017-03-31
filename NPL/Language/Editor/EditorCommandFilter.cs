@@ -4,17 +4,20 @@ using Microsoft.VisualStudio.Shell;
 using System.Diagnostics;
 using System;
 using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.TextManager.Interop;
 
 namespace NPLTools.Language.Editor
 {
     internal class EditorCommandFilter : IOleCommandTarget
     {
-        public EditorCommandFilter(IWpfTextView textView)
-        {
-            TextView = textView;
-        }
+        private ITextView _textView;
+        private IVsTextView _vsTextView;
 
-        public IWpfTextView TextView { get; private set; }
+        public EditorCommandFilter(ITextView textView, IVsTextView vsTextView)
+        {
+            _textView = textView;
+            _vsTextView = vsTextView;
+        }
 
         public IOleCommandTarget Next { get; set; }
 
@@ -26,14 +29,23 @@ namespace NPLTools.Language.Editor
                 {
                     case VSConstants.VSStd2KCmdID.COMMENT_BLOCK:
                     case VSConstants.VSStd2KCmdID.COMMENTBLOCK:
-                        CommentHelper.CommentOrUncommentBlock(TextView, true);
+                        CommentHelper.CommentOrUncommentBlock(_textView, true);
                         break;
                     case VSConstants.VSStd2KCmdID.UNCOMMENT_BLOCK:
                     case VSConstants.VSStd2KCmdID.UNCOMMENTBLOCK:
-                        CommentHelper.CommentOrUncommentBlock(TextView, false);
+                        CommentHelper.CommentOrUncommentBlock(_textView, false);
                         break;
                     case VSConstants.VSStd2KCmdID.FORMATSELECTION:
-                        FormatHelper.FormatBlock(TextView);
+                        FormatHelper.FormatBlock(_textView);
+                        break;
+                }
+            }
+            else if (pguidCmdGroup == VsMenus.guidStandardCommandSet97)
+            {
+                switch ((VSConstants.VSStd97CmdID)nCmdID)
+                {
+                    case VSConstants.VSStd97CmdID.GotoDefn:
+                        NavagationHelper.GotoDefinition(_vsTextView);
                         break;
                 }
             }
@@ -57,6 +69,19 @@ namespace NPLTools.Language.Editor
                             prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_ENABLED | OLECMDF.OLECMDF_SUPPORTED);
                             return VSConstants.S_OK;
                     }
+                }
+            }
+            else if (pguidCmdGroup == VsMenus.guidStandardCommandSet97)
+            {
+                for (int i = 0; i < cCmds; i++)
+                {
+                    switch ((VSConstants.VSStd97CmdID)prgCmds[i].cmdID)
+                    {
+                        case VSConstants.VSStd97CmdID.GotoDefn:
+                            prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_ENABLED | OLECMDF.OLECMDF_SUPPORTED);
+                            return VSConstants.S_OK;
+                    }
+
                 }
             }
             return Next.QueryStatus(pguidCmdGroup, cCmds, prgCmds, pCmdText);

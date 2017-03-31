@@ -99,6 +99,7 @@
     <Compile Include="Language\Editor\EditorCommandFilter.cs" />
     <Compile Include="Language\Editor\CommentHelper.cs" />
     <Compile Include="Language\Editor\FormatHelper.cs" />
+    <Compile Include="Language\Editor\NavagationHelper.cs" />
     <Compile Include="Language\NPLTextViewCreationListener.cs" />
     <Compile Include="Language\NPLEditorFactory.cs" />
     <Compile Include="Language\NPLTextViewExtensions.cs" />

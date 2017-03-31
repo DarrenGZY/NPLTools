@@ -27,7 +27,7 @@ namespace NPLTools.Language.Editor
         public static LuaNode AstRoot { get; private set; }
         public static ParseTree ParseTree { get; private set; }
 
-        private IWpfTextView _view;
+        private ITextView _view;
         private Parser _parser;
         private System.Threading.Timer _delayRefreshTimer;
         public void VsTextViewCreated(IVsTextView textViewAdapter)
@@ -39,7 +39,7 @@ namespace NPLTools.Language.Editor
             if (ParseTree.Root != null)
                 AstRoot = ParseTree.Root.AstNode as LuaNode;
             IOleCommandTarget next;
-            EditorCommandFilter commandFilter = new EditorCommandFilter(_view);
+            EditorCommandFilter commandFilter = new EditorCommandFilter(_view, textViewAdapter);
             textViewAdapter.AddCommandFilter(commandFilter, out next);
             commandFilter.Next = next;
         }
