@@ -93,10 +93,13 @@
     <Compile Include="Language\Classifier\ClassificationType.cs" />
     <Compile Include="Language\Classifier\NPLClassifier.cs" />
     <Compile Include="Language\Classifier\NPLSyntaxErrorTagger.cs" />
+    <Compile Include="Language\AutoCompletion\NPLCompletionCommandHandler.cs" />
+    <Compile Include="Language\AutoCompletion\NPLCompletionCommandProvider.cs" />
+    <Compile Include="Language\AutoCompletion\NPLCompletionSource.cs" />
     <Compile Include="Language\Editor\EditorCommandFilter.cs" />
     <Compile Include="Language\Editor\CommentHelper.cs" />
     <Compile Include="Language\Editor\FormatHelper.cs" />
-    <Compile Include="Language\Editor\NPLTextViewCreationListener.cs" />
+    <Compile Include="Language\NPLTextViewCreationListener.cs" />
     <Compile Include="Language\NPLEditorFactory.cs" />
     <Compile Include="Language\NPLTextViewExtensions.cs" />
     <Compile Include="Language\Outlining\OutliningTagger.cs" />
