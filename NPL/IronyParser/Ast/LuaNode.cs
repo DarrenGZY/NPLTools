@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Irony.Ast;
+using Irony.Parsing;
 
 namespace NPLTools.IronyParser.Ast
 {
@@ -21,5 +23,12 @@ namespace NPLTools.IronyParser.Ast
         {
             
         }
+
+        public override void Init(AstContext context, ParseTreeNode treeNode)
+        {
+            base.Init(context, treeNode);
+        }
     }
+
+    public class LuaNodeList : List<LuaNode> { }
 }

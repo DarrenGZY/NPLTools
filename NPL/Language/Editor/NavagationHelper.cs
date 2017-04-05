@@ -1,6 +1,7 @@
 ﻿using Irony.Parsing;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.TextManager.Interop;
+using NPLTools.Intelligense;
 using NPLTools.IronyParser;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,13 @@ namespace NPLTools.Language.Editor
 {
     internal static class NavagationHelper
     {
+        private static LuaModel _model;
+
+        public static void Initialize(LuaModel model)
+        {
+            _model = model;
+        }
+
         public static void GotoDefinition(IVsTextView vsTextView)
         {
             int line, column;
@@ -25,7 +33,12 @@ namespace NPLTools.Language.Editor
 
             vsTextView.GetWordExtent(line, column, (uint)WORDEXTFLAGS.WORDEXT_CURRENT, span);
             vsTextView.SetSelection(span[0].iStartLine, span[0].iStartIndex, span[0].iEndLine, span[0].iEndIndex);
-            //vsTextView.SetCaretPos(2, 4);
+            string word;
+            vsTextView.GetTextStream(span[0].iStartLine, span[0].iStartIndex, span[0].iEndLine, span[0].iEndIndex, out word);
+
+            TextSpan? res = _model.GetDeclarationLocation(word, span[0]);
+            if (res != null)
+                vsTextView.SetCaretPos(res.Value.iStartLine, res.Value.iStartIndex);
         }
 
         private static string GetSelectTextFromCaretPosition(int line, int column)

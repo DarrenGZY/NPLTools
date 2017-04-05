@@ -119,6 +119,8 @@ namespace NPLTools.IronyParser
             var ColonCallOpt = new NonTerminal("colon call");
             ColonCallOpt.AstConfig.NodeType = typeof(LuaBlockNode);
             var FunctionParameters = new NonTerminal("function parameters");
+
+            
             MarkTransient(Expr, Statement, Statements, StatementsEnd, SingleStatementWithTermOpt, /* ColonCallOpt, */
                           FunctionParameters,
                           LastStatementWithTermOpt, UnOp, BinOp, PrefixExpr, Var, Args, EllipsisOpt, ArgsParameters,
@@ -150,9 +152,9 @@ namespace NPLTools.IronyParser
             var TableConstructor = new NonTerminal("table constructor", typeof(LuaTableNode));
             var FieldList = new NonTerminal("field list", typeof(LuaExpressionNodeList));
             var Field = new NonTerminal("field", typeof(LuaField));
-            var FieldSep = new NonTerminal("field seperator", typeof(LuaBlockNode));
+            var FieldSep = new NonTerminal("field seperator", typeof(LuaNode));
 
-            var IdentifierWithOptNamespace = new NonTerminal("identifier including namespace", typeof(LuaBlockNode));
+            var IdentifierWithOptNamespace = new NonTerminal("identifier including namespace", typeof(LuaNode));
 
             var BinExp = new NonTerminal("binexp", typeof (LuaBinaryExpressionNode)) {Rule = Expr + BinOp + Expr};
             var UniExp = new NonTerminal("uniexp", typeof (LuaUnaryExpressionNode)) {Rule = UnOp + Expr};
@@ -169,10 +171,12 @@ namespace NPLTools.IronyParser
             var ForBlock = new NonTerminal("for block", typeof(LuaForBlockNode));
             var GenericForBlock = new NonTerminal("generic for block", typeof(LuaForBlockNode));
 
-            var LocalFunctionDeclaration = new NonTerminal("local function declaration", typeof(LuaBlockNode));
+            var LocalFunctionDeclaration = new NonTerminal("local function declaration", typeof(LuaFunctionDefNode));
             var FunctionDeclaration = new NonTerminal("function declaration", typeof (LuaFunctionDefNode));
 
             var Expr23 = new NonTerminal("expr 23", typeof(LuaExpressionNodeList));
+
+            var SingleStatementWithTermStar = new NonTerminal(SingleStatementWithTermOpt.Name + "*", typeof(LuaNode));
             #endregion
 
             #region Place Rules Here
@@ -182,9 +186,9 @@ namespace NPLTools.IronyParser
             Root = Chunk;
 
             //chunk ::= {stat [`;´]} [laststat [`;´]]
-            NonTerminal s = new NonTerminal(SingleStatementWithTermOpt.Name + "*", typeof(LuaBlockNode));
-            s.Rule = MakeStarRule(s, SingleStatementWithTermOpt);
-            Statements.Rule = s;
+
+            SingleStatementWithTermStar.Rule = MakeStarRule(SingleStatementWithTermStar, SingleStatementWithTermOpt);
+            Statements.Rule = SingleStatementWithTermStar;
             //Statements.Rule = 
             StatementsEnd.Rule = Empty | LastStatementWithTermOpt;
             Block.Rule = Statements + StatementsEnd;

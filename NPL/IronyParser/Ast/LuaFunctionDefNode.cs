@@ -41,24 +41,6 @@ namespace NPLTools.IronyParser.Ast
             AsString = "<Function " + name + ">";
         }
 
-        //public override void EvaluateNode(EvaluationContext context, AstMode mode)
-        //{
-        //    //push the function into the stack
-        //    context.Data.Push(this);
-        //    NameNode.Evaluate(context, AstMode.Write);
-        //}
-
-
-        //#region ICallTarget Members
-
-        //public void Call(EvaluationContext context)
-        //{
-        //    context.PushFrame(this.NameNode.ToString(), this, context.CurrentFrame);
-        //    Parameters.Evaluate(context, AstMode.None);
-        //    Body.Evaluate(context, AstMode.None);
-        //    context.PopFrame();
-        //}
-
         //#endregion
     }//class
 

@@ -16,6 +16,13 @@ namespace NPLTools.IronyParser.Ast
             get { return ChildNodes; }
         }
 
+        public List<LuaNode> Locals;
+
+        public LuaBlockNode()
+        {
+            Locals = new List<LuaNode>();
+        }
+
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
@@ -25,6 +32,11 @@ namespace NPLTools.IronyParser.Ast
             foreach (ParseTreeNode child in statements.ChildNodes)
             {
                 AddChild(String.Empty, child);
+
+                if (child.AstNode is IDeclaration)
+                {
+                    ((IDeclaration)child.AstNode).GetDeclarations(this);
+                }
             }
 
             AsString = "Block";

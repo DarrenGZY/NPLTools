@@ -11,6 +11,7 @@ using Irony.Parsing;
 using Irony.Interpreter.Ast;
 using NPLTools.IronyParser.Ast;
 using NPLTools.IronyParser;
+using NPLTools.Intelligense;
 
 namespace NPLTools.Language.Editor
 {
@@ -26,7 +27,7 @@ namespace NPLTools.Language.Editor
 
         public static LuaNode AstRoot { get; private set; }
         public static ParseTree ParseTree { get; private set; }
-
+        public static LuaModel Model { get; private set; }
         private ITextView _view;
         private Parser _parser;
         private System.Threading.Timer _delayRefreshTimer;
@@ -38,6 +39,9 @@ namespace NPLTools.Language.Editor
             ParseTree = _parser.Parse(_view.TextSnapshot.GetText());
             if (ParseTree.Root != null)
                 AstRoot = ParseTree.Root.AstNode as LuaNode;
+            Model = new LuaModel(textViewAdapter, AstRoot);
+            // TODO: move the initialization to a more proper place
+            NavagationHelper.Initialize(Model);
             IOleCommandTarget next;
             EditorCommandFilter commandFilter = new EditorCommandFilter(_view, textViewAdapter);
             textViewAdapter.AddCommandFilter(commandFilter, out next);
@@ -63,6 +67,7 @@ namespace NPLTools.Language.Editor
             ParseTree = _parser.Parse(snapShot.GetText());
             if (ParseTree.Root != null)
                 AstRoot = ParseTree.Root.AstNode as LuaNode;
+            Model.Update(AstRoot);
             TextContentChanged(this, new NPLTextContentChangedEventArgs(snapShot));
         } 
 
