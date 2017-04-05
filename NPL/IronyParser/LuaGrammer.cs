@@ -150,6 +150,7 @@ namespace NPLTools.IronyParser
             var LocalVariableDeclaration = new NonTerminal("local variable declaration", typeof(LuaLocalDeclaration));
             var LocalVariableDeclarationWithAssignment = new NonTerminal("local variable declaration with assignment", typeof(LuaLocalDeclarationAssignment));
             var TableConstructor = new NonTerminal("table constructor", typeof(LuaTableNode));
+            var TableAccess = new NonTerminal("table access", typeof(LuaTableAccessNode));
             var FieldList = new NonTerminal("field list", typeof(LuaExpressionNodeList));
             var Field = new NonTerminal("field", typeof(LuaField));
             var FieldSep = new NonTerminal("field seperator", typeof(LuaNode));
@@ -267,7 +268,8 @@ namespace NPLTools.IronyParser
                         PrefixExpr | TableConstructor | BinExp | UniExp;
 
             //var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name 
-            Var.Rule = Name | new NonTerminal("table access", PrefixExpr + "[" + Expr + "]" | PrefixExpr + DOT + Name);
+            TableAccess.Rule = PrefixExpr + "[" + Expr + "]" | PrefixExpr + DOT + Name;
+            Var.Rule = Name | TableAccess;
 
             //prefixexp ::= var | functioncall | `(´ exp `)´
             ParentheticalExpression.Rule = "(" + Expr + ")";

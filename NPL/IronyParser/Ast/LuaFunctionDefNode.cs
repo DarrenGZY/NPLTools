@@ -9,7 +9,7 @@ namespace NPLTools.IronyParser.Ast
 {
 
     //A node representing function definition
-    public class LuaFunctionDefNode : LuaNode
+    public class LuaFunctionDefNode : LuaNode, IDeclaration
     {
         LuaNode NameNode;
         LuaNode Parameters;
@@ -39,6 +39,11 @@ namespace NPLTools.IronyParser.Ast
             Body = AddChild("Body", treeNode.ChildNodes[i-1]) as LuaNode;
             
             AsString = "<Function " + name + ">";
+        }
+
+        public void GetDeclarations(LuaBlockNode block)
+        {
+            block.Locals.Add(NameNode);
         }
 
         //#endregion

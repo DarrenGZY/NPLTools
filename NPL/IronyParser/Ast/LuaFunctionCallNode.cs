@@ -7,9 +7,14 @@ namespace NPLTools.IronyParser.Ast
 {
     public class LuaFunctionCallNode : LuaNode
     {
-        AstNode TargetRef = new AstNode();
+        AstNode TargetRef;
         AstNode Arguments;
         string _targetName;
+
+        public LuaFunctionCallNode()
+        {
+
+        }
 
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {

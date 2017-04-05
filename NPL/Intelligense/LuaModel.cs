@@ -31,9 +31,9 @@ namespace NPLTools.Intelligense
             spans.Sort(delegate (TextSpan a, TextSpan b)
             {
                 if ((a.iStartLine > b.iStartLine || 
-                    (a.iStartLine == b.iStartLine && a.iStartIndex > b.iStartIndex)) && 
+                    (a.iStartLine == b.iStartLine && a.iStartIndex >= b.iStartIndex)) && 
                     (a.iEndLine < b.iEndLine ||
-                    (a.iEndLine == b.iEndLine && a.iEndIndex < b.iEndIndex)))
+                    (a.iEndLine == b.iEndLine && a.iEndIndex <= b.iEndIndex)))
                     return -1;
                 else
                     return 1;
@@ -61,12 +61,14 @@ namespace NPLTools.Intelligense
                         _vsTextView.GetLineAndColumn(endPosition, out declarationScope.iEndLine, out declarationScope.iEndIndex);
 
                         if ((span.iStartLine > declarationScope.iStartLine ||
-                            (span.iStartLine == declarationScope.iStartLine && span.iStartIndex > declarationScope.iStartIndex)) &&
+                            (span.iStartLine == declarationScope.iStartLine && span.iStartIndex >= declarationScope.iStartIndex)) &&
                             (span.iEndLine < declarationScope.iEndLine ||
-                            (span.iEndLine == declarationScope.iEndLine && span.iEndIndex < declarationScope.iEndIndex)))
+                            (span.iEndLine == declarationScope.iEndLine && span.iEndIndex <= declarationScope.iEndIndex)))
+                            spans.Add(declarationScope);
+                        else if (span.iEndLine == declarationScope.iStartLine &&
+                            span.iEndIndex == declarationScope.iStartIndex)
                             spans.Add(declarationScope);
                     }
-
                 }
             }
             //else if (node is LuaDoBlockNode)

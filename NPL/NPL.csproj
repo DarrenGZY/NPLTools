@@ -84,6 +84,7 @@
     <Compile Include="IronyParser\Ast\LuaParmListNode.cs" />
     <Compile Include="IronyParser\Ast\LuaRepeatBlockNode.cs" />
     <Compile Include="IronyParser\Ast\LuaTable.cs" />
+    <Compile Include="IronyParser\Ast\LuaTableAccessNode.cs" />
     <Compile Include="IronyParser\Ast\LuaUnaryExpressionNode.cs" />
     <Compile Include="IronyParser\Ast\LuaWhileBlockNode.cs" />
     <Compile Include="IronyParser\LuaGrammer.cs" />
