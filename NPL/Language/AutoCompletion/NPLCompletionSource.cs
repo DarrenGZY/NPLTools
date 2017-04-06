@@ -2,6 +2,8 @@
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Utilities;
+using NPLTools.Intelligense;
+using NPLTools.IronyParser.Ast;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -26,11 +28,26 @@ namespace NPLTools.Language.AutoCompletion
 
         public void AugmentCompletionSession(ICompletionSession session, IList<CompletionSet> completionSets)
         {
+            //ITrackingPoint point = session.GetTriggerPoint(_textBuffer);
+            SnapshotPoint? triggerPoint = session.GetTriggerPoint(_textBuffer.CurrentSnapshot);
+            
+            //point.Value.Snapshot.
+            //_textBuffer.
+
             List<string> strList = new List<string>();
-            strList.Add("addtion");
-            strList.Add("adaptation");
-            strList.Add("subtraction");
-            strList.Add("summation");
+            if (LuaModel.Declarations != null && triggerPoint.HasValue)
+            {
+                foreach (var keyValue in LuaModel.Declarations)
+                {
+                    if (LuaModel.IsInScope(triggerPoint.Value.Position, keyValue.Value))
+                        strList.Add(keyValue.Key);
+                }
+            }
+
+            //strList.Add("addtion");
+            //strList.Add("adaptation");
+            //strList.Add("subtraction");
+            //strList.Add("summation");
             _compList = new List<Completion>();
             foreach (string str in strList)
                 _compList.Add(new Completion(str, str, str, null, null));

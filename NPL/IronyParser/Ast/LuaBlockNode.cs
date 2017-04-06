@@ -17,6 +17,7 @@ namespace NPLTools.IronyParser.Ast
         }
 
         public List<LuaNode> Locals;
+        public Scope Scope;
 
         public LuaBlockNode()
         {
@@ -26,6 +27,9 @@ namespace NPLTools.IronyParser.Ast
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
+
+            Scope = new Scope(treeNode.Span.Location.Position, treeNode.Span.EndPosition);
+
             ParseTreeNode statements = treeNode.ChildNodes.Count > 0 ? treeNode.ChildNodes[0] : null;
             if (statements == null) return;
 
@@ -40,6 +44,17 @@ namespace NPLTools.IronyParser.Ast
             }
 
             AsString = "Block";
+        }
+    }
+
+    public struct Scope
+    {
+        public int startPosition;
+        public int endPosition;
+        public Scope(int startPosition, int endPosition)
+        {
+            this.startPosition = startPosition;
+            this.endPosition = endPosition;
         }
     }
 }

@@ -11,17 +11,82 @@ namespace NPLTools.Intelligense
 {
     public class LuaModel
     {
-        private AstNode _root;
-        private IVsTextView _vsTextView;
-        public LuaModel(IVsTextView vsTextView, AstNode root)
+        private LuaNode _root;
+        private static IVsTextView _vsTextView;
+
+        public static List<KeyValuePair<string, TextSpan>> Declarations;
+
+        public LuaModel(IVsTextView vsTextView,LuaNode root)
         {
             _vsTextView = vsTextView;
             _root = root;
+            Declarations = new List<KeyValuePair<string, TextSpan>>();
+            //GlobalDeclarations = new List<KeyValuePair<string, TextSpan>>();
+            GetDeclarations(_root, Declarations);
         }
 
-        public void Update(AstNode root)
+        public void Update(LuaNode root)
         {
             _root = root;
+            Declarations.Clear();
+            GetDeclarations(_root, Declarations);
+        }
+
+        public static bool IsInScope(int position, TextSpan span)
+        {
+            int line, index;
+            _vsTextView.GetLineAndColumn(position, out line, out index);
+            if ((line > span.iStartLine ||
+                (line == span.iStartLine && index > span.iStartIndex)) &&
+                (line < span.iEndLine ||
+                (line == span.iEndLine && index < span.iEndIndex)))
+                return true;
+            return false;
+        }
+
+        private void GetDeclarations(LuaNode node, List<KeyValuePair<string, TextSpan>> declarations)
+        {
+            if (node is LuaBlockNode)
+            {
+                if (node.Parent is LuaChunkNode)
+                {
+                    foreach (var declaration in ((LuaBlockNode)node).Locals)
+                    {
+                        int startLine, startIndex;
+                        _vsTextView.GetLineAndColumn(declaration.Span.EndPosition, out startLine, out startIndex);
+                        TextSpan scope;
+                        scope.iStartLine = startLine;
+                        scope.iStartIndex = startIndex;
+                        scope.iEndLine = int.MaxValue;
+                        scope.iEndIndex = int.MaxValue;
+
+                        declarations.Add(
+                            new KeyValuePair<string, TextSpan>(
+                                declaration.AsString, scope));
+                    }
+                }
+                else
+                {
+                    foreach (var declaration in ((LuaBlockNode)node).Locals)
+                    {
+                        int startLine, startIndex;
+                        int endLine, endIndex;
+                        _vsTextView.GetLineAndColumn(declaration.Span.EndPosition, out startLine, out startIndex);
+                        _vsTextView.GetLineAndColumn(((LuaBlockNode)node).Scope.endPosition, out endLine, out endIndex);
+                        TextSpan scope;
+                        scope.iStartLine = startLine;
+                        scope.iStartIndex = startIndex;
+                        scope.iEndLine = endLine;
+                        scope.iEndIndex = endIndex;
+
+                        declarations.Add(
+                            new KeyValuePair<string, TextSpan>(
+                                declaration.AsString, scope));
+                    }
+                } 
+            }
+            foreach (LuaNode child in node.ChildNodes)
+                GetDeclarations(child, declarations);
         }
 
         public TextSpan? GetDeclarationLocation(string name, TextSpan span)
