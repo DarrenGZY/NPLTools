@@ -11,7 +11,7 @@ namespace NPLTools.IronyParser.Ast
     //A node representing function definition
     public class LuaFunctionDefNode : LuaNode, IDeclaration
     {
-        LuaNode NameNode;
+        LuaFuncIdentifierNode NameNode;
         LuaNode Parameters;
         LuaNode Body;
 
@@ -31,7 +31,7 @@ namespace NPLTools.IronyParser.Ast
             }
             else
             {
-                NameNode = AddChild("Name", anon) as LuaNode;
+                NameNode = AddChild("Name", anon) as LuaFuncIdentifierNode;
             }
             var name = NameNode.AsString;
 

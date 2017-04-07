@@ -3,17 +3,20 @@ using Irony.Parsing;
 using Irony.Interpreter.Ast;
 
 namespace NPLTools.IronyParser.Ast{
-    public class LuaFuncIdentifierNode : LuaNode {
+    public class LuaFuncIdentifierNode : LuaNode
+    {
         private static int anonID = 0;
         private string name = "";
 
-        internal LuaFuncIdentifierNode InitAnonymous() {
+        internal LuaFuncIdentifierNode InitAnonymous()
+        {
             name = "anonfunc" + anonID++;
             AsString = name;
             return this;
         }
 
-        public override void Init(AstContext context, ParseTreeNode treeNode) {
+        public override void Init(AstContext context, ParseTreeNode treeNode)
+        {
             base.Init(context, treeNode);
 
             foreach (var node in treeNode.ChildNodes)

@@ -16,10 +16,6 @@ namespace NPLTools.Intelligense
 {
     public class Analyzer
     {
-        //public static LuaNode AstRoot { get; private set; }
-        //public static ParseTree ParseTree { get; private set; }
-        //public static LuaModel Model { get; private set; }
-
         private ITextView _textView;
         private IVsTextView _vsTextView;
         private Parser _parser;
@@ -39,7 +35,7 @@ namespace NPLTools.Intelligense
             if (_parseTree.Root != null)
                 _astRoot = _parseTree.Root.AstNode as LuaNode;
             if (_astRoot != null)
-                _model = new LuaModel(_vsTextView, _astRoot);
+                _model = new LuaModel(_textView, _vsTextView, _astRoot);
         }
 
         private void OnTextBufferChanged(object sender, TextContentChangedEventArgs e)
@@ -53,7 +49,7 @@ namespace NPLTools.Intelligense
                 return;
 
             if (_astRoot != null && _model == null)
-                _model = new LuaModel(_vsTextView, _astRoot);
+                _model = new LuaModel(_textView, _vsTextView, _astRoot);
             if (_astRoot != null && _model != null)
                 _model.Update(_astRoot);
         }
@@ -67,8 +63,6 @@ namespace NPLTools.Intelligense
             string text;
             TextSpan[] span = new TextSpan[1];
 
-            Parser parser = new Parser(LuaGrammar.Instance);
-            Scanner scanner = parser.Scanner;
             _vsTextView.GetCaretPos(out line, out column);
             _vsTextView.GetSelectedText(out text);
 
@@ -102,11 +96,11 @@ namespace NPLTools.Intelligense
             // Need a new parser and scanner here
             Parser parser = new Parser(LuaGrammar.Instance);
             Scanner scanner = parser.Scanner;
+
             //rule 1: insert space before and after binary operator if there not any
             //rule 2: insert space after comma, semicolon if there not any
             //rule 3: indentation increase inside block
             //rule 4: multiple spaces replaced by a single space
-
             using (var edit = _textView.TextBuffer.CreateEdit())
             {
                 //IEnumerable<ITextSnapshotLine> lines = view.TextSnapshot.Lines;
