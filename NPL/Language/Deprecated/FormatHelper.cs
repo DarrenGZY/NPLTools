@@ -111,7 +111,7 @@ namespace NPLTools.Language.Editor
             }
             
             
-            PrintAstTree(NPLTextViewCreationListener.ParseTree);
+            //PrintAstTree(NPLTextViewCreationListener.ParseTree);
             return false;
         }
 
@@ -119,7 +119,8 @@ namespace NPLTools.Language.Editor
         {
             int lineNumber = view.TextSnapshot.LineCount;
             indentations = new int[lineNumber];
-            LuaNode root = NPLTextViewCreationListener.AstRoot;
+            //LuaNode root = NPLTextViewCreationListener.AstRoot;
+            LuaNode root = null;
             for (int i = 0; i < lineNumber; ++i)
             {
                 indentations[i] = -1;

@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Text;
-using NPLTools.Language.Editor;
 using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Utilities;
 using Irony.Parsing;

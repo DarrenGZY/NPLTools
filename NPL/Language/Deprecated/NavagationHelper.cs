@@ -43,8 +43,6 @@ namespace NPLTools.Language.Editor
 
         private static string GetSelectTextFromCaretPosition(int line, int column)
         {
-
-
             return "";
         }
     }

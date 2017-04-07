@@ -13,7 +13,7 @@ using NPLTools.IronyParser.Ast;
 using NPLTools.IronyParser;
 using NPLTools.Intelligense;
 
-namespace NPLTools.Language.Editor
+namespace NPLTools.Language
 {
     [Export(typeof(IVsTextViewCreationListener))]
     [ContentType("NPL")]
@@ -24,34 +24,22 @@ namespace NPLTools.Language.Editor
         public IVsEditorAdaptersFactoryService AdaptersFactory { get; private set; }
 
         public static event EventHandler<NPLTextContentChangedEventArgs> TextContentChanged;
-
-        public static LuaNode AstRoot { get; private set; }
-        public static ParseTree ParseTree { get; private set; }
-        public static LuaModel Model { get; private set; }
+   
         private ITextView _view;
-        private IVsTextView _vsView;
-        private Parser _parser;
         private System.Threading.Timer _delayRefreshTimer;
+
         public void VsTextViewCreated(IVsTextView textViewAdapter)
         {
             _view = AdaptersFactory.GetWpfTextView(textViewAdapter);
             _view.TextBuffer.Changed += TextBuffer_Changed;
-            _vsView = textViewAdapter;
-            _parser = new Parser(LuaGrammar.Instance);
-            ParseTree = _parser.Parse(_view.TextSnapshot.GetText());
-            if (ParseTree.Root != null)
-                AstRoot = ParseTree.Root.AstNode as LuaNode;
-            if (AstRoot != null)
-                Model = new LuaModel(textViewAdapter, AstRoot); 
-            // TODO: move the initialization to a more proper place
-            NavagationHelper.Initialize(Model);
+
             IOleCommandTarget next;
-            EditorCommandFilter commandFilter = new EditorCommandFilter(_view, textViewAdapter);
+            NPLEditorCommandFilter commandFilter = new NPLEditorCommandFilter(_view, textViewAdapter);
             textViewAdapter.AddCommandFilter(commandFilter, out next);
             commandFilter.Next = next;
         }
 
-        private void TextBuffer_Changed(object sender, Microsoft.VisualStudio.Text.TextContentChangedEventArgs e)
+        private void TextBuffer_Changed(object sender, TextContentChangedEventArgs e)
         {
             if(_delayRefreshTimer != null)
             {
@@ -68,16 +56,6 @@ namespace NPLTools.Language.Editor
         private void OnTextContentChanged(ITextSnapshot snapShot)
         {
             TextContentChanged(this, new NPLTextContentChangedEventArgs(snapShot));
-            ParseTree = _parser.Parse(snapShot.GetText());
-            if (ParseTree.Root != null)
-                AstRoot = ParseTree.Root.AstNode as LuaNode;
-            else
-                return;
-
-            if (AstRoot != null && Model == null)
-                Model = new LuaModel(_vsView, AstRoot);
-            if (AstRoot != null && Model != null)
-                Model.Update(AstRoot);
         } 
 
         public void Dispose()

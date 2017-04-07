@@ -59,6 +59,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Guids.cs" />
+    <Compile Include="Intelligense\Analyzer.cs" />
     <Compile Include="Intelligense\LuaModel.cs" />
     <Compile Include="IronyParser\Ast\IDeclaration.cs" />
     <Compile Include="IronyParser\Ast\LuaElseIfListNode.cs" />
@@ -99,10 +100,7 @@
     <Compile Include="Language\AutoCompletion\NPLCompletionCommandHandler.cs" />
     <Compile Include="Language\AutoCompletion\NPLCompletionCommandProvider.cs" />
     <Compile Include="Language\AutoCompletion\NPLCompletionSource.cs" />
-    <Compile Include="Language\Editor\EditorCommandFilter.cs" />
-    <Compile Include="Language\Editor\CommentHelper.cs" />
-    <Compile Include="Language\Editor\FormatHelper.cs" />
-    <Compile Include="Language\Editor\NavagationHelper.cs" />
+    <Compile Include="Language\NPLEditorCommandFilter.cs" />
     <Compile Include="Language\NPLTextViewCreationListener.cs" />
     <Compile Include="Language\NPLEditorFactory.cs" />
     <Compile Include="Language\NPLTextViewExtensions.cs" />

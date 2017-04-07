@@ -5,18 +5,21 @@ using System.Diagnostics;
 using System;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.TextManager.Interop;
+using NPLTools.Intelligense;
 
-namespace NPLTools.Language.Editor
+namespace NPLTools.Language
 {
-    internal class EditorCommandFilter : IOleCommandTarget
+    internal class NPLEditorCommandFilter : IOleCommandTarget
     {
         private ITextView _textView;
         private IVsTextView _vsTextView;
+        private Analyzer _analyzer;
 
-        public EditorCommandFilter(ITextView textView, IVsTextView vsTextView)
+        public NPLEditorCommandFilter(ITextView textView, IVsTextView vsTextView)
         {
             _textView = textView;
             _vsTextView = vsTextView;
+            _analyzer = new Analyzer(textView, vsTextView);
         }
 
         public IOleCommandTarget Next { get; set; }
@@ -29,14 +32,14 @@ namespace NPLTools.Language.Editor
                 {
                     case VSConstants.VSStd2KCmdID.COMMENT_BLOCK:
                     case VSConstants.VSStd2KCmdID.COMMENTBLOCK:
-                        CommentHelper.CommentOrUncommentBlock(_textView, true);
+                        _analyzer.CommentOrUncommentBlock(true);
                         break;
                     case VSConstants.VSStd2KCmdID.UNCOMMENT_BLOCK:
                     case VSConstants.VSStd2KCmdID.UNCOMMENTBLOCK:
-                        CommentHelper.CommentOrUncommentBlock(_textView, false);
+                        _analyzer.CommentOrUncommentBlock(false);
                         break;
                     case VSConstants.VSStd2KCmdID.FORMATSELECTION:
-                        FormatHelper.FormatBlock(_textView);
+                        _analyzer.FormatBlock();
                         break;
                 }
             }
@@ -45,7 +48,7 @@ namespace NPLTools.Language.Editor
                 switch ((VSConstants.VSStd97CmdID)nCmdID)
                 {
                     case VSConstants.VSStd97CmdID.GotoDefn:
-                        NavagationHelper.GotoDefinition(_vsTextView);
+                        _analyzer.GotoDefinition();
                         break;
                 }
             }
@@ -81,7 +84,6 @@ namespace NPLTools.Language.Editor
                             prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_ENABLED | OLECMDF.OLECMDF_SUPPORTED);
                             return VSConstants.S_OK;
                     }
-
                 }
             }
             return Next.QueryStatus(pguidCmdGroup, cCmds, prgCmds, pCmdText);

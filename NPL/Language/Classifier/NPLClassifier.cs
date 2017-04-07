@@ -10,7 +10,6 @@ using Irony.Parsing;
 using Irony;
 using System.Linq;
 using NPLTools.IronyParser;
-using NPLTools.Language.Editor;
 
 namespace NPL.Classifier
 {
