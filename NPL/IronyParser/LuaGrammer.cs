@@ -165,15 +165,15 @@ namespace NPLTools.IronyParser
 
             var VariableAssignment = new NonTerminal("variable assignment", typeof (LuaAssignmentNode));
 
-            var DoBlock = new NonTerminal("do block", typeof(LuaDoBlockNode));
-            var WhileBlock = new NonTerminal("while block", typeof(LuaWhileBlockNode));
-            var RepeatBlock = new NonTerminal("repeat block", typeof(LuaRepeatBlockNode));
-            var ConditionalBlock = new NonTerminal("conditonal block", typeof (LuaIfNode));
-            var ForBlock = new NonTerminal("for block", typeof(LuaForBlockNode));
-            var GenericForBlock = new NonTerminal("generic for block", typeof(LuaForBlockNode));
+            var DoBlock = new NonTerminal(NPLConstants.DoBlock, typeof(LuaDoBlockNode));
+            var WhileBlock = new NonTerminal(NPLConstants.WhileBlock, typeof(LuaWhileBlockNode));
+            var RepeatBlock = new NonTerminal(NPLConstants.RepeatBlock, typeof(LuaRepeatBlockNode));
+            var ConditionalBlock = new NonTerminal(NPLConstants.ConditionBlock, typeof (LuaIfNode));
+            var ForBlock = new NonTerminal(NPLConstants.ForBlock, typeof(LuaForBlockNode));
+            var GenericForBlock = new NonTerminal(NPLConstants.GenericForBlock, typeof(LuaForBlockNode));
 
-            var LocalFunctionDeclaration = new NonTerminal("local function declaration", typeof(LuaFunctionDefNode));
-            var FunctionDeclaration = new NonTerminal("function declaration", typeof (LuaFunctionDefNode));
+            var LocalFunctionDeclaration = new NonTerminal(NPLConstants.FunctionDeclaration, typeof(LuaFunctionDefNode));
+            var FunctionDeclaration = new NonTerminal(NPLConstants.LocalFunctionDeclaration, typeof (LuaFunctionDefNode));
 
             var Expr23 = new NonTerminal("expr 23", typeof(LuaExpressionNodeList));
 
