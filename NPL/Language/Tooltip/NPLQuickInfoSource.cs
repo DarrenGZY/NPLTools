@@ -8,6 +8,10 @@ using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Text.Tagging;
 using Microsoft.VisualStudio.Utilities;
+using Microsoft.VisualStudio.TextManager.Interop;
+using NPLTools.IronyParser.Ast;
+using Irony.Parsing;
+using NPLTools.IronyParser;
 
 namespace NPLTools.Language.Tooltip
 {
@@ -22,7 +26,6 @@ namespace NPLTools.Language.Tooltip
         {
             _provider = provider;
             _subjectBuffer = subjectBuffer;
-
             _dictionary = new Dictionary<string, string>();
             _dictionary.Add("add", "int add(int firstInt, int secondInt)\nAdds one integer to another.");
             _dictionary.Add("subtract", "int subtract(int firstInt, int secondInt)\nSubtracts one integer from another.");
@@ -46,25 +49,78 @@ namespace NPLTools.Language.Tooltip
             TextExtent extent = navigator.GetExtentOfWord(subjectTriggerPoint.Value);
             string searchText = extent.Span.GetText();
 
-            foreach (string key in _dictionary.Keys)
+            string description = GetDescription(searchText, subjectTriggerPoint.Value.Position);
+
+            if (description != String.Empty)
             {
-                int foundIndex = searchText.IndexOf(key, StringComparison.CurrentCultureIgnoreCase);
-                if (foundIndex > -1)
-                {
-                    applicableToSpan = currentSnapshot.CreateTrackingSpan(extent.Span.Start + foundIndex, key.Length, SpanTrackingMode.EdgeInclusive);
-
-                    string value;
-                    _dictionary.TryGetValue(key, out value);
-                    if (value != null)
-                        quickInfoContent.Add(value);
-                    else
-                        quickInfoContent.Add("");
-
-                    return;
-                }
+                applicableToSpan = currentSnapshot.CreateTrackingSpan(extent.Span.Start, extent.Span.Length, SpanTrackingMode.EdgeInclusive);
+                quickInfoContent.Add(description);
+                return;
             }
 
             applicableToSpan = null;
+        }
+
+        private string GetDescription(string name, int position)
+        {
+            string description = String.Empty;
+            List<KeyValuePair<LuaNode, Region>> declarationNodes = new List<KeyValuePair<LuaNode, Region>>();
+            Parser parser = new Parser(LuaGrammar.Instance);
+            LuaNode root = parser.Parse(_subjectBuffer.CurrentSnapshot.GetText()).Root.AstNode as LuaNode;
+            GetDeclarationsByName(root, name, declarationNodes, position);
+            declarationNodes.Sort(delegate (KeyValuePair<LuaNode, Region> a, KeyValuePair<LuaNode, Region> b)
+            {
+                if (b.Value.Contains(a.Value))
+                    return -1;
+                else
+                    return 1;
+            });
+
+            if (declarationNodes.Count > 0 &&
+                declarationNodes[0].Key is LuaFuncIdentifierNode)
+            {
+                //Parser parser = new Parser(LuaGrammar.Instance);
+                Scanner scanner = new Parser(LuaGrammar.Instance).Scanner;
+
+                int funcDefLine = declarationNodes[0].Key.Location.Line;
+                for (int i = funcDefLine - 1; i >= 0; --i)
+                {
+                    string lineText = _subjectBuffer.CurrentSnapshot.GetLineFromLineNumber(i).GetText();
+                    int state = 0;
+                    scanner.VsSetSource(lineText, 0);
+                    Token token = scanner.VsReadToken(ref state);
+                    if (token == null || token.Terminal.Name != "block-comment")
+                        break;
+                    if (token.Terminal.Name == "block-comment")
+                        description = (description == String.Empty) ? token.ValueString : token.ValueString + "\n" + description;
+                }
+            }
+            return description;
+        }
+
+        private void GetDeclarationsByName(LuaNode node, string name, List<KeyValuePair<LuaNode, Region>> keyValue, int position)
+        {
+            if (node is LuaBlockNode)
+            {
+                foreach (var declaration in ((LuaBlockNode)node).Locals)
+                {
+                    if (declaration.AsString == name)
+                    {
+                        int scopeStartPosition = declaration.Span.EndPosition;
+                        int scopeEndPosition = node.Span.EndPosition;
+
+                        if (position >= scopeStartPosition &&
+                            position <= scopeEndPosition)
+                        {
+                            keyValue.Add(new KeyValuePair<LuaNode, Region>(declaration, new Region(scopeStartPosition, scopeEndPosition)));
+                        }
+                        else if (position == scopeStartPosition)
+                            keyValue.Add(new KeyValuePair<LuaNode, Region>(declaration, new Region(scopeStartPosition, scopeEndPosition)));
+                    }
+                }
+            }
+            foreach (LuaNode child in node.ChildNodes)
+                GetDeclarationsByName(child, name, keyValue, position);
         }
 
         public void Dispose()
@@ -76,7 +132,6 @@ namespace NPLTools.Language.Tooltip
             }
         }
     }
-
 
     [Export(typeof(IQuickInfoSourceProvider))]
     [Name("ToolTip QuickInfo Source")]
@@ -93,6 +148,26 @@ namespace NPLTools.Language.Tooltip
         public IQuickInfoSource TryCreateQuickInfoSource(ITextBuffer textBuffer)
         {
             return new NPLQuickInfoSource(this, textBuffer);
+        }
+    }
+
+    // TODO: move the struct to somewhere more properly
+    internal struct Region
+    {
+        public int start;
+        public int end;
+        public Region(int start, int end)
+        {
+            this.start = start;
+            this.end = end;
+        }
+
+        public bool Contains(Region region)
+        {
+            if (this.start <= region.start && this.end >= region.end)
+                return true;
+            else
+                return false;
         }
     }
 }

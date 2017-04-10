@@ -117,7 +117,7 @@ namespace NPLTools.Intelligense
 
         public string GetDescription(string name, TextSpan span)
         {
-            string description = "";
+            string description = String.Empty;
             List<KeyValuePair<LuaNode, TextSpan>> declarationNodes = new List<KeyValuePair<LuaNode, TextSpan>>();
             GetDeclarationsByName(_root, name, declarationNodes, span);
             declarationNodes.Sort(delegate (KeyValuePair<LuaNode, TextSpan> a, KeyValuePair<LuaNode, TextSpan> b)
@@ -130,7 +130,6 @@ namespace NPLTools.Intelligense
                 else
                     return 1;
             });
-
 
             if (declarationNodes.Count > 0 &&
                 declarationNodes[0].Key is LuaFuncIdentifierNode)
