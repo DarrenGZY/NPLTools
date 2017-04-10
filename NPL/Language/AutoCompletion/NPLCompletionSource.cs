@@ -1,16 +1,11 @@
-﻿using Microsoft.VisualStudio.Language.Intellisense;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.Composition;
+using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Utilities;
 using NPLTools.Intelligense;
-using NPLTools.IronyParser.Ast;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-//using Completion = Microsoft.VisualStudio.Language.Intellisense.Completion
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NPLTools.Language.AutoCompletion
 {

@@ -12,16 +12,16 @@ namespace NPLTools.Language.Outlining
     [Export(typeof(ITaggerProvider))]
     [TagType(typeof(IOutliningRegionTag))]
     [ContentType("NPL")]
-    internal sealed class OutliningTaggerProvide : ITaggerProvider
+    internal sealed class NPLOutliningTaggerProvider : ITaggerProvider
     {
         public ITagger<T> CreateTagger<T>(ITextBuffer buffer) where T : ITag
         {
-            Func<ITagger<T>> sc = delegate () { return new OutliningTagger(buffer) as ITagger<T>; };
+            Func<ITagger<T>> sc = delegate () { return new NPLOutliningTagger(buffer) as ITagger<T>; };
             return buffer.Properties.GetOrCreateSingletonProperty<ITagger<T>>(sc);
         }
     }
 
-    internal sealed class OutliningTagger : ITagger<IOutliningRegionTag>
+    internal sealed class NPLOutliningTagger : ITagger<IOutliningRegionTag>
     {
         public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
 
@@ -31,7 +31,7 @@ namespace NPLTools.Language.Outlining
         private List<Region> _regions;
         private System.Threading.Timer _delayRefreshTimer;
 
-        public OutliningTagger(ITextBuffer buffer)
+        public NPLOutliningTagger(ITextBuffer buffer)
         {
             _buffer = buffer;
             _snapshot = buffer.CurrentSnapshot;
@@ -92,14 +92,14 @@ namespace NPLTools.Language.Outlining
             int startPosition, length;
             if (node.Term.Name == NPLConstants.FunctionDeclaration)
             {
-                startPosition = node.ChildNodes[3].Span.Location.Position;
-                length = node.Span.Length - (node.ChildNodes[3].Span.Location.Position - node.Span.Location.Position);
+                startPosition = node.ChildNodes[2].Span.EndPosition + 1;
+                length = node.ChildNodes[4].Span.Location.Position - startPosition;
                 regions.Add(new Region(startPosition, length));
             }
             else if (node.Term.Name == NPLConstants.LocalFunctionDeclaration)
             {
-                startPosition = node.ChildNodes[4].Span.Location.Position;
-                length = node.Span.Length - (node.ChildNodes[4].Span.Location.Position - node.Span.Location.Position);
+                startPosition = node.ChildNodes[3].Span.EndPosition + 1;
+                length = node.ChildNodes[5].Span.Location.Position - startPosition;
                 regions.Add(new Region(startPosition, length));
             }
             else if (node.Term.Name == NPLConstants.DoBlock)

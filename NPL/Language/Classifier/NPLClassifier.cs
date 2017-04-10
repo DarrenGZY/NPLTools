@@ -3,15 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
-using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Tagging;
 using Microsoft.VisualStudio.Utilities;
 using Irony.Parsing;
-using Irony;
-using System.Linq;
 using NPLTools.IronyParser;
 
-namespace NPL.Classifier
+namespace NPLTools.Language.Classifier
 {
     [Export(typeof(ITaggerProvider))]
     [ContentType("NPL")]

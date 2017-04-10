@@ -6,12 +6,13 @@ using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Tagging;
 using Microsoft.VisualStudio.Utilities;
-namespace BraceMatching
+
+namespace NPLTools.Language.BraceMatching
 {
     [Export(typeof(IViewTaggerProvider))]
     [ContentType("NPL")]
     [TagType(typeof(TextMarkerTag))]
-    internal class BraceMatchingTaggerProvide : IViewTaggerProvider
+    internal class NPLBraceMatchingTaggerProvider : IViewTaggerProvider
     {
         public ITagger<T> CreateTagger<T>(ITextView textView, ITextBuffer buffer) where T : ITag
         {
@@ -21,18 +22,18 @@ namespace BraceMatching
             if (textView.TextBuffer != buffer)
                 return null;
 
-            return new BraceMatchingTagger(textView, buffer) as ITagger<T>;
+            return new NPLBraceMatchingTagger(textView, buffer) as ITagger<T>;
         }
     }
 
-    internal class BraceMatchingTagger : ITagger<TextMarkerTag>
+    internal class NPLBraceMatchingTagger : ITagger<TextMarkerTag>
     {
         ITextView View { get; set; }
         ITextBuffer SourceBuffer { get; set; }
         SnapshotPoint? CurrentChar { get; set; }
         private Dictionary<char, char> _braceList;
 
-        internal BraceMatchingTagger(ITextView view, ITextBuffer sourceBuffer)
+        internal NPLBraceMatchingTagger(ITextView view, ITextBuffer sourceBuffer)
         {
             _braceList = new Dictionary<char, char>();
             _braceList.Add('{', '}');

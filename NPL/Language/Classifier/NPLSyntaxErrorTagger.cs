@@ -1,15 +1,14 @@
-﻿using Microsoft.VisualStudio.Text.Tagging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.Text;
 using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Utilities;
+using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Text.Tagging;
+using Irony;
 using Irony.Parsing;
 using NPLTools.IronyParser;
-using Irony;
+
 
 namespace NPLTools.Language.Classifier
 {

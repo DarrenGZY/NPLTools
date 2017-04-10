@@ -92,9 +92,9 @@
     <Compile Include="IronyParser\Parser\LuaBlockCommentTerminal.cs" />
     <Compile Include="IronyParser\Parser\LuaLongStringTerminal.cs" />
     <Compile Include="IronyParser\Parser\LuaStringLiteral.cs" />
-    <Compile Include="Language\BraceMatching\BraceMatching.cs" />
-    <Compile Include="Language\Classifier\ClassificationFormat.cs" />
-    <Compile Include="Language\Classifier\ClassificationType.cs" />
+    <Compile Include="Language\BraceMatching\NPLBraceMatching.cs" />
+    <Compile Include="Language\Classifier\NPLClassificationFormat.cs" />
+    <Compile Include="Language\Classifier\NPLClassificationType.cs" />
     <Compile Include="Language\Classifier\NPLClassifier.cs" />
     <Compile Include="Language\Classifier\NPLSyntaxErrorTagger.cs" />
     <Compile Include="Language\AutoCompletion\NPLCompletionCommandHandler.cs" />
@@ -104,7 +104,7 @@
     <Compile Include="Language\NPLTextViewCreationListener.cs" />
     <Compile Include="Language\NPLEditorFactory.cs" />
     <Compile Include="Language\NPLTextViewExtensions.cs" />
-    <Compile Include="Language\Outlining\OutliningTagger.cs" />
+    <Compile Include="Language\Outlining\NPLOutliningTagger.cs" />
     <Compile Include="Language\Tooltip\NPLQuickInfoController.cs" />
     <Compile Include="Language\Tooltip\NPLQuickInfoSource.cs" />
     <Compile Include="NPLConstants.cs" />

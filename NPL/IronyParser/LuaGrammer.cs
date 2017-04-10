@@ -172,8 +172,8 @@ namespace NPLTools.IronyParser
             var ForBlock = new NonTerminal(NPLConstants.ForBlock, typeof(LuaForBlockNode));
             var GenericForBlock = new NonTerminal(NPLConstants.GenericForBlock, typeof(LuaForBlockNode));
 
-            var LocalFunctionDeclaration = new NonTerminal(NPLConstants.FunctionDeclaration, typeof(LuaFunctionDefNode));
-            var FunctionDeclaration = new NonTerminal(NPLConstants.LocalFunctionDeclaration, typeof (LuaFunctionDefNode));
+            var LocalFunctionDeclaration = new NonTerminal(NPLConstants.LocalFunctionDeclaration, typeof(LuaFunctionDefNode));
+            var FunctionDeclaration = new NonTerminal(NPLConstants.FunctionDeclaration, typeof (LuaFunctionDefNode));
 
             var Expr23 = new NonTerminal("expr 23", typeof(LuaExpressionNodeList));
 
