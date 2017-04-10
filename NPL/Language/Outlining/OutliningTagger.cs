@@ -78,7 +78,7 @@ namespace Outlining
         private void ReParse()
         {
             ParseTree tree = _parser.Parse(_buffer.CurrentSnapshot.GetText());
-            List<Region> newRegions = new List<Region>();
+           List<Region> newRegions = new List<Region>();
             IterateTreeNode(tree.Root, newRegions);
             _regions = newRegions;
             if (TagsChanged != null)
@@ -88,8 +88,18 @@ namespace Outlining
         private void IterateTreeNode(ParseTreeNode node, List<Region> regions)
         {
             if (node == null) return;
-            if (node.Term.Name == "named function")
-                regions.Add(new Region(node.Span.Location.Position, node.Span.Length));
+            if (node.Term.Name == "function declaration")
+            {
+                int startPosition = node.ChildNodes[3].Span.Location.Position;
+                int length = node.Span.Length - (node.ChildNodes[3].Span.Location.Position - node.Span.Location.Position);
+                regions.Add(new Region(startPosition, length));
+            }
+            else if (node.Term.Name == "local function declaration")
+            {
+                int startPosition = node.ChildNodes[4].Span.Location.Position;
+                int length = node.Span.Length - (node.ChildNodes[4].Span.Location.Position - node.Span.Location.Position);
+                regions.Add(new Region(startPosition, length));
+            }
             foreach (ParseTreeNode child in node.ChildNodes)
             {
                 IterateTreeNode(child, regions);
