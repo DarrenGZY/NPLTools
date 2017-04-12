@@ -40,6 +40,7 @@ namespace NPLTools.Intelligense
 
         private void OnTextBufferChanged(object sender, TextContentChangedEventArgs e)
         {
+            ITextVersion v = _textView.TextSnapshot.Version;
             string code = _textView.TextSnapshot.GetText();
             string code2 = e.After.GetText();
             _parseTree = _parser.Parse(_textView.TextSnapshot.GetText());

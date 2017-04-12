@@ -9,6 +9,7 @@ using NPLTools.Language;
 using NPLTools.Project;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio;
+using EnvDTE;
 
 namespace NPLTools
 {
@@ -37,7 +38,7 @@ namespace NPLTools
     //[ProvideLanguageExtension(typeof(NPLLanguageInfo), NPLConstants.LuaFileExtension)]
     [ProvideEditorExtension2(typeof(NPLEditorFactory), NPLConstants.NPLFileExtension, 50, __VSPHYSICALVIEWATTRIBUTES.PVA_SupportsPreview, "*:1", ProjectGuid = LuaConstants.ProjectFactoryGuid, NameResourceID = 3004, DefaultName = "module")]
     [ProvideLanguageExtension(typeof(NPLEditorFactory), NPLConstants.NPLFileExtension)]
-    //[ProvideAutoLoad(UIContextGuids80.NoSolution)]
+    [ProvideAutoLoad(UIContextGuids80.NoSolution)]
     public sealed class NPLPackage : CommonPackage
     {
         public static NPLPackage Instance;
@@ -64,6 +65,8 @@ namespace NPLTools
             base.Initialize();
             if (Instance == null)
                 Instance = new NPLPackage();
+            DTE dte = GetService(typeof(DTE)) as DTE;
+            string a = dte.FileName;
             //this.OnIdle += NPLPackage_OnIdle;
         }
 

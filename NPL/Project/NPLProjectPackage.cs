@@ -98,7 +98,15 @@ namespace NPLTools.Project
         {
             base.Initialize();
             this.RegisterProjectFactory(new NPLProjectFactory(this));
+            var dte = GetService(typeof(EnvDTE.DTE)) as EnvDTE.DTE;
+            string a = dte.FileName;
         }
+
+        public EnvDTE.DTE DTE
+        {
+            get { return GetService(typeof(EnvDTE.DTE)) as EnvDTE.DTE; }
+        }
+
 
         #endregion
     }

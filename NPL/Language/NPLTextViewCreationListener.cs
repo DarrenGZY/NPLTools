@@ -5,75 +5,44 @@ using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Utilities;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text;
-using Microsoft.VisualStudio.OLE.Interop;
+using IOleCommandTarget = Microsoft.VisualStudio.OLE.Interop.IOleCommandTarget;
 using System.Runtime.InteropServices;
 using Irony.Parsing;
 using Irony.Interpreter.Ast;
 using NPLTools.IronyParser.Ast;
 using NPLTools.IronyParser;
 using NPLTools.Intelligense;
+using Microsoft.VisualStudio.Shell;
+using NPLTools.Intelligense2;
+using NPLTools.Project;
+using Microsoft.VisualStudioTools.Project;
+using Microsoft.VisualStudio.Shell.Interop;
 
 namespace NPLTools.Language
 {
     [Export(typeof(IVsTextViewCreationListener))]
     [ContentType("NPL")]
     [TextViewRole(PredefinedTextViewRoles.Interactive)]
-    class NPLTextViewCreationListener : IVsTextViewCreationListener, IDisposable
+    class NPLTextViewCreationListener : IVsTextViewCreationListener
     {
         [Import]
         public IVsEditorAdaptersFactoryService AdaptersFactory { get; private set; }
 
-        public static event EventHandler<NPLTextContentChangedEventArgs> TextContentChanged;
-   
-        private ITextView _view;
-        private System.Threading.Timer _delayRefreshTimer;
+        [Import]
+        public SVsServiceProvider ServiceProvider { get; private set; } 
 
         public void VsTextViewCreated(IVsTextView textViewAdapter)
         {
-            _view = AdaptersFactory.GetWpfTextView(textViewAdapter);
-            _view.TextBuffer.Changed += TextBuffer_Changed;
-
+            ITextView textView = AdaptersFactory.GetWpfTextView(textViewAdapter);
+            //NPLProjectNode project = ServiceProvider.GetService(typeof(CommonProjectNode)) as NPLProjectNode;
+            IServiceProvider serviceProvider = ServiceProvider as IServiceProvider;
+            IVsSolution sln = serviceProvider.GetService(typeof(SVsSolution)) as IVsSolution;
+            NPLProjectNode project = sln.GetLoadedProject().GetNPLProject();
+            project.GetAnalyzer().MonitorTextBuffer(textView.TextBuffer);
             IOleCommandTarget next;
-            NPLEditorCommandFilter commandFilter = new NPLEditorCommandFilter(_view, textViewAdapter);
+            NPLEditorCommandFilter commandFilter = new NPLEditorCommandFilter(textView, textViewAdapter, ServiceProvider);
             textViewAdapter.AddCommandFilter(commandFilter, out next);
             commandFilter.Next = next;
-        }
-
-        private void TextBuffer_Changed(object sender, TextContentChangedEventArgs e)
-        {
-            if(_delayRefreshTimer != null)
-            {
-                _delayRefreshTimer.Dispose();
-            }
-            _delayRefreshTimer = new System.Threading.Timer(HandleTextChangedEvent, null, 500, System.Threading.Timeout.Infinite);    
-        }
-
-        private void HandleTextChangedEvent(object args)
-        {
-            OnTextContentChanged(_view.TextSnapshot);
-        }
-
-        private void OnTextContentChanged(ITextSnapshot snapShot)
-        {
-            TextContentChanged(this, new NPLTextContentChangedEventArgs(snapShot));
-        } 
-
-        public void Dispose()
-        {
-            if (_delayRefreshTimer != null)
-            {
-                _delayRefreshTimer.Dispose();
-            }
-        }
-    }
-
-    class NPLTextContentChangedEventArgs : EventArgs
-    {
-        public ITextSnapshot Snapshot { get; private set; }
-
-        public NPLTextContentChangedEventArgs(ITextSnapshot Snapshot)
-        {
-            this.Snapshot = Snapshot;
         }
     }
 }

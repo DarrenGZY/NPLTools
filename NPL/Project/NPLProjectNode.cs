@@ -47,6 +47,9 @@ using VsCommands2K = Microsoft.VisualStudio.VSConstants.VSStd2KCmdID;
 using VsMenus = Microsoft.VisualStudioTools.Project.VsMenus;
 
 using Microsoft.VisualStudio.OLE.Interop;
+using NPLTools.Intelligense2;
+using NPLTools.Language;
+using Microsoft.VisualStudio.Text;
 
 namespace NPLTools.Project
 {
@@ -57,31 +60,35 @@ namespace NPLTools.Project
         // about the directory from the search path that referenced them in IProjectEntry.Properties[_searchPathEntryKey], so that
         // they can be located and removed when that directory is removed from the path.
         private static readonly object _searchPathEntryKey = new { Name = "SearchPathEntry" };
-        /*
-                private object _designerContext;
-                private VsProjectAnalyzer _analyzer;
-        */
+
+        private ProjectAnalyzer _analyzer;
+
         private readonly HashSet<string> _warningFiles = new HashSet<string>();
         private readonly HashSet<string> _errorFiles = new HashSet<string>();
-        /*
-                private LuaDebugPropertyPage _debugPropPage;
-                private CommonSearchPathContainerNode _searchPathContainer;
-                private InterpretersContainerNode _interpretersContainer;
-                private MSBuildProjectInterpreterFactoryProvider _interpreters;
 
-                internal List<CustomCommand> _customCommands;
-
-                private string _customCommandsDisplayLabel;
-                private HashSet<IReplWindow> _associatedReplWindows;
-        */
         public NPLProjectNode(CommonProjectPackage package)
             //            : base(package, Utilities.GetImageList(typeof(LuaProjectNode).Assembly.GetManifestResourceStream(LuaConstants.ProjectImageList))) {
             : base(package, Utilities.GetImageList(new FileStream("../../Resources/Solution.png", FileMode.Open)))//Images.png
         {
+            //RegisterFileChangeNotification()
             /*
                         Type projectNodePropsType = typeof(LuaProjectNodeProperties);
                         AddCATIDMapping(projectNodePropsType, projectNodePropsType.GUID);
             */
+        }
+
+        public ProjectAnalyzer GetAnalyzer()
+        {
+            if (_analyzer == null)
+                _analyzer = CreateAnalyzer();
+            return _analyzer;
+        }
+
+        public ProjectAnalyzer CreateAnalyzer()
+        {
+            var model = Site.GetComponentModel();
+            var res = new ProjectAnalyzer(Site);
+            return res;
         }
 
         protected override void NewBuildProject(Microsoft.Build.Evaluation.Project project)
@@ -160,11 +167,13 @@ namespace NPLTools.Project
                 private static void SetSearchPathEntry(IProjectEntry entry, string value) {
                     entry.Properties[_searchPathEntryKey] = value;
                 }
-
-                public override CommonFileNode CreateCodeFileNode(ProjectElement item) {
-                    return new LuaFileNode(this, item);
-                }
-
+                */
+        public override CommonFileNode CreateCodeFileNode(ProjectElement item)
+        {
+            NPLFileNode newNode = new NPLFileNode(this, item);
+            return newNode;
+        }
+        /*
                 public override CommonFileNode CreateNonCodeFileNode(ProjectElement item) {
                     return new LuaNonCodeFileNode(this, item);
                 }
@@ -264,22 +273,22 @@ namespace NPLTools.Project
                 protected internal override FolderNode CreateFolderNode(ProjectElement element) {
                     return new LuaFolderNode(this, element);
                 }
-
+*/
                 public override FileNode CreateFileNode(ProjectElement item) {
                     var newNode = base.CreateFileNode(item);
                     string include = item.GetMetadata(ProjectFileConstants.Include);
 
-                    if (XamlDesignerSupport.DesignerContextType != null &&
-                        newNode is CommonFileNode &&
-                        !string.IsNullOrEmpty(include) &&
-                        Path.GetExtension(include).Equals(".xaml", StringComparison.OrdinalIgnoreCase)) {
-                        //Create a DesignerContext for the XAML designer for this file
-                        newNode.OleServiceProvider.AddService(XamlDesignerSupport.DesignerContextType, ((CommonFileNode)newNode).ServiceCreator, false);
-                    }
+                    //if (XamlDesignerSupport.DesignerContextType != null &&
+                    //    newNode is CommonFileNode &&
+                    //    !string.IsNullOrEmpty(include) &&
+                    //    Path.GetExtension(include).Equals(".xaml", StringComparison.OrdinalIgnoreCase)) {
+                    //    //Create a DesignerContext for the XAML designer for this file
+                    //    newNode.OleServiceProvider.AddService(XamlDesignerSupport.DesignerContextType, ((CommonFileNode)newNode).ServiceCreator, false);
+                    //}
 
                     return newNode;
                 }
-
+/*s
                 protected override bool FilterItemTypeToBeAddedToHierarchy(string itemType) {
                     if (MSBuildProjectInterpreterFactoryProvider.InterpreterReferenceItem.Equals(itemType, StringComparison.Ordinal) ||
                         MSBuildProjectInterpreterFactoryProvider.InterpreterItem.Equals(itemType, StringComparison.Ordinal)) {

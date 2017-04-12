@@ -1,7 +1,7 @@
 ﻿using Irony.Interpreter.Ast;
 using Irony.Parsing;
+using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
-using Microsoft.VisualStudio.TextManager.Interop;
 using NPLTools.IronyParser;
 using NPLTools.IronyParser.Ast;
 using System;
@@ -16,16 +16,14 @@ namespace NPLTools.Intelligense
     {
         private LuaNode _root;
         private ITextView _textView;
-        private static IVsTextView _vsTextView;
 
-        public static List<KeyValuePair<string, TextSpan>> Declarations;
+        public static List<KeyValuePair<string, ITrackingSpan>> Declarations;
 
-        public LuaModel(ITextView textView, IVsTextView vsTextView,LuaNode root)
+        public LuaModel(ITextView textView, LuaNode root)
         {
             _textView = textView;
-            _vsTextView = vsTextView;
             _root = root;
-            Declarations = new List<KeyValuePair<string, TextSpan>>();
+            Declarations = new List<KeyValuePair<string, ITrackingSpan>>();
             //GlobalDeclarations = new List<KeyValuePair<string, TextSpan>>();
             GetDeclarations(_root, Declarations);
         }
@@ -37,19 +35,19 @@ namespace NPLTools.Intelligense
             GetDeclarations(_root, Declarations);
         }
 
-        public static bool IsInScope(int position, TextSpan span)
-        {
-            int line, index;
-            _vsTextView.GetLineAndColumn(position, out line, out index);
-            if ((line > span.iStartLine ||
-                (line == span.iStartLine && index > span.iStartIndex)) &&
-                (line < span.iEndLine ||
-                (line == span.iEndLine && index < span.iEndIndex)))
-                return true;
-            return false;
-        }
+        //public bool IsInScope(int position, ITrackingSpan span)
+        //{
+        //    int line, index;
+        //    _vsTextView.GetLineAndColumn(position, out line, out index);
+        //    if ((line > span.iStartLine ||
+        //        (line == span.iStartLine && index > span.iStartIndex)) &&
+        //        (line < span.iEndLine ||
+        //        (line == span.iEndLine && index < span.iEndIndex)))
+        //        return true;
+        //    return false;
+        //}
 
-        private void GetDeclarations(LuaNode node, List<KeyValuePair<string, TextSpan>> declarations)
+        private void GetDeclarations(LuaNode node, List<KeyValuePair<string, ITrackingSpan>> declarations)
         {
             if (node is LuaBlockNode)
             {

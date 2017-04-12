@@ -3,25 +3,29 @@ using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using System.Diagnostics;
 using System;
+using IServiceProvider = System.IServiceProvider;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.TextManager.Interop;
 using NPLTools.Intelligense;
+using Microsoft.VisualStudio.ComponentModelHost;
+using NPLTools.Intelligense2;
 
 namespace NPLTools.Language
 {
     internal class NPLEditorCommandFilter : IOleCommandTarget
     {
-        private ITextView _textView;
-        private IVsTextView _vsTextView;
-        private Analyzer _analyzer;
+        private readonly ITextView _textView;
+        private readonly IVsTextView _vsTextView;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly IComponentModel _componentModel;
 
-        public NPLEditorCommandFilter(ITextView textView, IVsTextView vsTextView)
+        public NPLEditorCommandFilter(ITextView textView, IVsTextView vsTextView, IServiceProvider serviceProvider)
         {
             _textView = textView;
             _vsTextView = vsTextView;
-            _analyzer = new Analyzer(textView, vsTextView);
+            _serviceProvider = serviceProvider;
         }
-
+    
         public IOleCommandTarget Next { get; set; }
 
         public int Exec(ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
@@ -32,14 +36,14 @@ namespace NPLTools.Language
                 {
                     case VSConstants.VSStd2KCmdID.COMMENT_BLOCK:
                     case VSConstants.VSStd2KCmdID.COMMENTBLOCK:
-                        _analyzer.CommentOrUncommentBlock(true);
+                        CommentOrUncommentBlock(true);
                         break;
                     case VSConstants.VSStd2KCmdID.UNCOMMENT_BLOCK:
                     case VSConstants.VSStd2KCmdID.UNCOMMENTBLOCK:
-                        _analyzer.CommentOrUncommentBlock(false);
+                        CommentOrUncommentBlock(false);
                         break;
                     case VSConstants.VSStd2KCmdID.FORMATSELECTION:
-                        _analyzer.FormatBlock();
+                        FormatBlock();
                         break;
                 }
             }
@@ -48,7 +52,7 @@ namespace NPLTools.Language
                 switch ((VSConstants.VSStd97CmdID)nCmdID)
                 {
                     case VSConstants.VSStd97CmdID.GotoDefn:
-                        _analyzer.GotoDefinition();
+                        GotoDefinition();
                         break;
                 }
             }
@@ -87,6 +91,24 @@ namespace NPLTools.Language
                 }
             }
             return Next.QueryStatus(pguidCmdGroup, cCmds, prgCmds, pCmdText);
+        }
+
+        private void GotoDefinition()
+        {
+            var caret = _textView.Caret.Position.BufferPosition;
+            var analysis = _textView.GetAnalysisAtCaret(_serviceProvider);
+
+            var span = analysis.Analyzer.GetDeclarationLocation(analysis, _textView, caret);
+        }
+
+        private void CommentOrUncommentBlock(bool comment)
+        {
+
+        }
+
+        private void FormatBlock()
+        {
+
         }
     }
 }
