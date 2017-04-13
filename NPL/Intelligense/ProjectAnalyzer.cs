@@ -114,6 +114,13 @@ namespace NPLTools.Intelligense
             return res;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="entry"></param>
+        /// <param name="textBuffer"></param>
+        /// <param name="point"></param>
+        /// <returns></returns>
         internal string GetDescription(AnalysisEntry entry, ITextBuffer textBuffer, SnapshotPoint point)
         {
             int spanStart, spanEnd;
@@ -155,6 +162,12 @@ namespace NPLTools.Intelligense
 
             return description;
         }
+
+        internal List<Region> GetOutliningRegions(AnalysisEntry entry)
+        {
+            return entry.Model.GetOutliningRegions();
+        }
+
         /// <summary>
         /// 
         /// </summary>

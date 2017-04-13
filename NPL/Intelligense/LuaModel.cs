@@ -16,23 +16,28 @@ namespace NPLTools.Intelligense
     public class LuaModel
     {
         private LuaNode _root;
+        private ParseTree _parseTree;
         public static List<KeyValuePair<string, SourceSpan>> Declarations;
 
-        public LuaModel(LuaNode root)
+        public LuaModel(ParseTree parseTree)
         {
-            if (root != null)
+            _parseTree = parseTree;
+
+            if (_parseTree.Root.AstNode!= null)
             {
-                _root = root;
+                _root = _parseTree.Root.AstNode as LuaNode;
                 Declarations = new List<KeyValuePair<string, SourceSpan>>();
                 GetDeclarations(_root, Declarations);
             } 
         }
 
-        public void Update(LuaNode root)
+        public void Update(ParseTree parseTree)
         {
-            if (root != null)
+            _parseTree = parseTree;
+
+            if (_parseTree.Root.AstNode != null)
             {
-                _root = root;
+                _root = _parseTree.Root.AstNode as LuaNode;
                 Declarations.Clear();
                 GetDeclarations(_root, Declarations);
             }  
@@ -159,6 +164,64 @@ namespace NPLTools.Intelligense
             foreach (LuaNode childNode in node.GetChildNodes())
             {
                 WalkSyntaxTreeForIndentations(childNode, indentations);
+            }
+        }
+
+        public List<Region> GetOutliningRegions()
+        {
+            List<Region> regions = new List<Region>();
+            if (_root != null)
+                WalkSyntaxTreeForOutliningRegions(_parseTree.Root, regions);
+            return regions;
+        }
+
+        private void WalkSyntaxTreeForOutliningRegions(ParseTreeNode node, List<Region> regions)
+        {
+            if (node == null) return;
+
+            int startPosition, length;
+            if (node.Term.Name == NPLConstants.FunctionDeclaration)
+            {
+                startPosition = node.ChildNodes[2].Span.EndPosition + 1;
+                length = node.ChildNodes[4].Span.Location.Position - startPosition;
+                regions.Add(new Region(startPosition, length));
+            }
+            else if (node.Term.Name == NPLConstants.LocalFunctionDeclaration)
+            {
+                startPosition = node.ChildNodes[3].Span.EndPosition + 1;
+                length = node.ChildNodes[5].Span.Location.Position - startPosition;
+                regions.Add(new Region(startPosition, length));
+            }
+            else if (node.Term.Name == NPLConstants.DoBlock)
+            {
+                startPosition = node.ChildNodes[0].Span.EndPosition;
+                length = node.ChildNodes[2].Span.Location.Position - node.ChildNodes[0].Span.EndPosition;
+                regions.Add(new Region(startPosition, length));
+            }
+            else if (node.Term.Name == NPLConstants.WhileBlock)
+            {
+                startPosition = node.ChildNodes[0].Span.EndPosition;
+                length = node.ChildNodes[4].Span.Location.Position - node.ChildNodes[0].Span.EndPosition;
+                regions.Add(new Region(startPosition, length));
+            }
+            else if (node.Term.Name == NPLConstants.RepeatBlock)
+            {
+                startPosition = node.ChildNodes[0].Span.EndPosition;
+                length = node.ChildNodes[3].Span.EndPosition - node.ChildNodes[0].Span.EndPosition;
+                regions.Add(new Region(startPosition, length));
+            }
+            else if (node.Term.Name == NPLConstants.ForBlock ||
+                node.Term.Name == NPLConstants.GenericForBlock ||
+                node.Term.Name == NPLConstants.ConditionBlock)
+            {
+                startPosition = node.ChildNodes[0].Span.EndPosition;
+                length = node.ChildNodes[6].Span.Location.Position - node.ChildNodes[0].Span.EndPosition;
+                regions.Add(new Region(startPosition, length));
+            }
+
+            foreach (ParseTreeNode child in node.ChildNodes)
+            {
+                WalkSyntaxTreeForOutliningRegions(child, regions);
             }
         }
     }

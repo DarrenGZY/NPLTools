@@ -6,6 +6,8 @@ using Microsoft.VisualStudio.Utilities;
 using Microsoft.VisualStudio.Text;
 using NPLTools.IronyParser;
 using Irony.Parsing;
+using Microsoft.VisualStudio.Shell;
+using NPLTools.Intelligense;
 
 namespace NPLTools.Language.Outlining
 {
@@ -14,9 +16,12 @@ namespace NPLTools.Language.Outlining
     [ContentType("NPL")]
     internal sealed class NPLOutliningTaggerProvider : ITaggerProvider
     {
+        [Import]
+        internal SVsServiceProvider ServiceProvider { get; private set; }
+
         public ITagger<T> CreateTagger<T>(ITextBuffer buffer) where T : ITag
         {
-            Func<ITagger<T>> sc = delegate () { return new NPLOutliningTagger(buffer) as ITagger<T>; };
+            Func<ITagger<T>> sc = delegate () { return new NPLOutliningTagger(this, buffer) as ITagger<T>; };
             return buffer.Properties.GetOrCreateSingletonProperty<ITagger<T>>(sc);
         }
     }
@@ -25,18 +30,17 @@ namespace NPLTools.Language.Outlining
     {
         public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
 
+        private NPLOutliningTaggerProvider _provider;
         private ITextBuffer _buffer;
-        private ITextSnapshot _snapshot;
-        private Parser _parser;
+        private AnalysisEntry _analysisEntry;
         private List<Region> _regions;
-        private System.Threading.Timer _delayRefreshTimer;
 
-        public NPLOutliningTagger(ITextBuffer buffer)
+        public NPLOutliningTagger(NPLOutliningTaggerProvider provider, ITextBuffer buffer)
         {
             _buffer = buffer;
-            _snapshot = buffer.CurrentSnapshot;
+            _provider = provider;
+            _analysisEntry = _buffer.GetAnalysisAtCaret(provider.ServiceProvider);
             _regions = new List<Region>();
-            _parser = new Parser(LuaGrammar.Instance);
             ReParse();
             _buffer.Changed += BufferChanged;
         }
@@ -60,89 +64,14 @@ namespace NPLTools.Language.Outlining
 
         void BufferChanged(object sender, TextContentChangedEventArgs e)
         {
-            if (e.After != _buffer.CurrentSnapshot)
-                return;
-
-            if (_delayRefreshTimer != null)
-            {
-                _delayRefreshTimer.Dispose();
-            }
-            _delayRefreshTimer = new System.Threading.Timer(ReParseCallBack, null, 500, System.Threading.Timeout.Infinite);
-        }
-
-        private void ReParseCallBack(object args)
-        {
             ReParse();
         }
 
         private void ReParse()
         {
-            ParseTree tree = _parser.Parse(_buffer.CurrentSnapshot.GetText());
-            if (tree.Root == null) return;
-            _regions.Clear();
-            IterateTreeNode(tree.Root, _regions);
+            _regions = _analysisEntry.Analyzer.GetOutliningRegions(_analysisEntry);
             if (TagsChanged != null)
                 TagsChanged(this, new SnapshotSpanEventArgs(new SnapshotSpan(_buffer.CurrentSnapshot, 0, _buffer.CurrentSnapshot.Length)));
-        }
-
-        private void IterateTreeNode(ParseTreeNode node, List<Region> regions)
-        {
-            if (node == null) return;
-
-            int startPosition, length;
-            if (node.Term.Name == NPLConstants.FunctionDeclaration)
-            {
-                startPosition = node.ChildNodes[2].Span.EndPosition + 1;
-                length = node.ChildNodes[4].Span.Location.Position - startPosition;
-                regions.Add(new Region(startPosition, length));
-            }
-            else if (node.Term.Name == NPLConstants.LocalFunctionDeclaration)
-            {
-                startPosition = node.ChildNodes[3].Span.EndPosition + 1;
-                length = node.ChildNodes[5].Span.Location.Position - startPosition;
-                regions.Add(new Region(startPosition, length));
-            }
-            else if (node.Term.Name == NPLConstants.DoBlock)
-            {
-                startPosition = node.ChildNodes[0].Span.EndPosition;
-                length = node.ChildNodes[2].Span.Location.Position - node.ChildNodes[0].Span.EndPosition;
-                regions.Add(new Region(startPosition, length));
-            }
-            else if (node.Term.Name == NPLConstants.WhileBlock)
-            {
-                startPosition = node.ChildNodes[0].Span.EndPosition;
-                length = node.ChildNodes[4].Span.Location.Position - node.ChildNodes[0].Span.EndPosition;
-                regions.Add(new Region(startPosition, length));
-            }
-            else if (node.Term.Name == NPLConstants.RepeatBlock)
-            {
-                startPosition = node.ChildNodes[0].Span.EndPosition;
-                length = node.ChildNodes[3].Span.EndPosition - node.ChildNodes[0].Span.EndPosition;
-                regions.Add(new Region(startPosition, length));
-            }
-            else if (node.Term.Name == NPLConstants.ForBlock || 
-                node.Term.Name == NPLConstants.GenericForBlock ||
-                node.Term.Name == NPLConstants.ConditionBlock)
-            {
-                startPosition = node.ChildNodes[0].Span.EndPosition;
-                length = node.ChildNodes[6].Span.Location.Position - node.ChildNodes[0].Span.EndPosition;
-                regions.Add(new Region(startPosition, length));
-            }
-
-            foreach (ParseTreeNode child in node.ChildNodes)
-            {
-                IterateTreeNode(child, regions);
-            }
-        }
-    }
-
-    internal class Region {
-        public int Start;
-        public int Length;
-        public Region(int start, int length)
-        {
-            this.Start = start;
-            this.Length = length;
         }
     }
 }

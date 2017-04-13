@@ -20,4 +20,15 @@ namespace NPLTools.Intelligense
             EndLine = endLine;
         }
     }
+
+    public struct Region
+    {
+        public int Start;
+        public int Length;
+        public Region(int start, int length)
+        {
+            this.Start = start;
+            this.Length = length;
+        }
+    }
 }
