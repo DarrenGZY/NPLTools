@@ -12,6 +12,8 @@ using Microsoft.VisualStudio.TextManager.Interop;
 using NPLTools.IronyParser.Ast;
 using Irony.Parsing;
 using NPLTools.IronyParser;
+using NPLTools.Language;
+using Microsoft.VisualStudio.Shell;
 
 namespace NPLTools.Language.Tooltip
 {
@@ -42,18 +44,19 @@ namespace NPLTools.Language.Tooltip
                 return;
             }
 
-            ITextSnapshot currentSnapshot = subjectTriggerPoint.Value.Snapshot;
-            SnapshotSpan querySpan = new SnapshotSpan(subjectTriggerPoint.Value, 0);
+            //ITextSnapshot currentSnapshot = subjectTriggerPoint.Value.Snapshot;
+            //SnapshotSpan querySpan = new SnapshotSpan(subjectTriggerPoint.Value, 0);
 
             ITextStructureNavigator navigator = _provider.NavigatorService.GetTextStructureNavigator(_subjectBuffer);
             TextExtent extent = navigator.GetExtentOfWord(subjectTriggerPoint.Value);
-            string searchText = extent.Span.GetText();
+            //string searchText = extent.Span.GetText();
 
-            string description = GetDescription(searchText, subjectTriggerPoint.Value.Position);
+            var analysis = _subjectBuffer.GetAnalysisAtCaret(_provider.ServiceProvider);
+            string description = analysis.Analyzer.GetDescription(analysis, _subjectBuffer, subjectTriggerPoint.Value);
 
-            if (description != String.Empty)
+            if (description != String.Empty && description != null)
             {
-                applicableToSpan = currentSnapshot.CreateTrackingSpan(extent.Span.Start, extent.Span.Length, SpanTrackingMode.EdgeInclusive);
+                applicableToSpan = subjectTriggerPoint.Value.Snapshot.CreateTrackingSpan(extent.Span.Start, extent.Span.Length, SpanTrackingMode.EdgeInclusive);
                 quickInfoContent.Add(description);
                 return;
             }
@@ -144,6 +147,9 @@ namespace NPLTools.Language.Tooltip
 
         [Import]
         internal ITextBufferFactoryService TextBufferFactoryService { get; set; }
+
+        [Import]
+        internal SVsServiceProvider ServiceProvider { get; private set; }
 
         public IQuickInfoSource TryCreateQuickInfoSource(ITextBuffer textBuffer)
         {

@@ -13,7 +13,7 @@ using System.Threading;
 using Task = System.Threading.Tasks.Task;
 using System.Threading.Tasks;
 
-namespace NPLTools.Intelligense2
+namespace NPLTools.Intelligense
 {
     public interface IAnalysisEntryService
     {
@@ -81,6 +81,11 @@ namespace NPLTools.Intelligense2
 
             entry = null;
             return true;
+        }
+
+        public bool TryGetAnalysisEntry(ITextBuffer textBuffer, out AnalysisEntry entry)
+        {
+            return TryGetAnalysisEntry(null, textBuffer, out entry);
         }
 
         public void SetAnalyzer(ITextBuffer textBuffer, ProjectAnalyzer analyzer)

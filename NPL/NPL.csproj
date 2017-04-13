@@ -59,10 +59,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Guids.cs" />
-    <Compile Include="Intelligense2\AnalysisEntry.cs" />
-    <Compile Include="Intelligense2\AnalysisEntryService.cs" />
-    <Compile Include="Intelligense2\ProjectAnalyzer.cs" />
-    <Compile Include="Intelligense\Analyzer.cs" />
+    <Compile Include="Intelligense\AnalysisEntry.cs" />
+    <Compile Include="Intelligense\AnalysisEntryService.cs" />
+    <Compile Include="Intelligense\ProjectAnalyzer.cs" />
+    <Compile Include="Intelligense\SourceSpan.cs" />
     <Compile Include="Intelligense\LuaModel.cs" />
     <Compile Include="IronyParser\Ast\IDeclaration.cs" />
     <Compile Include="IronyParser\Ast\LuaElseIfListNode.cs" />

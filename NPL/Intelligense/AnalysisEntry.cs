@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NPLTools.Intelligense2
+namespace NPLTools.Intelligense
 {
     internal sealed class AnalysisEntry
     {

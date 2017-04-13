@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudioTools;
-using NPLTools.Intelligense2;
+using NPLTools.Intelligense;
 using NPLTools.Project;
 using System;
 using System.Collections.Generic;
@@ -36,6 +36,14 @@ namespace NPLTools.Language
             var service = serviceProvider.GetEntryService();
             AnalysisEntry entry = null;
             service?.TryGetAnalysisEntry(textView, textView.TextBuffer, out entry);
+            return entry;
+        }
+
+        internal static AnalysisEntry GetAnalysisAtCaret(this ITextBuffer textBuffer, IServiceProvider serviceProvider)
+        {
+            var service = serviceProvider.GetEntryService();
+            AnalysisEntry entry = null;
+            service?.TryGetAnalysisEntry(textBuffer, out entry);
             return entry;
         }
 

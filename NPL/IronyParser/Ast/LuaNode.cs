@@ -11,7 +11,7 @@ namespace NPLTools.IronyParser.Ast
 {
     public class LuaNode : AstNode
     {
-        public void AddChild(string role, AstNode child)
+        public void AddChild(string role, LuaNode child)
         {
             if (child == null) return;
             child.Role = role;
@@ -28,6 +28,18 @@ namespace NPLTools.IronyParser.Ast
         {
             base.Init(context, treeNode);
         }
+
+        public int EndLine
+        {
+            get
+            {
+                if (ChildNodes.Count == 0)
+                    return this.Location.Line;
+                else
+                    return (this.ChildNodes.Last<AstNode>() as LuaNode).EndLine;
+            }
+        }
+
     }
 
     public class LuaNodeList : List<LuaNode> { }

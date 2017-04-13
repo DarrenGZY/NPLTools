@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.TextManager.Interop;
 using NPLTools.Intelligense;
 using Microsoft.VisualStudio.ComponentModelHost;
-using NPLTools.Intelligense2;
+using NPLTools.Intelligense;
 using Microsoft.VisualStudio.Text;
 
 namespace NPLTools.Language
@@ -104,7 +104,7 @@ namespace NPLTools.Language
             if (span.HasValue)
             {
                 int line, column;
-                _vsTextView.GetLineAndColumn(span.Value.Start, out line, out column);
+                _vsTextView.GetLineAndColumn(span.Value.StartPosition, out line, out column);
                 _vsTextView.SetCaretPos(line, column);
             }
         }
@@ -167,10 +167,10 @@ namespace NPLTools.Language
             return false;
         }
 
-        private async void FormatBlock()
+        private void FormatBlock()
         {
             var analysis = _textView.GetAnalysisAtCaret(_serviceProvider);
-            await analysis.Analyzer.FormatBlock(analysis, _textView);
+            analysis.Analyzer.FormatBlock(analysis, _textView);
         }
 
         #region comment block helpers

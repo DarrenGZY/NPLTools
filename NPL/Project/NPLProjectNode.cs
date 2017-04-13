@@ -47,7 +47,7 @@ using VsCommands2K = Microsoft.VisualStudio.VSConstants.VSStd2KCmdID;
 using VsMenus = Microsoft.VisualStudioTools.Project.VsMenus;
 
 using Microsoft.VisualStudio.OLE.Interop;
-using NPLTools.Intelligense2;
+using NPLTools.Intelligense;
 using NPLTools.Language;
 using Microsoft.VisualStudio.Text;
 

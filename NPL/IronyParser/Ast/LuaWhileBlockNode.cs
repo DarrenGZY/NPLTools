@@ -11,8 +11,8 @@ namespace NPLTools.IronyParser.Ast
 {
     public class LuaWhileBlockNode : LuaNode
     {
-        public AstNode Expression;
-        public AstNode Block;
+        public LuaNode Expression;
+        public LuaNode Block;
 
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
@@ -20,8 +20,8 @@ namespace NPLTools.IronyParser.Ast
 
             if (treeNode.ChildNodes.Count != 5) return;
 
-            Expression = treeNode.ChildNodes[1].AstNode as AstNode;
-            Block = treeNode.ChildNodes[3].AstNode as AstNode;
+            Expression = treeNode.ChildNodes[1].AstNode as LuaNode;
+            Block = treeNode.ChildNodes[3].AstNode as LuaNode;
 
             AddChild("while loop expr", Expression);
             AddChild("while loop block", Block);

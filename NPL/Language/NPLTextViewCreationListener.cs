@@ -13,7 +13,7 @@ using NPLTools.IronyParser.Ast;
 using NPLTools.IronyParser;
 using NPLTools.Intelligense;
 using Microsoft.VisualStudio.Shell;
-using NPLTools.Intelligense2;
+using NPLTools.Intelligense;
 using NPLTools.Project;
 using Microsoft.VisualStudioTools.Project;
 using Microsoft.VisualStudio.Shell.Interop;

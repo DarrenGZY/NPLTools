@@ -11,8 +11,8 @@ namespace NPLTools.IronyParser.Ast
 {
     public class LuaRepeatBlockNode : LuaNode
     {
-        public AstNode Block { get; private set; }
-        public AstNode Expression { get; private set; }
+        public LuaNode Block { get; private set; }
+        public LuaNode Expression { get; private set; }
 
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
@@ -20,8 +20,8 @@ namespace NPLTools.IronyParser.Ast
 
             if (treeNode.ChildNodes.Count != 4) return;
 
-            Block = treeNode.ChildNodes[1].AstNode as AstNode;
-            Expression = treeNode.ChildNodes[3].AstNode as AstNode;
+            Block = treeNode.ChildNodes[1].AstNode as LuaNode;
+            Expression = treeNode.ChildNodes[3].AstNode as LuaNode;
 
             AddChild("repeat block", Block);
             AddChild("repeat block expr", Expression);

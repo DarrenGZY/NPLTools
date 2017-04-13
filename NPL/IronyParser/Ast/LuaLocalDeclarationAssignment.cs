@@ -27,7 +27,7 @@ namespace NPLTools.IronyParser.Ast
             LuaLocalDeclaration declaration = treeNode.ChildNodes[0].AstNode as LuaLocalDeclaration;
             VariableList = declaration.VariableList;
             
-            foreach (AstNode variable in VariableList)
+            foreach (LuaNode variable in VariableList)
             {
                 AddChild(variable.Role, variable);
             }
