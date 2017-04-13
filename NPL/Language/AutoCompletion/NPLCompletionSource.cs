@@ -30,14 +30,14 @@ namespace NPLTools.Language.AutoCompletion
             //_textBuffer.
 
             List<string> strList = new List<string>();
-            if (LuaModel.Declarations != null && triggerPoint.HasValue)
-            {
-                foreach (var keyValue in LuaModel.Declarations)
-                {
-                    if (LuaModel.IsInScope(triggerPoint.Value.Position, keyValue.Value))
-                        strList.Add(keyValue.Key);
-                }
-            }
+            //if (LuaModel.Declarations != null && triggerPoint.HasValue)
+            //{
+            //    foreach (var keyValue in LuaModel.Declarations)
+            //    {
+            //        if (LuaModel.IsInScope(triggerPoint.Value.Position, keyValue.Value))
+            //            strList.Add(keyValue.Key);
+            //    }
+            //}
 
             //strList.Add("addtion");
             //strList.Add("adaptation");

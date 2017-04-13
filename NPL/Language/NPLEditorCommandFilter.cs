@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TextManager.Interop;
 using NPLTools.Intelligense;
 using Microsoft.VisualStudio.ComponentModelHost;
 using NPLTools.Intelligense2;
+using Microsoft.VisualStudio.Text;
 
 namespace NPLTools.Language
 {
@@ -99,16 +100,209 @@ namespace NPLTools.Language
             var analysis = _textView.GetAnalysisAtCaret(_serviceProvider);
 
             var span = analysis.Analyzer.GetDeclarationLocation(analysis, _textView, caret);
+
+            if (span.HasValue)
+            {
+                int line, column;
+                _vsTextView.GetLineAndColumn(span.Value.Start, out line, out column);
+                _vsTextView.SetCaretPos(line, column);
+            }
         }
 
-        private void CommentOrUncommentBlock(bool comment)
+        public bool CommentOrUncommentBlock(bool comment)
         {
+            SnapshotPoint start, end;
+            SnapshotPoint? mappedStart, mappedEnd;
 
+            if (_textView.Selection.IsActive && !_textView.Selection.IsEmpty)
+            {
+                // comment every line in the selection
+                start = _textView.Selection.Start.Position;
+                end = _textView.Selection.End.Position;
+                mappedStart = MapPoint(_textView, start);
+
+                var endLine = end.GetContainingLine();
+                if (endLine.Start == end)
+                {
+                    // http://pytools.codeplex.com/workitem/814
+                    // User selected one extra line, but no text on that line.  So let's
+                    // back it up to the previous line.  It's impossible that we're on the
+                    // 1st line here because we have a selection, and we end at the start of
+                    // a line.  In normal selection this is only possible if we wrapped onto the
+                    // 2nd line, and it's impossible to have a box selection with a single line.
+                    end = end.Snapshot.GetLineFromLineNumber(endLine.LineNumber - 1).End;
+                }
+
+                mappedEnd = MapPoint(_textView, end);
+            }
+            else
+            {
+                // comment the current line
+                start = end = _textView.Caret.Position.BufferPosition;
+                mappedStart = mappedEnd = MapPoint(_textView, start);
+            }
+
+            if (mappedStart != null && mappedEnd != null &&
+                mappedStart.Value <= mappedEnd.Value)
+            {
+                if (comment)
+                {
+                    CommentRegion(_textView, mappedStart.Value, mappedEnd.Value);
+                }
+                else
+                {
+                    UncommentRegion(_textView, mappedStart.Value, mappedEnd.Value);
+                }
+
+                // TODO: select multiple spans?
+                // Select the full region we just commented, do not select if in projection buffer 
+                // (the selection might span non-language buffer regions)
+                if (IsNPLContent(_textView.TextBuffer))
+                {
+                    UpdateSelection(_textView, start, end);
+                }
+                return true;
+            }
+
+            return false;
         }
 
-        private void FormatBlock()
+        private async void FormatBlock()
         {
-
+            var analysis = _textView.GetAnalysisAtCaret(_serviceProvider);
+            await analysis.Analyzer.FormatBlock(analysis, _textView);
         }
+
+        #region comment block helpers
+        private bool IsNPLContent(ITextBuffer buffer)
+        {
+            return buffer.ContentType.IsOfType("NPL");
+        }
+
+        private bool IsNPLContent(ITextSnapshot buffer)
+        {
+            return buffer.ContentType.IsOfType("NPL");
+        }
+
+        private SnapshotPoint? MapPoint(ITextView view, SnapshotPoint point)
+        {
+            return view.BufferGraph.MapDownToFirstMatch(
+               point,
+               PointTrackingMode.Positive,
+               IsNPLContent,
+               PositionAffinity.Successor
+            );
+        }
+
+        /// <summary>
+        /// Adds comment characters (--) to the start of each line.  If there is a selection the comment is applied
+        /// to each selected line.  Otherwise the comment is applied to the current line.
+        /// </summary>
+        /// <param name="view"></param>
+        private void CommentRegion(ITextView view, SnapshotPoint start, SnapshotPoint end)
+        {
+            Debug.Assert(start.Snapshot == end.Snapshot);
+            var snapshot = start.Snapshot;
+
+            using (var edit = snapshot.TextBuffer.CreateEdit())
+            {
+                int minColumn = Int32.MaxValue;
+                // first pass, determine the position to place the comment
+                for (int i = start.GetContainingLine().LineNumber; i <= end.GetContainingLine().LineNumber; i++)
+                {
+                    var curLine = snapshot.GetLineFromLineNumber(i);
+                    var text = curLine.GetText();
+
+                    int firstNonWhitespace = IndexOfNonWhitespaceCharacter(text);
+                    if (firstNonWhitespace >= 0 && firstNonWhitespace < minColumn)
+                    {
+                        // ignore blank lines
+                        minColumn = firstNonWhitespace;
+                    }
+                }
+
+                // second pass, place the comment
+                for (int i = start.GetContainingLine().LineNumber; i <= end.GetContainingLine().LineNumber; i++)
+                {
+                    var curLine = snapshot.GetLineFromLineNumber(i);
+                    if (String.IsNullOrWhiteSpace(curLine.GetText()))
+                    {
+                        continue;
+                    }
+
+                    Debug.Assert(curLine.Length >= minColumn);
+
+                    edit.Insert(curLine.Start.Position + minColumn, "--");
+                }
+
+                edit.Apply();
+            }
+        }
+
+        private int IndexOfNonWhitespaceCharacter(string text)
+        {
+            for (int j = 0; j < text.Length; j++)
+            {
+                if (!Char.IsWhiteSpace(text[j]))
+                {
+                    return j;
+                }
+            }
+            return -1;
+        }
+
+        /// <summary>
+        /// Removes a comment character (--) from the start of each line.  If there is a selection the character is
+        /// removed from each selected line.  Otherwise the character is removed from the current line.  Uncommented
+        /// lines are ignored.
+        /// </summary>
+        private void UncommentRegion(ITextView view, SnapshotPoint start, SnapshotPoint end)
+        {
+            Debug.Assert(start.Snapshot == end.Snapshot);
+            var snapshot = start.Snapshot;
+
+            using (var edit = snapshot.TextBuffer.CreateEdit())
+            {
+
+                // first pass, determine the position to place the comment
+                for (int i = start.GetContainingLine().LineNumber; i <= end.GetContainingLine().LineNumber; i++)
+                {
+                    var curLine = snapshot.GetLineFromLineNumber(i);
+
+                    DeleteFirstCommentChar(edit, curLine);
+                }
+
+                edit.Apply();
+            }
+        }
+
+        private void UpdateSelection(ITextView view, SnapshotPoint start, SnapshotPoint end)
+        {
+            view.Selection.Select(
+                new SnapshotSpan(
+                    // translate to the new snapshot version:
+                    start.GetContainingLine().Start.TranslateTo(view.TextBuffer.CurrentSnapshot, PointTrackingMode.Negative),
+                    end.GetContainingLine().End.TranslateTo(view.TextBuffer.CurrentSnapshot, PointTrackingMode.Positive)
+                ),
+                false
+            );
+        }
+
+        private void DeleteFirstCommentChar(ITextEdit edit, ITextSnapshotLine curLine)
+        {
+            var text = curLine.GetText();
+            for (int j = 0; j < text.Length; j++)
+            {
+                if (!Char.IsWhiteSpace(text[j]))
+                {
+                    if (text[j] == '-' && (j + 1) < text.Length && text[j + 1] == '-')
+                    {
+                        edit.Delete(curLine.Start.Position + j, 2);
+                    }
+                    break;
+                }
+            }
+        }
+        #endregion
     }
 }

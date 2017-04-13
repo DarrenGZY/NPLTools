@@ -35,7 +35,7 @@ namespace NPLTools.Intelligense
             if (_parseTree.Root != null)
                 _astRoot = _parseTree.Root.AstNode as LuaNode;
             if (_astRoot != null)
-                _model = new LuaModel(_textView, _vsTextView, _astRoot);
+                _model = new LuaModel(_astRoot);
         }
 
         private void OnTextBufferChanged(object sender, TextContentChangedEventArgs e)
@@ -50,7 +50,7 @@ namespace NPLTools.Intelligense
                 return;
 
             if (_astRoot != null && _model == null)
-                _model = new LuaModel(_textView, _vsTextView, _astRoot);
+                _model = new LuaModel(_astRoot);
             if (_astRoot != null && _model != null)
                 _model.Update(_astRoot);
         }
@@ -58,27 +58,27 @@ namespace NPLTools.Intelligense
         /// <summary>
         /// Go to the definition command
         /// </summary>
-        public void GotoDefinition()
-        {
-            int line, column;
-            string text;
-            TextSpan[] span = new TextSpan[1];
+        //public void GotoDefinition()
+        //{
+        //    int line, column;
+        //    string text;
+        //    TextSpan[] span = new TextSpan[1];
 
-            _vsTextView.GetCaretPos(out line, out column);
-            _vsTextView.GetSelectedText(out text);
+        //    _vsTextView.GetCaretPos(out line, out column);
+        //    _vsTextView.GetSelectedText(out text);
 
-            _vsTextView.GetWordExtent(line, column, (uint)WORDEXTFLAGS.WORDEXT_CURRENT, span);
-            _vsTextView.SetSelection(span[0].iStartLine, span[0].iStartIndex, span[0].iEndLine, span[0].iEndIndex);
-            string word;
-            _vsTextView.GetTextStream(span[0].iStartLine, span[0].iStartIndex, span[0].iEndLine, span[0].iEndIndex, out word);
+        //    _vsTextView.GetWordExtent(line, column, (uint)WORDEXTFLAGS.WORDEXT_CURRENT, span);
+        //    _vsTextView.SetSelection(span[0].iStartLine, span[0].iStartIndex, span[0].iEndLine, span[0].iEndIndex);
+        //    string word;
+        //    _vsTextView.GetTextStream(span[0].iStartLine, span[0].iStartIndex, span[0].iEndLine, span[0].iEndIndex, out word);
 
-            if (_model != null)
-            {
-                TextSpan? res = _model.GetDeclarationLocation(word, span[0]);
-                if (res != null)
-                    _vsTextView.SetCaretPos(res.Value.iStartLine, res.Value.iStartIndex);
-            }
-        }
+        //    if (_model != null)
+        //    {
+        //        TextSpan? res = _model.GetDeclarationLocation(word, span[0]);
+        //        if (res != null)
+        //            _vsTextView.SetCaretPos(res.Value.iStartLine, res.Value.iStartIndex);
+        //    }
+        //}
 
         /// <summary>
         /// Format the block command
