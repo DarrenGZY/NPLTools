@@ -9,6 +9,7 @@ using Irony.Parsing;
 using Microsoft.VisualStudio.Shell;
 using NPLTools.Intelligense;
 using Microsoft.VisualStudio.Shell.Interop;
+using Task = System.Threading.Tasks.Task;
 
 namespace NPLTools.Language.Outlining
 {
@@ -46,9 +47,17 @@ namespace NPLTools.Language.Outlining
             if (!project.GetAnalyzer().HasMonitoredTextBuffer(buffer))
                 project.GetAnalyzer().MonitorTextBuffer(buffer);
             _analysisEntry = _buffer.GetAnalysisAtCaret(provider.ServiceProvider);
+            _analysisEntry.Model.NewParseTree += Model_NewParseTree;
             _regions = new List<Region>();
             ReParse();
-            _buffer.Changed += BufferChanged;
+            //_buffer.Changed += BufferChanged;
+        }
+
+        private void Model_NewParseTree(object sender, ParseTreeChangedEventArgs e)
+        {
+            _regions.Clear();
+             if (e.Tree != null && e.Tree.Root != null)
+                WalkSyntaxTreeForOutliningRegions(e.Tree.Root, _regions);
         }
 
         public IEnumerable<ITagSpan<IOutliningRegionTag>> GetTags(NormalizedSnapshotSpanCollection spans)
@@ -58,26 +67,78 @@ namespace NPLTools.Language.Outlining
 
             foreach (var region in _regions)
             {
-                if (region.Start <= spans[spans.Count-1].End &&
-                    (region.Start+region.Length) >= spans[0].Start)
+                if (region.Start <= spans[spans.Count - 1].End &&
+                    (region.Start + region.Length) >= spans[0].Start)
                 {
                     yield return new TagSpan<IOutliningRegionTag>(
-                        new SnapshotSpan(spans[0].Snapshot, region.Start, region.Length ),
+                        new SnapshotSpan(spans[0].Snapshot, region.Start, region.Length),
                         new OutliningRegionTag(false, false, "...", spans[0].Snapshot.GetText().Substring(region.Start, region.Length)));
                 }
             }
         }
 
-        void BufferChanged(object sender, TextContentChangedEventArgs e)
+        async void BufferChanged(object sender, TextContentChangedEventArgs e)
         {
-            ReParse();
+            await ReParse();
         }
 
-        private void ReParse()
+        private Task ReParse()
         {
-            _regions = _analysisEntry.Analyzer.GetOutliningRegions(_analysisEntry);
-            if (TagsChanged != null)
-                TagsChanged(this, new SnapshotSpanEventArgs(new SnapshotSpan(_buffer.CurrentSnapshot, 0, _buffer.CurrentSnapshot.Length)));
+            return Task.Run(()=> {
+                _regions = _analysisEntry.Analyzer.GetOutliningRegions(_analysisEntry);
+                if (TagsChanged != null)
+                    TagsChanged(this, new SnapshotSpanEventArgs(new SnapshotSpan(_buffer.CurrentSnapshot, 0, _buffer.CurrentSnapshot.Length)));
+            });
+        }
+
+        private void WalkSyntaxTreeForOutliningRegions(ParseTreeNode node, List<Region> regions)
+        {
+            if (node == null) return;
+
+            int startPosition, length;
+            if (node.Term.Name == NPLConstants.FunctionDeclaration)
+            {
+                startPosition = node.ChildNodes[2].Span.EndPosition + 1;
+                length = node.ChildNodes[4].Span.Location.Position - startPosition;
+                regions.Add(new Region(startPosition, length));
+            }
+            else if (node.Term.Name == NPLConstants.LocalFunctionDeclaration)
+            {
+                startPosition = node.ChildNodes[3].Span.EndPosition + 1;
+                length = node.ChildNodes[5].Span.Location.Position - startPosition;
+                regions.Add(new Region(startPosition, length));
+            }
+            else if (node.Term.Name == NPLConstants.DoBlock)
+            {
+                startPosition = node.ChildNodes[0].Span.EndPosition;
+                length = node.ChildNodes[2].Span.Location.Position - node.ChildNodes[0].Span.EndPosition;
+                regions.Add(new Region(startPosition, length));
+            }
+            else if (node.Term.Name == NPLConstants.WhileBlock)
+            {
+                startPosition = node.ChildNodes[0].Span.EndPosition;
+                length = node.ChildNodes[4].Span.Location.Position - node.ChildNodes[0].Span.EndPosition;
+                regions.Add(new Region(startPosition, length));
+            }
+            else if (node.Term.Name == NPLConstants.RepeatBlock)
+            {
+                startPosition = node.ChildNodes[0].Span.EndPosition;
+                length = node.ChildNodes[3].Span.EndPosition - node.ChildNodes[0].Span.EndPosition;
+                regions.Add(new Region(startPosition, length));
+            }
+            else if (node.Term.Name == NPLConstants.ForBlock ||
+                node.Term.Name == NPLConstants.GenericForBlock ||
+                node.Term.Name == NPLConstants.ConditionBlock)
+            {
+                startPosition = node.ChildNodes[0].Span.EndPosition;
+                length = node.ChildNodes[6].Span.Location.Position - node.ChildNodes[0].Span.EndPosition;
+                regions.Add(new Region(startPosition, length));
+            }
+
+            foreach (ParseTreeNode child in node.ChildNodes)
+            {
+                WalkSyntaxTreeForOutliningRegions(child, regions);
+            }
         }
     }
 }

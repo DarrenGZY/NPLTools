@@ -211,7 +211,7 @@ namespace NPLTools.IronyParser
             FunctionDeclaration.Rule = FUNCTION + FuncName + FunctionParameters + Block + END;
 
             //     local function Name funcbody | 
-            LocalFunctionDeclaration.Rule = LOCAL + FunctionDeclaration;
+            LocalFunctionDeclaration.Rule = LOCAL + FUNCTION + FuncName + FunctionParameters + Block + END;
 
             //     local namelist [`=´ explist]
             LocalVariableDeclaration.Rule = LOCAL + NameList;

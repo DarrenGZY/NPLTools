@@ -29,7 +29,7 @@ namespace NPLTools.Language.AutoCompletion
             //point.Value.Snapshot.
             //_textBuffer.
 
-            List<string> strList = new List<string>();
+            List<string> strList = new List<string>(); 
             //if (LuaModel.Declarations != null && triggerPoint.HasValue)
             //{
             //    foreach (var keyValue in LuaModel.Declarations)

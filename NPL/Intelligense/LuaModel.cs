@@ -18,6 +18,7 @@ namespace NPLTools.Intelligense
         private LuaNode _root;
         private ParseTree _parseTree;
         public static List<KeyValuePair<string, SourceSpan>> Declarations;
+        public event EventHandler<ParseTreeChangedEventArgs> NewParseTree;
 
         public LuaModel(ParseTree parseTree)
         {
@@ -28,7 +29,7 @@ namespace NPLTools.Intelligense
                 _root = _parseTree.Root.AstNode as LuaNode;
                 Declarations = new List<KeyValuePair<string, SourceSpan>>();
                 GetDeclarations(_root, Declarations);
-            } 
+            }
         }
 
         public void Update(ParseTree parseTree)
@@ -40,6 +41,9 @@ namespace NPLTools.Intelligense
                 _root = _parseTree.Root.AstNode as LuaNode;
                 Declarations.Clear();
                 GetDeclarations(_root, Declarations);
+
+                if (NewParseTree != null)
+                    NewParseTree(this, new ParseTreeChangedEventArgs(parseTree));
             }  
         }
 
@@ -228,6 +232,16 @@ namespace NPLTools.Intelligense
             {
                 WalkSyntaxTreeForOutliningRegions(child, regions);
             }
+        }
+    }
+
+    public class ParseTreeChangedEventArgs : EventArgs
+    {
+        public ParseTree Tree { get; set; }
+
+        public ParseTreeChangedEventArgs(ParseTree tree)
+        {
+            Tree = tree;
         }
     }
 }
