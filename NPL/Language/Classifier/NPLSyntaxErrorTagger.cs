@@ -9,7 +9,6 @@ using Irony;
 using Irony.Parsing;
 using NPLTools.IronyParser;
 
-
 namespace NPLTools.Language.Classifier
 {
     [Export(typeof(ITaggerProvider))]
@@ -26,7 +25,6 @@ namespace NPLTools.Language.Classifier
     internal sealed class NPLSyntaxErrorTagger : ITagger<ErrorTag>
     {
         private ITextBuffer _buffer;
-        private Parser _parser;
         private List<ITagSpan<ErrorTag>> _syntaxErrorTags;
         private LogMessageList _syntaxErrorMessages;
 
@@ -36,8 +34,6 @@ namespace NPLTools.Language.Classifier
         {
             _buffer = buffer;
             _syntaxErrorTags = new List<ITagSpan<ErrorTag>>();
-            _parser = new Parser(LuaGrammar.Instance);
-            //NPLTextViewCreationListener.TextContentChanged += TextContentChanged;
         }
 
         IEnumerable<ITagSpan<ErrorTag>> ITagger<ErrorTag>.GetTags(NormalizedSnapshotSpanCollection spans)

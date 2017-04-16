@@ -54,10 +54,7 @@ namespace NPLTools.Language
             {
                 return textDocument.FilePath;
             }
-            else
-            {
-                return null;
-            }
+            return null;
         }
 
         public static IVsProject GetLoadedProject(this IVsSolution solution)

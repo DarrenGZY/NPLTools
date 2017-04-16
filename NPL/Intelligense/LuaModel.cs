@@ -23,7 +23,7 @@ namespace NPLTools.Intelligense
         {
             _parseTree = parseTree;
 
-            if (_parseTree.Root.AstNode!= null)
+            if (_parseTree.Root!= null)
             {
                 _root = _parseTree.Root.AstNode as LuaNode;
                 Declarations = new List<KeyValuePair<string, SourceSpan>>();
@@ -35,7 +35,7 @@ namespace NPLTools.Intelligense
         {
             _parseTree = parseTree;
 
-            if (_parseTree.Root.AstNode != null)
+            if (_parseTree.Root != null && _parseTree.Root.AstNode != null)
             {
                 _root = _parseTree.Root.AstNode as LuaNode;
                 Declarations.Clear();
@@ -57,6 +57,9 @@ namespace NPLTools.Intelligense
 
         private void GetDeclarations(LuaNode node, List<KeyValuePair<string, SourceSpan>> declarations)
         {
+            if (node == null)
+                return;
+
             if (node is LuaBlockNode)
             {
                 if (node.Parent is LuaChunkNode)
@@ -170,8 +173,10 @@ namespace NPLTools.Intelligense
         public List<Region> GetOutliningRegions()
         {
             List<Region> regions = new List<Region>();
+
             if (_root != null)
                 WalkSyntaxTreeForOutliningRegions(_parseTree.Root, regions);
+
             return regions;
         }
 

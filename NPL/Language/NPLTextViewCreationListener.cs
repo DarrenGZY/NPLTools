@@ -29,20 +29,42 @@ namespace NPLTools.Language
         public IVsEditorAdaptersFactoryService AdaptersFactory { get; private set; }
 
         [Import]
-        public SVsServiceProvider ServiceProvider { get; private set; } 
+        public SVsServiceProvider ServiceProvider { get; private set; }
+
+        private ITextBuffer _textBuffer;
+        private AnalysisEntry _analysisEntry;
 
         public void VsTextViewCreated(IVsTextView textViewAdapter)
         {
             ITextView textView = AdaptersFactory.GetWpfTextView(textViewAdapter);
+            _textBuffer = textView.TextBuffer;
             //NPLProjectNode project = ServiceProvider.GetService(typeof(CommonProjectNode)) as NPLProjectNode;
             IServiceProvider serviceProvider = ServiceProvider as IServiceProvider;
             IVsSolution sln = serviceProvider.GetService(typeof(SVsSolution)) as IVsSolution;
             NPLProjectNode project = sln.GetLoadedProject().GetNPLProject();
-            project.GetAnalyzer().MonitorTextBuffer(textView.TextBuffer);
+            if (!project.GetAnalyzer().HasMonitoredTextBuffer(textView.TextBuffer))
+                _analysisEntry = project.GetAnalyzer().MonitorTextBuffer(textView.TextBuffer);
+            else
+                _analysisEntry = project.GetAnalyzer().GetAnalysisEntryFromPath(textView.TextBuffer.GetFilePath());
+            textView.Closed += TextView_Closed;
             IOleCommandTarget next;
             NPLEditorCommandFilter commandFilter = new NPLEditorCommandFilter(textView, textViewAdapter, ServiceProvider);
             textViewAdapter.AddCommandFilter(commandFilter, out next);
             commandFilter.Next = next;
+        }
+
+        private void TextView_Closed(object sender, EventArgs e)
+        {
+            close();
+        }
+
+        private void close()
+        {
+            IServiceProvider serviceProvider = ServiceProvider as IServiceProvider;
+            IVsSolution sln = serviceProvider.GetService(typeof(SVsSolution)) as IVsSolution;
+            NPLProjectNode project = sln.GetLoadedProject().GetNPLProject();
+            //if (!project.GetAnalyzer().HasMonitoredTextBuffer(_textBuffer))
+            project.GetAnalyzer().CanceledMonitorTextBuffer(_analysisEntry, _textBuffer);
         }
     }
 }

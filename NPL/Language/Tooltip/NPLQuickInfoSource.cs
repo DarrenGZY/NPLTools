@@ -64,68 +64,6 @@ namespace NPLTools.Language.Tooltip
             applicableToSpan = null;
         }
 
-        private string GetDescription(string name, int position)
-        {
-            string description = String.Empty;
-            List<KeyValuePair<LuaNode, Region>> declarationNodes = new List<KeyValuePair<LuaNode, Region>>();
-            Parser parser = new Parser(LuaGrammar.Instance);
-            LuaNode root = parser.Parse(_subjectBuffer.CurrentSnapshot.GetText()).Root.AstNode as LuaNode;
-            GetDeclarationsByName(root, name, declarationNodes, position);
-            declarationNodes.Sort(delegate (KeyValuePair<LuaNode, Region> a, KeyValuePair<LuaNode, Region> b)
-            {
-                if (b.Value.Contains(a.Value))
-                    return -1;
-                else
-                    return 1;
-            });
-
-            if (declarationNodes.Count > 0 &&
-                declarationNodes[0].Key is LuaFuncIdentifierNode)
-            {
-                //Parser parser = new Parser(LuaGrammar.Instance);
-                Scanner scanner = new Parser(LuaGrammar.Instance).Scanner;
-
-                int funcDefLine = declarationNodes[0].Key.Location.Line;
-                for (int i = funcDefLine - 1; i >= 0; --i)
-                {
-                    string lineText = _subjectBuffer.CurrentSnapshot.GetLineFromLineNumber(i).GetText();
-                    int state = 0;
-                    scanner.VsSetSource(lineText, 0);
-                    Token token = scanner.VsReadToken(ref state);
-                    if (token == null || token.Terminal.Name != "block-comment")
-                        break;
-                    if (token.Terminal.Name == "block-comment")
-                        description = (description == String.Empty) ? token.ValueString : token.ValueString + "\n" + description;
-                }
-            }
-            return description;
-        }
-
-        private void GetDeclarationsByName(LuaNode node, string name, List<KeyValuePair<LuaNode, Region>> keyValue, int position)
-        {
-            if (node is LuaBlockNode)
-            {
-                foreach (var declaration in ((LuaBlockNode)node).Locals)
-                {
-                    if (declaration.AsString == name)
-                    {
-                        int scopeStartPosition = declaration.Span.EndPosition;
-                        int scopeEndPosition = node.Span.EndPosition;
-
-                        if (position >= scopeStartPosition &&
-                            position <= scopeEndPosition)
-                        {
-                            keyValue.Add(new KeyValuePair<LuaNode, Region>(declaration, new Region(scopeStartPosition, scopeEndPosition)));
-                        }
-                        else if (position == scopeStartPosition)
-                            keyValue.Add(new KeyValuePair<LuaNode, Region>(declaration, new Region(scopeStartPosition, scopeEndPosition)));
-                    }
-                }
-            }
-            foreach (LuaNode child in node.ChildNodes)
-                GetDeclarationsByName(child, name, keyValue, position);
-        }
-
         public void Dispose()
         {
             if (!_isDisposed)
@@ -154,26 +92,6 @@ namespace NPLTools.Language.Tooltip
         public IQuickInfoSource TryCreateQuickInfoSource(ITextBuffer textBuffer)
         {
             return new NPLQuickInfoSource(this, textBuffer);
-        }
-    }
-
-    // TODO: move the struct to somewhere more properly
-    internal struct Region
-    {
-        public int start;
-        public int end;
-        public Region(int start, int end)
-        {
-            this.start = start;
-            this.end = end;
-        }
-
-        public bool Contains(Region region)
-        {
-            if (this.start <= region.start && this.end >= region.end)
-                return true;
-            else
-                return false;
         }
     }
 }

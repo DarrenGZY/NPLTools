@@ -31,11 +31,26 @@ namespace NPLTools.Intelligense
             return _projectFiles.ContainsKey(fileName);
         }
 
-        internal void MonitorTextBuffer(ITextBuffer textBuffer)
+        internal AnalysisEntry MonitorTextBuffer(ITextBuffer textBuffer)
         {
             AnalysisEntry entry = CreateProjectEntry(textBuffer);
             _entryService.SetAnalyzer(textBuffer, this);
             textBuffer.Changed += TextBufferChanged;
+            return entry;
+        }
+
+        internal bool HasMonitoredTextBuffer(ITextBuffer textBuffer)
+        {
+            string path = textBuffer.GetFilePath();
+            return _projectFiles.ContainsKey(path);
+        }
+
+        internal void CanceledMonitorTextBuffer(AnalysisEntry entry, ITextBuffer textBuffer)
+        {
+            string path = entry.FilePath;
+            if (_projectFiles.ContainsKey(path))
+                _projectFiles.Remove(path);
+            textBuffer.Changed -= TextBufferChanged;
         }
 
         private async void TextBufferChanged(object sender, TextContentChangedEventArgs e)

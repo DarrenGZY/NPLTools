@@ -8,6 +8,7 @@ using NPLTools.IronyParser;
 using Irony.Parsing;
 using Microsoft.VisualStudio.Shell;
 using NPLTools.Intelligense;
+using Microsoft.VisualStudio.Shell.Interop;
 
 namespace NPLTools.Language.Outlining
 {
@@ -39,6 +40,11 @@ namespace NPLTools.Language.Outlining
         {
             _buffer = buffer;
             _provider = provider;
+            IServiceProvider serviceProvider = _provider.ServiceProvider as IServiceProvider;
+            IVsSolution sln = serviceProvider.GetService(typeof(SVsSolution)) as IVsSolution;
+            var project = sln.GetLoadedProject().GetNPLProject();
+            if (!project.GetAnalyzer().HasMonitoredTextBuffer(buffer))
+                project.GetAnalyzer().MonitorTextBuffer(buffer);
             _analysisEntry = _buffer.GetAnalysisAtCaret(provider.ServiceProvider);
             _regions = new List<Region>();
             ReParse();
