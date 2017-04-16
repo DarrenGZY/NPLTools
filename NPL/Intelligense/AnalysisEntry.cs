@@ -12,6 +12,8 @@ namespace NPLTools.Intelligense
 {
     internal sealed class AnalysisEntry
     {
+        public event EventHandler<ParseTreeChangedEventArgs> NewParseTree;
+
         private readonly int _fileId;
         private readonly string _path;
         private readonly ProjectAnalyzer _analyzer;
@@ -31,9 +33,12 @@ namespace NPLTools.Intelligense
         {
             return Task.Run(() =>
             {
-               ParseTree parseTree = _parser.Parse(source);
+                ParseTree parseTree = _parser.Parse(source);
                 if (parseTree.Root != null)
                     _model.Update(parseTree);
+
+                if (NewParseTree != null)
+                    NewParseTree(this, new ParseTreeChangedEventArgs(parseTree));
             });
         }
 
@@ -42,5 +47,15 @@ namespace NPLTools.Intelligense
         public ProjectAnalyzer Analyzer => _analyzer;
 
         public LuaModel Model => _model;
+    }
+
+    internal class ParseTreeChangedEventArgs : EventArgs
+    {
+        public ParseTree Tree { get; set; }
+
+        public ParseTreeChangedEventArgs(ParseTree tree)
+        {
+            Tree = tree;
+        }
     }
 }

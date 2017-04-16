@@ -8,6 +8,8 @@ using Microsoft.VisualStudio.Text.Tagging;
 using Irony;
 using Irony.Parsing;
 using NPLTools.IronyParser;
+using NPLTools.Intelligense;
+using Microsoft.VisualStudio.Shell;
 
 namespace NPLTools.Language.Classifier
 {
@@ -16,9 +18,12 @@ namespace NPLTools.Language.Classifier
     [TagType(typeof(ErrorTag))]
     internal sealed class NPLSyntaxErrorTaggerProvider : ITaggerProvider
     {
+        [Import]
+        internal SVsServiceProvider ServiceProvider { get; private set; }
+
         public ITagger<T> CreateTagger<T>(ITextBuffer buffer) where T : ITag
         {
-            return new NPLSyntaxErrorTagger(buffer) as ITagger<T>;
+            return new NPLSyntaxErrorTagger(this, buffer) as ITagger<T>;
         }
     }
 
@@ -27,13 +32,30 @@ namespace NPLTools.Language.Classifier
         private ITextBuffer _buffer;
         private List<ITagSpan<ErrorTag>> _syntaxErrorTags;
         private LogMessageList _syntaxErrorMessages;
+        public AnalysisEntry _analysisEntry;
 
         public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
 
-        public NPLSyntaxErrorTagger(ITextBuffer buffer)
+        public NPLSyntaxErrorTagger(NPLSyntaxErrorTaggerProvider provider, ITextBuffer buffer)
         {
             _buffer = buffer;
             _syntaxErrorTags = new List<ITagSpan<ErrorTag>>();
+            _analysisEntry = buffer.GetAnalysisAtCaret(provider.ServiceProvider);
+            _analysisEntry.NewParseTree += OnNewParseTree;
+        }
+
+        private void OnNewParseTree(object sender, ParseTreeChangedEventArgs e)
+        {
+            _syntaxErrorTags.Clear();
+            _syntaxErrorMessages = e.Tree.ParserMessages;
+            foreach (LogMessage syntaxErrorMessage in _syntaxErrorMessages)
+            {
+                _syntaxErrorTags.Add(new TagSpan<ErrorTag>(new SnapshotSpan(_buffer.CurrentSnapshot, Math.Min(_buffer.CurrentSnapshot.Length, Math.Max(syntaxErrorMessage.Location.Position, 1)) - 1, 1),
+                    new ErrorTag("syntax error", syntaxErrorMessage.Message)));
+            }
+
+            if (TagsChanged != null)
+                TagsChanged(this, new SnapshotSpanEventArgs(new SnapshotSpan(_buffer.CurrentSnapshot, new Span(0, _buffer.CurrentSnapshot.Length))));
         }
 
         IEnumerable<ITagSpan<ErrorTag>> ITagger<ErrorTag>.GetTags(NormalizedSnapshotSpanCollection spans)

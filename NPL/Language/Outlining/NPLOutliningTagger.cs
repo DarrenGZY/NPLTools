@@ -33,31 +33,33 @@ namespace NPLTools.Language.Outlining
         public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
 
         private NPLOutliningTaggerProvider _provider;
-        private ITextBuffer _buffer;
+        private ITextBuffer _textBuffer;
         private AnalysisEntry _analysisEntry;
         private List<Region> _regions;
 
-        public NPLOutliningTagger(NPLOutliningTaggerProvider provider, ITextBuffer buffer)
+        public NPLOutliningTagger(NPLOutliningTaggerProvider provider, ITextBuffer textBuffer)
         {
-            _buffer = buffer;
+            _textBuffer = textBuffer;
             _provider = provider;
             IServiceProvider serviceProvider = _provider.ServiceProvider as IServiceProvider;
             IVsSolution sln = serviceProvider.GetService(typeof(SVsSolution)) as IVsSolution;
             var project = sln.GetLoadedProject().GetNPLProject();
-            if (!project.GetAnalyzer().HasMonitoredTextBuffer(buffer))
-                project.GetAnalyzer().MonitorTextBuffer(buffer);
-            _analysisEntry = _buffer.GetAnalysisAtCaret(provider.ServiceProvider);
-            _analysisEntry.Model.NewParseTree += Model_NewParseTree;
+            if (!project.GetAnalyzer().HasMonitoredTextBuffer(textBuffer))
+                project.GetAnalyzer().MonitorTextBuffer(textBuffer);
+            _analysisEntry = _textBuffer.GetAnalysisAtCaret(provider.ServiceProvider);
+            _analysisEntry.NewParseTree += OnNewParseTree;
             _regions = new List<Region>();
             ReParse();
             //_buffer.Changed += BufferChanged;
         }
 
-        private void Model_NewParseTree(object sender, ParseTreeChangedEventArgs e)
+        private void OnNewParseTree(object sender, ParseTreeChangedEventArgs e)
         {
-            _regions.Clear();
-             if (e.Tree != null && e.Tree.Root != null)
+            if (e.Tree != null && e.Tree.Root != null)
+            {
+                _regions.Clear();
                 WalkSyntaxTreeForOutliningRegions(e.Tree.Root, _regions);
+            }       
         }
 
         public IEnumerable<ITagSpan<IOutliningRegionTag>> GetTags(NormalizedSnapshotSpanCollection spans)
@@ -87,7 +89,7 @@ namespace NPLTools.Language.Outlining
             return Task.Run(()=> {
                 _regions = _analysisEntry.Analyzer.GetOutliningRegions(_analysisEntry);
                 if (TagsChanged != null)
-                    TagsChanged(this, new SnapshotSpanEventArgs(new SnapshotSpan(_buffer.CurrentSnapshot, 0, _buffer.CurrentSnapshot.Length)));
+                    TagsChanged(this, new SnapshotSpanEventArgs(new SnapshotSpan(_textBuffer.CurrentSnapshot, 0, _textBuffer.CurrentSnapshot.Length)));
             });
         }
 

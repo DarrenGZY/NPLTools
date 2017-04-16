@@ -6,38 +6,38 @@ using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Utilities;
 using NPLTools.Intelligense;
+using Microsoft.VisualStudio.Shell;
 
 namespace NPLTools.Language.AutoCompletion
 {
     internal class NPLCompletionSource : ICompletionSource
     {
-        private NPLCompletionSourceProvider _sourceProvider;
+        private NPLCompletionSourceProvider _provider;
         private ITextBuffer _textBuffer;
         private List<Completion> _compList;
+        private AnalysisEntry _analysisEntry;
 
-        public NPLCompletionSource(NPLCompletionSourceProvider sourceProvider, ITextBuffer textBuffer)
+        public NPLCompletionSource(NPLCompletionSourceProvider provider, ITextBuffer textBuffer)
         {
-            _sourceProvider = sourceProvider;
+            _provider = provider;
             _textBuffer = textBuffer;
+            _analysisEntry = _textBuffer.GetAnalysisAtCaret(provider.ServiceProvider);
         }
 
         public void AugmentCompletionSession(ICompletionSession session, IList<CompletionSet> completionSets)
         {
             //ITrackingPoint point = session.GetTriggerPoint(_textBuffer);
-            SnapshotPoint? triggerPoint = session.GetTriggerPoint(_textBuffer.CurrentSnapshot);
-            
-            //point.Value.Snapshot.
-            //_textBuffer.
+            SnapshotPoint? triggerPoint = session.GetTriggerPoint(_textBuffer.CurrentSnapshot);           
 
-            List<string> strList = new List<string>(); 
-            //if (LuaModel.Declarations != null && triggerPoint.HasValue)
-            //{
-            //    foreach (var keyValue in LuaModel.Declarations)
-            //    {
-            //        if (LuaModel.IsInScope(triggerPoint.Value.Position, keyValue.Value))
-            //            strList.Add(keyValue.Key);
-            //    }
-            //}
+            List<string> strList = new List<string>();
+            if (_analysisEntry.Model.Declarations != null && triggerPoint.HasValue)
+            {
+                foreach (var declaration in _analysisEntry.Model.Declarations)
+                {
+                    if (_analysisEntry.Model.IsInScope(triggerPoint.Value.Position, declaration.Value))
+                        strList.Add(declaration.Key);
+                }
+            }
 
             //strList.Add("addtion");
             //strList.Add("adaptation");
@@ -59,7 +59,7 @@ namespace NPLTools.Language.AutoCompletion
         private ITrackingSpan FindTokenSpanAtPosition(ITrackingPoint point, ICompletionSession session)
         {
             SnapshotPoint currentPoint = (session.TextView.Caret.Position.BufferPosition) - 1;
-            ITextStructureNavigator navigator = _sourceProvider.NavigatorService.GetTextStructureNavigator(_textBuffer);
+            ITextStructureNavigator navigator = _provider.NavigatorService.GetTextStructureNavigator(_textBuffer);
             TextExtent extent = navigator.GetExtentOfWord(currentPoint);
             return currentPoint.Snapshot.CreateTrackingSpan(extent.Span, SpanTrackingMode.EdgeInclusive);
         }
@@ -84,6 +84,8 @@ namespace NPLTools.Language.AutoCompletion
         [Import]
         internal ITextStructureNavigatorSelectorService NavigatorService { get; set; }
 
+        [Import]
+        internal SVsServiceProvider ServiceProvider { get; private set; }
 
         public ICompletionSource TryCreateCompletionSource(ITextBuffer textBuffer)
         {

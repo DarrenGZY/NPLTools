@@ -17,8 +17,7 @@ namespace NPLTools.Intelligense
     {
         private LuaNode _root;
         private ParseTree _parseTree;
-        public static List<KeyValuePair<string, SourceSpan>> Declarations;
-        public event EventHandler<ParseTreeChangedEventArgs> NewParseTree;
+        public List<KeyValuePair<string, SourceSpan>> Declarations = new List<KeyValuePair<string, SourceSpan>>();
 
         public LuaModel(ParseTree parseTree)
         {
@@ -27,7 +26,6 @@ namespace NPLTools.Intelligense
             if (_parseTree.Root!= null)
             {
                 _root = _parseTree.Root.AstNode as LuaNode;
-                Declarations = new List<KeyValuePair<string, SourceSpan>>();
                 GetDeclarations(_root, Declarations);
             }
         }
@@ -40,24 +38,17 @@ namespace NPLTools.Intelligense
             {
                 _root = _parseTree.Root.AstNode as LuaNode;
                 Declarations.Clear();
-                GetDeclarations(_root, Declarations);
-
-                if (NewParseTree != null)
-                    NewParseTree(this, new ParseTreeChangedEventArgs(parseTree));
-            }  
+                GetDeclarations(_root, Declarations);  
+            }
         }
 
-        //public bool IsInScope(int position, ITrackingSpan span)
-        //{
-        //    int line, index;
-        //    _vsTextView.GetLineAndColumn(position, out line, out index);
-        //    if ((line > span.iStartLine ||
-        //        (line == span.iStartLine && index > span.iStartIndex)) &&
-        //        (line < span.iEndLine ||
-        //        (line == span.iEndLine && index < span.iEndIndex)))
-        //        return true;
-        //    return false;
-        //}
+        public bool IsInScope(int position, SourceSpan span)
+        {
+            if (position >= span.StartPosition &&
+                position <= span.EndPosition)
+                return true;
+            return false;
+        }
 
         private void GetDeclarations(LuaNode node, List<KeyValuePair<string, SourceSpan>> declarations)
         {
@@ -235,13 +226,5 @@ namespace NPLTools.Intelligense
         }
     }
 
-    public class ParseTreeChangedEventArgs : EventArgs
-    {
-        public ParseTree Tree { get; set; }
 
-        public ParseTreeChangedEventArgs(ParseTree tree)
-        {
-            Tree = tree;
-        }
-    }
 }
