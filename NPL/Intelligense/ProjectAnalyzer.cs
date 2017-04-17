@@ -128,15 +128,13 @@ namespace NPLTools.Intelligense
             int spanStart, spanEnd;
             for (spanEnd = point.Position; spanEnd < point.Snapshot.Length; ++spanEnd)
             {
-                if (point.Snapshot.GetText().Substring(spanEnd, 1).ToLower().ToCharArray()[0] < 'a' ||
-                    point.Snapshot.GetText().Substring(spanEnd, 1).ToLower().ToCharArray()[0] > 'z')
+                if (!char.IsLetterOrDigit(point.Snapshot[spanEnd]))
                     break;
             }
 
             for (spanStart = point.Position; spanStart > 0; --spanStart)
             {
-                if (point.Snapshot.GetText().Substring(spanStart - 1, 1).ToLower().ToCharArray()[0] < 'a' ||
-                    point.Snapshot.GetText().Substring(spanStart - 1, 1).ToLower().ToCharArray()[0] > 'z')
+                if (!char.IsLetterOrDigit(point.Snapshot[spanStart - 1]))
                     break;
             }
 

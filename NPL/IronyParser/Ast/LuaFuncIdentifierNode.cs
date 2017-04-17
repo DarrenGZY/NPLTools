@@ -22,7 +22,15 @@ namespace NPLTools.IronyParser.Ast{
             foreach (var node in treeNode.ChildNodes)
             {
                 if (node.Term.Name == "identifier including namespace")
-                    name += node.ChildNodes[0].Token.ValueString;
+                {
+                    if (node.ChildNodes.Count == 0)
+                        continue;
+                    name += node.ChildNodes[0].Token.Value;
+                    for (int i = 1; i < node.ChildNodes.Count; ++i)
+                    {
+                        name += "." + node.ChildNodes[i].Token.Value;
+                    }
+                }
 
                 if (node.Term.Name == "colon call" && node.ChildNodes.Count > 0)
                     name += ":" + node.ChildNodes[1];

@@ -38,15 +38,5 @@ namespace NPLTools.IronyParser.Ast
             AsString = "Call " + _targetName;
         }
 
- //       public override void EvaluateNode(EvaluationContext context, AstMode mode)
- //       {
- //           TargetRef.Evaluate(context, AstMode.Read);
- //           var target = context.Data.Pop() as ICallTarget;
- ////           if (target == null)
- //  //             context.ThrowError(Resources.ErrVarIsNotCallable, _targetName);
- //           Arguments.Evaluate(context, AstMode.Read);
- //           target.Call(context);
- //       }
-
     }//class
 }
