@@ -50,6 +50,29 @@ namespace NPLTools.Intelligense
             return false;
         }
 
+        internal Dictionary<string, SourceSpan> GetGlobals()
+        {
+            Dictionary<string, SourceSpan> declarations = new Dictionary<string, SourceSpan>();
+
+            if (_root == null)
+                return declarations;
+
+            LuaBlockNode node = _root.ChildNodes[0] as LuaBlockNode;
+            foreach (var declaration in node.Locals)
+            {
+                SourceSpan scope = new SourceSpan(declaration.Span.EndPosition,
+                    declaration.EndLine,
+                    node.Span.EndPosition,
+                    node.EndLine);
+
+                if (!declarations.ContainsKey(declaration.AsString))
+                    declarations.Add(declaration.AsString, scope);
+            }
+
+            return declarations;
+        }
+
+
         private void GetDeclarations(LuaNode node, List<KeyValuePair<string, SourceSpan>> declarations)
         {
             if (node == null)
@@ -107,6 +130,14 @@ namespace NPLTools.Intelligense
             if (spans.Count > 0)
                 return spans[0];
 
+            return null;
+        }
+
+        public SourceSpan? GetGlobalDeclarationLocation(string name)
+        {
+            var globals = GetGlobals();
+            if (globals.ContainsKey(name))
+                return globals[name];
             return null;
         }
 

@@ -4,6 +4,7 @@ using NPLTools.IronyParser;
 using NPLTools.IronyParser.Ast;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,7 +27,8 @@ namespace NPLTools.Intelligense
             _path = path;
             _fileId = fileId;
             _parser = new Parser(LuaGrammar.Instance);
-            _model = new LuaModel(_parser.Parse(analyzer.GetTextBufferById(fileId).CurrentSnapshot.GetText()));
+            string source = File.ReadAllText(path);
+            _model = new LuaModel(_parser.Parse(source));
         }
 
         public Task UpdateModel(string source)

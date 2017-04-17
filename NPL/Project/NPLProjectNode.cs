@@ -171,6 +171,10 @@ namespace NPLTools.Project
         public override CommonFileNode CreateCodeFileNode(ProjectElement item)
         {
             NPLFileNode newNode = new NPLFileNode(this, item);
+
+            string path = newNode.Url;
+            GetAnalyzer().CreateAnalysisEntry(path);
+
             return newNode;
         }
         /*

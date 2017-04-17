@@ -34,15 +34,12 @@ namespace NPLTools.Language.AutoCompletion
             {
                 foreach (var declaration in _analysisEntry.Model.Declarations)
                 {
-                    if (_analysisEntry.Model.IsInScope(triggerPoint.Value.Position, declaration.Value))
+                    if (_analysisEntry.Model.IsInScope(triggerPoint.Value.Position, declaration.Value) &&
+                        !strList.Contains(declaration.Key))
                         strList.Add(declaration.Key);
                 }
             }
 
-            //strList.Add("addtion");
-            //strList.Add("adaptation");
-            //strList.Add("subtraction");
-            //strList.Add("summation");
             _compList = new List<Completion>();
             foreach (string str in strList)
                 _compList.Add(new Completion(str, str, str, null, null));

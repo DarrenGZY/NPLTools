@@ -10,6 +10,7 @@ using NPLTools.Project;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio;
 using EnvDTE;
+using Microsoft.VisualStudioTools.Project;
 
 namespace NPLTools
 {
@@ -88,6 +89,12 @@ namespace NPLTools
         public override bool IsRecognizedFile(string filename)
         {
             throw new NotImplementedException();
+        }
+
+
+        internal static void NavigateTo(System.IServiceProvider serviceProvider, string filename, Guid docViewGuidType, int line, int col)
+        {
+            VsUtilities.NavigateTo(serviceProvider, filename, docViewGuidType, line, col);
         }
 
         #endregion

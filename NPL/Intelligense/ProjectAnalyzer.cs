@@ -14,7 +14,6 @@ namespace NPLTools.Intelligense
 {
     public class ProjectAnalyzer
     {
-        // 
         private Dictionary<string, AnalysisEntry> _projectFiles = new Dictionary<string, AnalysisEntry>();
         private Dictionary<int, AnalysisEntry> _projectFilesById = new Dictionary<int, AnalysisEntry>();
         private Dictionary<int, ITextBuffer> _projectBufferById = new Dictionary<int, ITextBuffer>();
@@ -34,7 +33,11 @@ namespace NPLTools.Intelligense
 
         internal AnalysisEntry MonitorTextBuffer(ITextBuffer textBuffer)
         {
-            AnalysisEntry entry = CreateProjectEntry(textBuffer);
+            AnalysisEntry entry;
+            if (_projectFiles.ContainsKey(textBuffer.GetFilePath()))
+                entry = _projectFiles[textBuffer.GetFilePath()];
+            else
+                entry = CreateAnalysisEntry(textBuffer);
             _entryService.SetAnalyzer(textBuffer, this);
             textBuffer.Changed += TextBufferChanged;
             return entry;
@@ -60,7 +63,7 @@ namespace NPLTools.Intelligense
             await entry.UpdateModel(e.After.GetText());
         }
 
-        internal AnalysisEntry CreateProjectEntry(ITextBuffer textBuffer)
+        internal AnalysisEntry CreateAnalysisEntry(ITextBuffer textBuffer)
         {
             string path = textBuffer.GetFilePath();
             Random random = new Random();
@@ -71,6 +74,21 @@ namespace NPLTools.Intelligense
             } while (_projectFilesById.ContainsKey(id));
 
             _projectBufferById[id] = textBuffer;    // TODO: move to a better place
+
+            AnalysisEntry entry = new AnalysisEntry(this, path, id);
+            _projectFiles[path] = entry;
+            _projectFilesById[id] = entry;
+            return entry;
+        }
+
+        internal AnalysisEntry CreateAnalysisEntry(string path)
+        {
+            Random random = new Random();
+            int id;
+            do
+            {
+                id = random.Next(1000);     // TODO: use a more proper number
+            } while (_projectFilesById.ContainsKey(id));
 
             AnalysisEntry entry = new AnalysisEntry(this, path, id);
             _projectFiles[path] = entry;
@@ -105,7 +123,7 @@ namespace NPLTools.Intelligense
         /// <param name="textView"></param>
         /// <param name="point"></param>
         /// <returns></returns>
-        internal SourceSpan? GetDeclarationLocation(AnalysisEntry entry, ITextView textView, SnapshotPoint point)
+        internal KeyValuePair<string, SourceSpan>? GetDeclarationLocation(AnalysisEntry entry, ITextView textView, SnapshotPoint point)
         {
             int spanStart, spanEnd;
             for (spanEnd = point.Position; spanEnd < point.Snapshot.Length; ++spanEnd)
@@ -125,9 +143,25 @@ namespace NPLTools.Intelligense
             string word = point.Snapshot.GetText().Substring(spanStart, spanEnd - spanStart);
             SourceSpan span = new SourceSpan(spanStart, point.GetContainingLine().LineNumber, spanEnd, point.GetContainingLine().LineNumber);
 
+            // Find declaration in its own file
             SourceSpan? res = entry.Model.GetDeclarationLocation(word, span);
+            if (res != null)
+                return new KeyValuePair<string, SourceSpan>(entry.FilePath, res.Value);
+            // Find declaration in files in project
+            var pair = GetDeclarationinFiles(word);
+            return pair;
+        }
 
-            return res;
+        private KeyValuePair<string, SourceSpan>? GetDeclarationinFiles(string name)
+        {
+            foreach (var path in _projectFiles.Keys)
+            {
+                var entry = _projectFiles[path];
+                SourceSpan? res = entry.Model.GetGlobalDeclarationLocation(name);
+                if (res != null)
+                    return new KeyValuePair<string, SourceSpan>(path, res.Value);
+            }
+            return null;
         }
 
         /// <summary>

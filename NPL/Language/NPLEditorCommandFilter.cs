@@ -103,9 +103,16 @@ namespace NPLTools.Language
 
             if (span.HasValue)
             {
-                int line, column;
-                _vsTextView.GetLineAndColumn(span.Value.StartPosition, out line, out column);
-                _vsTextView.SetCaretPos(line, column);
+                if (span.Value.Key == _textView.TextBuffer.GetFilePath())
+                {
+                    int line, column;
+                    _vsTextView.GetLineAndColumn(span.Value.Value.StartPosition, out line, out column);
+                    _vsTextView.SetCaretPos(line, column);
+                }
+                else
+                {
+                    NPLPackage.NavigateTo(_serviceProvider, span.Value.Key, Guid.Empty, 1, 1); // TODO: translate position to line and col
+                }
             }
         }
 
