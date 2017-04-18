@@ -8,7 +8,6 @@ using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.TextManager.Interop;
 using NPLTools.Intelligense;
 using Microsoft.VisualStudio.ComponentModelHost;
-using NPLTools.Intelligense;
 using Microsoft.VisualStudio.Text;
 
 namespace NPLTools.Language

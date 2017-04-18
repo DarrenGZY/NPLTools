@@ -62,6 +62,7 @@
     <Compile Include="Intelligense\AnalysisEntry.cs" />
     <Compile Include="Intelligense\AnalysisEntryService.cs" />
     <Compile Include="Intelligense\ProjectAnalyzer.cs" />
+    <Compile Include="Intelligense\ReverseParser.cs" />
     <Compile Include="Intelligense\SourceSpan.cs" />
     <Compile Include="Intelligense\LuaModel.cs" />
     <Compile Include="IronyParser\Ast\IDeclaration.cs" />

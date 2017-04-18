@@ -1,27 +1,41 @@
-﻿using Irony.Ast;
+﻿using System;
+using Irony.Ast;
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
 
 namespace NPLTools.IronyParser.Ast
 {
-    public class LuaAssignmentNode : LuaNode
+    public class LuaAssignmentNode : LuaNode, IDeclaration
     {
-        public LuaNode Target;
-        public string AssignmentOp;
-        public LuaNode Expression;
+        public LuaNodeList VariableList { get; set; }
+        public LuaNodeList ExpressionList { get; set; }
+
+        public LuaAssignmentNode()
+        {
+            VariableList = new LuaNodeList();
+            ExpressionList = new LuaNodeList();
+        }
 
         // Lua's productions allways take lists on both sides of the '='
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
 
-            Target = AddChild("To", treeNode.ChildNodes[0]) as LuaNode;
-            
-            AssignmentOp = "=";
+            foreach (var parseTreeNode in treeNode.ChildNodes[0].ChildNodes)
+                VariableList.Add(AddChild(String.Empty, parseTreeNode) as LuaNode);
 
-            Expression = AddChild("Expr", treeNode.ChildNodes[2]) as LuaNode;
+            foreach (var parseTreeNode in treeNode.ChildNodes[2].ChildNodes)
+                ExpressionList.Add(AddChild(String.Empty, parseTreeNode) as LuaNode);
 
-            AsString = AssignmentOp + " (assignment)";
+            AsString = "(assignment)";
+        }
+
+        public void GetDeclarations(LuaBlockNode block)
+        {
+            foreach (var variable in VariableList)
+            {
+                block.Locals.Add(variable);
+            }
         }
     }
 }

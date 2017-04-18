@@ -10,9 +10,22 @@ namespace NPLTools.IronyParser.Ast
 {
     public class LuaTableAccessNode : LuaNode
     {
+        public LuaNode PrefixNode;
+        public LuaNode Expr;
+
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
+
+            // prefixexp `.´ Name 
+            if (treeNode.ChildNodes.Count == 3)
+                AsString = (treeNode.ChildNodes[0].AstNode as LuaNode) + "." + (treeNode.ChildNodes[2].AstNode as LuaNode);
+
+            // prefixexp `[´ exp `]´ 
+            if (treeNode.ChildNodes.Count == 4)
+            {
+
+            }
         }
     }
 }

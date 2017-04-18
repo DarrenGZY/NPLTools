@@ -125,28 +125,14 @@ namespace NPLTools.Intelligense
         /// <returns></returns>
         internal KeyValuePair<string, SourceSpan>? GetDeclarationLocation(AnalysisEntry entry, ITextView textView, SnapshotPoint point)
         {
-            int spanStart, spanEnd;
-            for (spanEnd = point.Position; spanEnd < point.Snapshot.Length; ++spanEnd)
-            {
-                if (!char.IsLetterOrDigit(point.Snapshot[spanEnd]))
-                    break;
-            }
-
-            for (spanStart = point.Position; spanStart > 0; --spanStart)
-            {
-                if (!char.IsLetterOrDigit(point.Snapshot[spanStart - 1]))
-                    break;
-            }
-
-            string word = point.Snapshot.GetText().Substring(spanStart, spanEnd - spanStart);
-            SourceSpan span = new SourceSpan(spanStart, point.GetContainingLine().LineNumber, spanEnd, point.GetContainingLine().LineNumber);
+            IdentifierSource word = ReverseParser.ParseIdentifier(point);
 
             // Find declaration in its own file
-            SourceSpan? res = entry.Model.GetDeclarationLocation(word, span);
+            SourceSpan? res = entry.Model.GetDeclarationLocation(word.Identifier, word.Span);
             if (res != null)
                 return new KeyValuePair<string, SourceSpan>(entry.FilePath, res.Value);
             // Find declaration in files in project
-            var pair = GetDeclarationinFiles(word);
+            var pair = GetDeclarationinFiles(word.Identifier);
             return pair;
         }
 
