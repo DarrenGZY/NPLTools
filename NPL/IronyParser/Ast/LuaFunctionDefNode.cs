@@ -45,7 +45,7 @@ namespace NPLTools.IronyParser.Ast
         {
             // block.Locals.Add(NameNode);
             Declaration declaration = new Declaration(NameNode.Name,
-                new ScopeSpan(Body.Span.EndPosition, Body.EndLine, block.Span.EndPosition, block.EndLine));
+                new ScopeSpan(NameNode.Span.EndPosition, NameNode.EndLine, block.Span.EndPosition, block.EndLine));
 
             foreach(var local in block.Locals)
             {

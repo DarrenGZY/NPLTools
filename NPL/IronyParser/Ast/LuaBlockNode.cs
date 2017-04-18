@@ -17,7 +17,7 @@ namespace NPLTools.IronyParser.Ast
         }
 
         public List<Declaration> Locals;
-        public List<LuaNode> Globals;
+        public List<Declaration> Globals;
 
         public Scope Scope;
         public LuaBlockNode()

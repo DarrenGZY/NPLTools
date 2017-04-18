@@ -134,7 +134,7 @@ namespace NPLTools.Intelligense
                 //node = node as LuaBlockNode;
                 foreach (var declaration in ((LuaBlockNode)node).Locals)
                 {
-                    if (declaration.Name == name)
+                    if (declaration.NamesEqual(new List<string>(name.Split('.'))))
                     {
                         if (span.StartPosition >= declaration.Scope.StartPosition &&
                             span.EndPosition <= declaration.Scope.EndPosition)

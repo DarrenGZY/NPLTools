@@ -19,7 +19,11 @@ namespace NPLTools.IronyParser.Ast
 
             // prefixexp `.´ Name 
             if (treeNode.ChildNodes.Count == 3)
+            {
                 AsString = (treeNode.ChildNodes[0].AstNode as LuaNode) + "." + (treeNode.ChildNodes[2].AstNode as LuaNode);
+                PrefixNode = AddChild(String.Empty, treeNode.ChildNodes[0]) as LuaNode;
+                Expr = AddChild(String.Empty, treeNode.ChildNodes[2]) as LuaNode;
+            }
 
             // prefixexp `[´ exp `]´ 
             if (treeNode.ChildNodes.Count == 4)
