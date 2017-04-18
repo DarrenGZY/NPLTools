@@ -40,9 +40,45 @@ namespace NPLTools.IronyParser.Ast
 
         public void GetDeclarations(LuaBlockNode block)
         {
-            foreach (var variable in VariableList)
+            for (int i = 0; i < VariableList.Count; ++i)
             {
-                block.Locals.Add(variable);
+                LuaNode variable = VariableList[i];
+                Declaration declaration = new Declaration(variable.AsString,
+                                        new ScopeSpan(variable.Span.EndPosition,
+                                        variable.EndLine,
+                                        block.Span.EndPosition,
+                                        block.EndLine));
+                block.Locals.Add(declaration);
+
+                List<Declaration> namespaces = new List<Declaration>() { declaration };
+                AddDeclarationsForTableField(block, namespaces, ExpressionList[i]);
+            }
+        }
+
+        private void AddDeclarationsForTableField(LuaBlockNode block, List<Declaration> namespaces, LuaNode expr)
+        {
+            if (expr is LuaTableNode)
+            {
+                foreach (var field in ((LuaTableNode)expr).FieldList)
+                {
+                    AddDeclarationsForTableField(block, namespaces, field);
+                }
+            }
+
+            if (expr is LuaField && ((LuaField)expr).Name != null)
+            {
+                LuaNode variable = ((LuaField)expr).Name;
+                Declaration declaration = new Declaration(variable.AsString,
+                        new ScopeSpan(variable.Span.EndPosition,
+                        variable.EndLine,
+                        block.Span.EndPosition,
+                        block.EndLine),
+                        namespaces);
+
+                block.Locals.Add(declaration);
+                namespaces.Add(declaration);
+                AddDeclarationsForTableField(block, namespaces, ((LuaField)expr).Expression);
+                namespaces.Remove(declaration);
             }
         }
     }

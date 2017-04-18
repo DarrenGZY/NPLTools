@@ -18,8 +18,12 @@ namespace NPLTools.IronyParser.Ast
         {
             base.Init(context, treeNode);
 
-            foreach (var node in treeNode.ChildNodes)
-                FieldList.Add(AddChild(String.Empty, node) as LuaNode);
+            foreach (var node in treeNode.ChildNodes[0].ChildNodes)
+            {
+                LuaNode s = AddChild(String.Empty, node) as LuaNode;
+                FieldList.Add(s as LuaField);
+            }
+                
             AsString = "LuaTable";
         }
     }

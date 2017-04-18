@@ -37,6 +37,5 @@ namespace NPLTools.IronyParser.Ast
             
             AsString = "Call " + _targetName;
         }
-
     }//class
 }

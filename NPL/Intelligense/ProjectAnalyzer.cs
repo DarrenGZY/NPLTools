@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using NPLTools.Language;
 using SourceSpan = NPLTools.Intelligense.SourceSpan;
 using Microsoft.VisualStudio.Text.Editor;
+using NPLTools.IronyParser.Ast;
 
 namespace NPLTools.Intelligense
 {
@@ -123,27 +124,27 @@ namespace NPLTools.Intelligense
         /// <param name="textView"></param>
         /// <param name="point"></param>
         /// <returns></returns>
-        internal KeyValuePair<string, SourceSpan>? GetDeclarationLocation(AnalysisEntry entry, ITextView textView, SnapshotPoint point)
+        internal KeyValuePair<string, ScopeSpan>? GetDeclarationLocation(AnalysisEntry entry, ITextView textView, SnapshotPoint point)
         {
             IdentifierSource word = ReverseParser.ParseIdentifier(point);
 
             // Find declaration in its own file
-            SourceSpan? res = entry.Model.GetDeclarationLocation(word.Identifier, word.Span);
+            ScopeSpan? res = entry.Model.GetDeclarationLocation(word.Identifier, word.Span);
             if (res != null)
-                return new KeyValuePair<string, SourceSpan>(entry.FilePath, res.Value);
+                return new KeyValuePair<string, ScopeSpan>(entry.FilePath, res.Value);
             // Find declaration in files in project
             var pair = GetDeclarationinFiles(word.Identifier);
             return pair;
         }
 
-        private KeyValuePair<string, SourceSpan>? GetDeclarationinFiles(string name)
+        private KeyValuePair<string, ScopeSpan>? GetDeclarationinFiles(string name)
         {
             foreach (var path in _projectFiles.Keys)
             {
                 var entry = _projectFiles[path];
-                SourceSpan? res = entry.Model.GetGlobalDeclarationLocation(name);
+                ScopeSpan? res = entry.Model.GetGlobalDeclarationLocation(name);
                 if (res != null)
-                    return new KeyValuePair<string, SourceSpan>(path, res.Value);
+                    return new KeyValuePair<string, ScopeSpan>(path, res.Value);
             }
             return null;
         }
@@ -172,9 +173,9 @@ namespace NPLTools.Intelligense
                     break;
             }
             string word = point.Snapshot.GetText().Substring(spanStart, spanEnd - spanStart);
-            SourceSpan span = new SourceSpan(spanStart, point.GetContainingLine().LineNumber, spanEnd, point.GetContainingLine().LineNumber);
+            ScopeSpan span = new ScopeSpan(spanStart, point.GetContainingLine().LineNumber, spanEnd, point.GetContainingLine().LineNumber);
 
-            SourceSpan? res = entry.Model.GetDeclarationLocation(word, span);
+            ScopeSpan? res = entry.Model.GetDeclarationLocation(word, span);
 
             if (!res.HasValue)
                 return null;

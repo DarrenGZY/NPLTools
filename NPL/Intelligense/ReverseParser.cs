@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.Text;
+using NPLTools.IronyParser.Ast;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +28,7 @@ namespace NPLTools.Intelligense
                     break;
             }
             string id = point.Snapshot.GetText().Substring(spanStart, spanEnd - spanStart);
-            SourceSpan span = new SourceSpan(spanStart, point.GetContainingLine().LineNumber, spanEnd, point.GetContainingLine().LineNumber);
+            ScopeSpan span = new ScopeSpan(spanStart, point.GetContainingLine().LineNumber, spanEnd, point.GetContainingLine().LineNumber);
             return new IdentifierSource(id, span);
         } 
     }
@@ -35,17 +36,17 @@ namespace NPLTools.Intelligense
     internal struct IdentifierSource
     {
         public string Identifier;
-        public SourceSpan Span;
+        public ScopeSpan Span;
         public List<IdentifierSource> NameSpaces;
 
-        public IdentifierSource(string id, SourceSpan span, List<IdentifierSource> nameSpaces)
+        public IdentifierSource(string id, ScopeSpan span, List<IdentifierSource> nameSpaces)
         {
             Identifier = id;
             Span = span;
             NameSpaces = nameSpaces;
         }
 
-        public IdentifierSource(string id, SourceSpan span)
+        public IdentifierSource(string id, ScopeSpan span)
         {
             Identifier = id;
             Span = span;

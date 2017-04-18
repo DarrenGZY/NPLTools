@@ -1,6 +1,6 @@
 ﻿using Irony.Ast;
-using Irony.Interpreter.Ast;
 using Irony.Parsing;
+using System.Collections.Generic;
 using System.Text;
 
 namespace NPLTools.IronyParser.Ast
@@ -8,6 +8,7 @@ namespace NPLTools.IronyParser.Ast
     public class LuaChunkNode : LuaNode
     {
         public LuaBlockNode Block { get; set; }
+        public List<LuaNode> Globals { get; set; }
 
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {

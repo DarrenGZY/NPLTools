@@ -1,10 +1,11 @@
-﻿using Irony.Ast;
+﻿using System;
+using Irony.Ast;
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
 
 namespace NPLTools.IronyParser.Ast
 {
-    public class LuaField : LuaNode 
+    public class LuaField : LuaNode
     {
         public LuaNode Name { get; private set; }
         public LuaNode Expression { get; private set; }

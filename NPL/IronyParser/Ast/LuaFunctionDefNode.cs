@@ -43,7 +43,17 @@ namespace NPLTools.IronyParser.Ast
 
         public void GetDeclarations(LuaBlockNode block)
         {
-            block.Locals.Add(NameNode);
+            // block.Locals.Add(NameNode);
+            Declaration declaration = new Declaration(NameNode.Name,
+                new ScopeSpan(Body.Span.EndPosition, Body.EndLine, block.Span.EndPosition, block.EndLine));
+
+            foreach(var local in block.Locals)
+            {
+                if (local.NamesEqual(NameNode.Namespaces))
+                    declaration.NameSpaces.Add(local);
+            }
+
+            block.Locals.Add(declaration);
         }
 
         //#endregion

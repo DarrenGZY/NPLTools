@@ -17,7 +17,7 @@ namespace NPLTools.Intelligense
     {
         private LuaNode _root;
         private ParseTree _parseTree;
-        public List<KeyValuePair<string, SourceSpan>> Declarations = new List<KeyValuePair<string, SourceSpan>>();
+        public List<KeyValuePair<string, ScopeSpan>> Declarations = new List<KeyValuePair<string, ScopeSpan>>();
 
         public LuaModel(ParseTree parseTree)
         {
@@ -42,7 +42,7 @@ namespace NPLTools.Intelligense
             }
         }
 
-        public bool IsInScope(int position, SourceSpan span)
+        public bool IsInScope(int position, ScopeSpan span)
         {
             if (position >= span.StartPosition &&
                 position <= span.EndPosition)
@@ -50,9 +50,9 @@ namespace NPLTools.Intelligense
             return false;
         }
 
-        internal Dictionary<string, SourceSpan> GetGlobals()
+        internal Dictionary<string, ScopeSpan> GetGlobals()
         {
-            Dictionary<string, SourceSpan> declarations = new Dictionary<string, SourceSpan>();
+            Dictionary<string, ScopeSpan> declarations = new Dictionary<string, ScopeSpan>();
 
             if (_root == null)
                 return declarations;
@@ -60,20 +60,16 @@ namespace NPLTools.Intelligense
             LuaBlockNode node = _root.ChildNodes[0] as LuaBlockNode;
             foreach (var declaration in node.Locals)
             {
-                SourceSpan scope = new SourceSpan(declaration.Span.EndPosition,
-                    declaration.EndLine,
-                    node.Span.EndPosition,
-                    node.EndLine);
 
-                if (!declarations.ContainsKey(declaration.AsString))
-                    declarations.Add(declaration.AsString, scope);
+                // TODO: some error here
+                if (!declarations.ContainsKey(declaration.Name))
+                    declarations.Add(declaration.Name, declaration.Scope);
             }
 
             return declarations;
         }
 
-
-        private void GetDeclarations(LuaNode node, List<KeyValuePair<string, SourceSpan>> declarations)
+        private void GetDeclarations(LuaNode node, List<KeyValuePair<string, ScopeSpan>> declarations)
         {
             if (node == null)
                 return;
@@ -84,28 +80,18 @@ namespace NPLTools.Intelligense
                 {
                     foreach (var declaration in ((LuaBlockNode)node).Locals)
                     {
-                        SourceSpan scope = new SourceSpan(declaration.Span.EndPosition,
-                            declaration.EndLine,
-                            node.Span.EndPosition,
-                            node.EndLine);
-
                         declarations.Add(
-                            new KeyValuePair<string, SourceSpan>(
-                                declaration.AsString, scope));
+                            new KeyValuePair<string, ScopeSpan>(
+                                declaration.Name, declaration.Scope));
                     }
                 }
                 else
                 {
                     foreach (var declaration in ((LuaBlockNode)node).Locals)
                     {
-                        SourceSpan scope  = new SourceSpan(declaration.Span.EndPosition, 
-                            declaration.EndLine,
-                            node.Span.EndPosition,
-                            node.EndLine);
-
                         declarations.Add(
-                            new KeyValuePair<string, SourceSpan>(
-                                declaration.AsString, scope));
+                            new KeyValuePair<string, ScopeSpan>(
+                                declaration.Name, declaration.Scope));
                     }
                 } 
             }
@@ -113,13 +99,13 @@ namespace NPLTools.Intelligense
                 GetDeclarations(child, declarations);
         }
 
-        public SourceSpan? GetDeclarationLocation(string name, SourceSpan span)
+        public ScopeSpan? GetDeclarationLocation(string name, ScopeSpan span)
         {
             if (_root == null)
                 return null;
-            List<SourceSpan> spans = new List<SourceSpan>();
+            List<ScopeSpan> spans = new List<ScopeSpan>();
             GetDeclarationsByName(_root, name, spans, span);
-            spans.Sort(delegate (SourceSpan a, SourceSpan b)
+            spans.Sort(delegate (ScopeSpan a, ScopeSpan b)
             {
                 if (a.StartPosition >= b.StartPosition && a.EndPosition <= b.EndPosition)
                     return -1;
@@ -133,7 +119,7 @@ namespace NPLTools.Intelligense
             return null;
         }
 
-        public SourceSpan? GetGlobalDeclarationLocation(string name)
+        public ScopeSpan? GetGlobalDeclarationLocation(string name)
         {
             var globals = GetGlobals();
             if (globals.ContainsKey(name))
@@ -141,27 +127,20 @@ namespace NPLTools.Intelligense
             return null;
         }
 
-        private void GetDeclarationsByName(LuaNode node, string name, List<SourceSpan> spans, SourceSpan span)
+        private void GetDeclarationsByName(LuaNode node, string name, List<ScopeSpan> spans, ScopeSpan span)
         {
             if (node is LuaBlockNode)
             {
                 //node = node as LuaBlockNode;
                 foreach (var declaration in ((LuaBlockNode)node).Locals)
                 {
-                    if (declaration.AsString == name)
+                    if (declaration.Name == name)
                     {
-                        int startPosition = declaration.Span.EndPosition;
-                        int endPosition = node.Span.EndPosition;
-                        SourceSpan declarationScope = new SourceSpan(startPosition, 
-                            declaration.EndLine,
-                            endPosition,
-                            node.EndLine);
-
-                        if (span.StartPosition >= declarationScope.StartPosition &&
-                            span.EndPosition <= declarationScope.EndPosition)
-                            spans.Add(declarationScope);
-                        else if (span.EndPosition == declarationScope.StartPosition)
-                            spans.Add(declarationScope);
+                        if (span.StartPosition >= declaration.Scope.StartPosition &&
+                            span.EndPosition <= declaration.Scope.EndPosition)
+                            spans.Add(declaration.Scope);
+                        else if (span.EndPosition == declaration.Scope.StartPosition)
+                            spans.Add(declaration.Scope);
                     }
                 }
             }

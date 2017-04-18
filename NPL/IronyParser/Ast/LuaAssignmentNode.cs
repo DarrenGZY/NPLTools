@@ -1,6 +1,5 @@
 ﻿using System;
 using Irony.Ast;
-using Irony.Interpreter.Ast;
 using Irony.Parsing;
 
 namespace NPLTools.IronyParser.Ast
@@ -34,7 +33,8 @@ namespace NPLTools.IronyParser.Ast
         {
             foreach (var variable in VariableList)
             {
-                block.Locals.Add(variable);
+                // string name = variable.ToString();
+                // block.Locals.Add(variable);
             }
         }
     }

@@ -20,7 +20,7 @@ namespace NPL.Test
             //LuaGrammar grammar = new LuaGrammar();
             Irony.Parsing.Parser parser = new Irony.Parsing.Parser(new NPLTools.IronyParser.LuaGrammar());
 
-            string code = "a = {b = 1} a['b'] = 1";
+            string code = "local a = {}  function c.b() end";
             Irony.Parsing.ParseTree tree = parser.Parse(code);
             
             PrintTree(tree);
