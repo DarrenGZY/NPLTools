@@ -6,15 +6,15 @@ using Microsoft.VisualStudio.Utilities;
 namespace NPLTools.Language.Classifier
 {
     [Export(typeof(EditorFormatDefinition))]
-    [ClassificationType(ClassificationTypeNames = "Keyword")]
-    [Name("Keyword")]
+    [ClassificationType(ClassificationTypeNames = "NPLKeyword")]
+    [Name("NPLKeyword")]
     [UserVisible(false)]
     [Order(Before = Priority.Default)]
     internal sealed class NPLKeywordFormat : ClassificationFormatDefinition
     {
         public NPLKeywordFormat()
         {
-            DisplayName = "Keyword"; 
+            DisplayName = "NPLKeyword"; 
             ForegroundColor = Colors.BlueViolet;
         }
     }
@@ -35,29 +35,29 @@ namespace NPLTools.Language.Classifier
     }
 
     [Export(typeof(EditorFormatDefinition))]
-    [ClassificationType(ClassificationTypeNames = "String")]
-    [Name("String")]
+    [ClassificationType(ClassificationTypeNames = "NPLString")]
+    [Name("NPLString")]
     [UserVisible(false)]
     [Order(Before = Priority.Default)]
     internal sealed class NPLStringFormat : ClassificationFormatDefinition
     {
         public NPLStringFormat()
         {
-            DisplayName = "String"; 
+            DisplayName = "NPLString"; 
             ForegroundColor = Colors.DarkOrange;
         }
     }
 
     [Export(typeof(EditorFormatDefinition))]
-    [ClassificationType(ClassificationTypeNames = "Comment")]
-    [Name("Comment")]
+    [ClassificationType(ClassificationTypeNames = "NPLComment")]
+    [Name("NPLComment")]
     [UserVisible(false)]
     [Order(Before = Priority.Default)]
     internal sealed class NPLCommentFormat : ClassificationFormatDefinition
     {
         public NPLCommentFormat()
         {
-            DisplayName = "Comment"; 
+            DisplayName = "NPLComment"; 
             ForegroundColor = Colors.DarkGreen;
         }
     }
@@ -77,15 +77,15 @@ namespace NPLTools.Language.Classifier
     }
 
     [Export(typeof(EditorFormatDefinition))]
-    [ClassificationType(ClassificationTypeNames = "Number")]
-    [Name("Number")]
+    [ClassificationType(ClassificationTypeNames = "NPLNumber")]
+    [Name("NPLNumber")]
     [UserVisible(false)]
     [Order(Before = Priority.Default)]
     internal sealed class NPLNumber : ClassificationFormatDefinition
     {
         public NPLNumber()
         {
-            DisplayName = "Number"; 
+            DisplayName = "NPLNumber"; 
             ForegroundColor = Colors.GreenYellow;
         }
     }

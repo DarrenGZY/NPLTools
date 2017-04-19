@@ -43,6 +43,8 @@ namespace NPLTools.Intelligense
                     NewParseTree(this, new ParseTreeChangedEventArgs(parseTree));
             });
         }
+        
+
 
         public string FilePath => _path;
 

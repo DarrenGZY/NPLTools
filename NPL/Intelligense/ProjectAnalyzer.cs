@@ -46,8 +46,7 @@ namespace NPLTools.Intelligense
 
         internal bool HasMonitoredTextBuffer(ITextBuffer textBuffer)
         {
-            string path = textBuffer.GetFilePath();
-            return _projectFiles.ContainsKey(path);
+            return textBuffer.GetAnalysisAtCaret(_serviceProvider) != null;
         }
 
         internal void CanceledMonitorTextBuffer(AnalysisEntry entry, ITextBuffer textBuffer)

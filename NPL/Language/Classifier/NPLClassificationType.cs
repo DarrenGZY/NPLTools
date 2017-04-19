@@ -8,7 +8,7 @@ namespace NPLTools.Language.Classifier
     {
 
         [Export(typeof(ClassificationTypeDefinition))]
-        [Name("Keyword")]
+        [Name("NPLKeyword")]
         internal static ClassificationTypeDefinition NPLKeyword = null;
 
         [Export(typeof(ClassificationTypeDefinition))]
@@ -16,11 +16,11 @@ namespace NPLTools.Language.Classifier
         internal static ClassificationTypeDefinition NPLIdentifier = null;
 
         [Export(typeof(ClassificationTypeDefinition))]
-        [Name("String")]
+        [Name("NPLString")]
         internal static ClassificationTypeDefinition NPLString = null;
         
         [Export(typeof(ClassificationTypeDefinition))]
-        [Name("Comment")]
+        [Name("NPLComment")]
         internal static ClassificationTypeDefinition NPLComment = null;
 
         [Export(typeof(ClassificationTypeDefinition))]
@@ -28,7 +28,7 @@ namespace NPLTools.Language.Classifier
         internal static ClassificationTypeDefinition NPLText = null;
 
         [Export(typeof(ClassificationTypeDefinition))]
-        [Name("Number")]
+        [Name("NPLNumber")]
         internal static ClassificationTypeDefinition NPLNumber = null;
 
     }

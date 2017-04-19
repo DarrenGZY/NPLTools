@@ -50,6 +50,11 @@ namespace NPLTools.Intelligense
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public ScopeSpan? GetGlobalDeclarationLocation(string name)
         {
             if (_root == null)
@@ -68,25 +73,6 @@ namespace NPLTools.Intelligense
                 return spans[0];
 
             return null;
-        }
-
-        internal Dictionary<string, ScopeSpan> GetGlobals()
-        {
-            Dictionary<string, ScopeSpan> declarations = new Dictionary<string, ScopeSpan>();
-
-            if (_root == null)
-                return declarations;
-
-            LuaBlockNode node = _root.ChildNodes[0] as LuaBlockNode;
-            foreach (var declaration in node.Locals)
-            {
-
-                // TODO: some error here
-                if (!declarations.ContainsKey(declaration.Name))
-                    declarations.Add(declaration.Name, declaration.Scope);
-            }
-
-            return declarations;
         }
 
         private void GetDeclarations(LuaNode node, List<KeyValuePair<string, ScopeSpan>> declarations)
@@ -119,6 +105,12 @@ namespace NPLTools.Intelligense
                 GetDeclarations(child, declarations);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="span"></param>
+        /// <returns></returns>
         public ScopeSpan? GetDeclarationLocation(string name, ScopeSpan span)
         {
             if (_root == null)
@@ -188,6 +180,10 @@ namespace NPLTools.Intelligense
                 GetGlobalDeclarationsByName(child, name, spans);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="indentations"></param>
         public void RetrieveIndentationsFromSyntaxTree(out int[] indentations)
         {
             int lineNumber = _root.EndLine + 1;

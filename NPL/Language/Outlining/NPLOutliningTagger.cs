@@ -49,7 +49,6 @@ namespace NPLTools.Language.Outlining
             _analysisEntry = _textBuffer.GetAnalysisAtCaret(provider.ServiceProvider);
             _regions = new List<Region>();
             _analysisEntry.NewParseTree += OnNewParseTree;
-            //ReParse();
         }
 
         private void OnNewParseTree(object sender, ParseTreeChangedEventArgs e)

@@ -48,7 +48,6 @@ namespace NPLTools.Language.Classifier
                                IClassificationTypeRegistryService typeService)
         {
             _buffer = buffer;
-            //_buffer.Changed += TextChanged;
             _currentText = _buffer.CurrentSnapshot.GetText();
             _parser = new Irony.Parsing.Parser(LuaGrammar.Instance);
             _nplTypes = new Dictionary<TokenType, IClassificationType>();
@@ -62,7 +61,6 @@ namespace NPLTools.Language.Classifier
             _nplTypes[TokenType.Operator] = typeService.GetClassificationType("Text");
             _nplTypes[TokenType.WhiteSpace] = typeService.GetClassificationType("Text");
             _nplTypes[TokenType.Unknown] = typeService.GetClassificationType("Text");
-            //NPLTextViewCreationListener.TextContentChanged += TextContentChanged;
         }
 
         public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
@@ -78,8 +76,10 @@ namespace NPLTools.Language.Classifier
                 TokenList tokens = _parser.Parse(containingLine.GetText()).Tokens;
                 foreach(Token token in tokens)
                 {
-                    yield return
-                        new TagSpan<ClassificationTag>(new SnapshotSpan(curSpan.Snapshot, new Span(curSpan.Start.Position + token.Location.Position, token.Length)), new ClassificationTag(_nplTypes[token.EditorInfo.Type]));
+                    // Handle EOF token
+                    if (token.Category != TokenCategory.Outline)
+                        yield return
+                            new TagSpan<ClassificationTag>(new SnapshotSpan(curSpan.Snapshot, new Span(curSpan.Start.Position + token.Location.Position, token.Length)), new ClassificationTag(_nplTypes[token.EditorInfo.Type]));
                 }
             }
         }

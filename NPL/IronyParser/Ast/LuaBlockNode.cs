@@ -18,12 +18,14 @@ namespace NPLTools.IronyParser.Ast
 
         public List<Declaration> Locals;
         public List<Declaration> Globals;
+        public List<RequiredDeclaration> Requires;
 
         public Scope Scope;
         public LuaBlockNode()
         {
             Locals = new List<Declaration>();
             Globals = new List<Declaration>();
+            Requires = new List<RequiredDeclaration>();
         }
 
         public override void Init(AstContext context, ParseTreeNode treeNode)
@@ -111,23 +113,14 @@ namespace NPLTools.IronyParser.Ast
         }
     }
 
-    public class IdDeclaration : Declaration
+    public class RequiredDeclaration
     {
-        public IdDeclaration(string name, ScopeSpan scope) 
-            : base (name, scope)
+        public string FilePath;
+        public ScopeSpan Scope;
+        public RequiredDeclaration(string filePath, ScopeSpan scope)
         {
-            
-        }
-    }
-
-    public class TableDeclaration : Declaration
-    {
-        public List<Declaration> Fileds { get; set; }
-
-        public TableDeclaration(string name, ScopeSpan scope) 
-            : base(name, scope)
-        {
-            Fileds = new List<Declaration>();
+            FilePath = filePath;
+            Scope = scope;
         }
     }
 }
