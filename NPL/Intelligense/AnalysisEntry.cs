@@ -27,8 +27,19 @@ namespace NPLTools.Intelligense
             _path = path;
             _fileId = fileId;
             _parser = new Parser(LuaGrammar.Instance);
-            string source = File.ReadAllText(path);
-            _model = new LuaModel(_parser.Parse(source));
+            InitModel();
+        }
+
+        public async void InitModel()
+        {
+            await Task.Run(()=> {
+                string source = File.ReadAllText(_path);
+                ParseTree parseTree = _parser.Parse(source);
+                _model = new LuaModel(parseTree);
+
+                if (NewParseTree != null)
+                    NewParseTree(this, new ParseTreeChangedEventArgs(parseTree));
+            });
         }
 
         public Task UpdateModel(string source)

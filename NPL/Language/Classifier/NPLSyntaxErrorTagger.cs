@@ -64,21 +64,5 @@ namespace NPLTools.Language.Classifier
             var res =  _syntaxErrorTags.Where(ts => ts.Span.End >= start && ts.Span.Start <= end).OfType<ITagSpan<ErrorTag>>();
             return res;
         }
-
-        //private void TextContentChanged(object sender, NPLTextContentChangedEventArgs e)
-        //{
-        //    if (_buffer.CurrentSnapshot != e.Snapshot)
-        //        return;
-        //    _syntaxErrorTags.Clear();
-        //    _syntaxErrorMessages = _parser.Parse(e.Snapshot.GetText()).ParserMessages;
-        //    foreach (LogMessage syntaxErrorMessage in _syntaxErrorMessages)
-        //    {
-        //        _syntaxErrorTags.Add(new TagSpan<ErrorTag>(new SnapshotSpan(e.Snapshot, Math.Min(e.Snapshot.Length, Math.Max(syntaxErrorMessage.Location.Position, 1)) - 1, 1),
-        //            new ErrorTag("syntax error", syntaxErrorMessage.Message)));
-        //    }
-
-        //    if (TagsChanged != null)
-        //        TagsChanged(this, new SnapshotSpanEventArgs(new SnapshotSpan(e.Snapshot, new Span(0, e.Snapshot.Length))));
-        //}
     }
 }

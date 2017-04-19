@@ -8,6 +8,7 @@ using NPLTools.Tests;
 //using NPLTools.Grammar.Ast;
 using NPLTools.IronyParser;
 using Irony.Interpreter.Ast;
+using System.IO;
 
 namespace NPL.Test
 {
@@ -20,7 +21,15 @@ namespace NPL.Test
             //LuaGrammar grammar = new LuaGrammar();
             Irony.Parsing.Parser parser = new Irony.Parsing.Parser(new NPLTools.IronyParser.LuaGrammar());
 
-            string code = "a() a.b() a().b()";
+            string code = "";
+            try
+            {
+                code = File.ReadAllText("test.lua");
+            }
+            catch(Exception e)
+            {
+
+            }
             Irony.Parsing.ParseTree tree = parser.Parse(code);
             
             PrintTree(tree);

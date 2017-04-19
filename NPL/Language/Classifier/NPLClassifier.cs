@@ -77,7 +77,7 @@ namespace NPLTools.Language.Classifier
                 foreach(Token token in tokens)
                 {
                     // Handle EOF token
-                    if (token.Category != TokenCategory.Outline)
+                    if (token.Category != TokenCategory.Outline && token.EditorInfo != null)
                         yield return
                             new TagSpan<ClassificationTag>(new SnapshotSpan(curSpan.Snapshot, new Span(curSpan.Start.Position + token.Location.Position, token.Length)), new ClassificationTag(_nplTypes[token.EditorInfo.Type]));
                 }
