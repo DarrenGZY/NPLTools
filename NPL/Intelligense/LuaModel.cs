@@ -15,7 +15,7 @@ namespace NPLTools.Intelligense
 {
     public class LuaModel
     {
-        private LuaNode _root;
+        private LuaChunkNode _root;
         private ParseTree _parseTree;
         public List<KeyValuePair<string, ScopeSpan>> Declarations = new List<KeyValuePair<string, ScopeSpan>>();
 
@@ -25,7 +25,7 @@ namespace NPLTools.Intelligense
 
             if (_parseTree.Root!= null)
             {
-                _root = _parseTree.Root.AstNode as LuaNode;
+                _root = _parseTree.Root.AstNode as LuaChunkNode;
                 GetDeclarations(_root, Declarations);
             }
         }
@@ -36,7 +36,7 @@ namespace NPLTools.Intelligense
 
             if (_parseTree.Root != null && _parseTree.Root.AstNode != null)
             {
-                _root = _parseTree.Root.AstNode as LuaNode;
+                _root = _parseTree.Root.AstNode as LuaChunkNode;
                 Declarations.Clear();
                 GetDeclarations(_root, Declarations);  
             }
@@ -48,6 +48,26 @@ namespace NPLTools.Intelligense
                 position <= span.EndPosition)
                 return true;
             return false;
+        }
+
+        public ScopeSpan? GetGlobalDeclarationLocation(string name)
+        {
+            if (_root == null)
+                return null;
+            List<ScopeSpan> spans = new List<ScopeSpan>();
+            GetGlobalDeclarationsByName(_root, name, spans);
+            spans.Sort(delegate (ScopeSpan a, ScopeSpan b)
+            {
+                if (a.StartPosition >= b.StartPosition && a.EndPosition <= b.EndPosition)
+                    return -1;
+                else
+                    return 1;
+            });
+
+            if (spans.Count > 0)
+                return spans[0];
+
+            return null;
         }
 
         internal Dictionary<string, ScopeSpan> GetGlobals()
@@ -119,14 +139,6 @@ namespace NPLTools.Intelligense
             return null;
         }
 
-        public ScopeSpan? GetGlobalDeclarationLocation(string name)
-        {
-            var globals = GetGlobals();
-            if (globals.ContainsKey(name))
-                return globals[name];
-            return null;
-        }
-
         private void GetDeclarationsByName(LuaNode node, string name, List<ScopeSpan> spans, ScopeSpan span)
         {
             if (node is LuaBlockNode)
@@ -143,9 +155,37 @@ namespace NPLTools.Intelligense
                             spans.Add(declaration.Scope);
                     }
                 }
+
+                foreach (var declaration in ((LuaBlockNode)node).Globals)
+                {
+                    if (declaration.NamesEqual(new List<string>(name.Split('.'))))
+                    {
+                        if (span.StartPosition >= declaration.Scope.StartPosition &&
+                            span.EndPosition <= declaration.Scope.EndPosition)
+                            spans.Add(declaration.Scope);
+                        else if (span.EndPosition == declaration.Scope.StartPosition)
+                            spans.Add(declaration.Scope);
+                    }
+                }
             }
             foreach (LuaNode child in node.ChildNodes)
                 GetDeclarationsByName(child, name, spans, span);
+        }
+
+        private void GetGlobalDeclarationsByName(LuaNode node, string name, List<ScopeSpan> spans)
+        {
+            if (node is LuaBlockNode)
+            {
+                foreach (var declaration in ((LuaBlockNode)node).Globals)
+                {
+                    if (declaration.NamesEqual(new List<string>(name.Split('.'))))
+                    {
+                            spans.Add(declaration.Scope);
+                    }
+                }
+            }
+            foreach (LuaNode child in node.ChildNodes)
+                GetGlobalDeclarationsByName(child, name, spans);
         }
 
         public void RetrieveIndentationsFromSyntaxTree(out int[] indentations)

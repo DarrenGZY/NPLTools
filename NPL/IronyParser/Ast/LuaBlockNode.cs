@@ -23,6 +23,7 @@ namespace NPLTools.IronyParser.Ast
         public LuaBlockNode()
         {
             Locals = new List<Declaration>();
+            Globals = new List<Declaration>();
         }
 
         public override void Init(AstContext context, ParseTreeNode treeNode)

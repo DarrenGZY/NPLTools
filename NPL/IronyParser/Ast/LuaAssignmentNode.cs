@@ -35,15 +35,32 @@ namespace NPLTools.IronyParser.Ast
             for (int i = 0; i < VariableList.Count; ++i)
             {
                 LuaNode variable = VariableList[i];
-                Declaration declaration;
-                DeclarationType type = GetDeclarationType(variable, block, out declaration);
+                Declaration namespaces;
+                DeclarationType type = GetDeclarationType(variable, block, out namespaces);
+                if (type == DeclarationType.Global && variable is LuaIdentifierNode)
+                {
+                    Declaration declaration = new Declaration(variable.AsString, new ScopeSpan(variable.Span.EndPosition, variable.EndLine, int.MaxValue, int.MaxValue));
+                    block.Globals.Add(declaration);
 
+                }
+                else if (type == DeclarationType.Global && variable is LuaTableAccessNode)
+                {
+                    string[] names = variable.AsString.Split('.');
+                    block.Globals.Add(new Declaration(names[names.Length - 1], new ScopeSpan(variable.Span.EndPosition, variable.EndLine,
+                        int.MaxValue, int.MaxValue), new List<Declaration>() { namespaces }));
+                }
+                else if (type == DeclarationType.Local)
+                {
+                    string[] names = variable.AsString.Split('.');
+                    block.Locals.Add(new Declaration(names[names.Length - 1], new ScopeSpan(variable.Span.EndPosition, variable.EndLine,
+                        block.Span.EndPosition, block.EndLine), new List<Declaration>() { namespaces }));
+                }
             }
         }
 
-        private DeclarationType GetDeclarationType(LuaNode variable, LuaBlockNode block, out Declaration declaration)
+        private DeclarationType GetDeclarationType(LuaNode variable, LuaBlockNode block, out Declaration namespaces)
         {
-            declaration = null;
+            namespaces = null;
             if (variable is LuaIdentifierNode)
             {
                 foreach (var localDeclaration in block.Locals)
@@ -71,7 +88,7 @@ namespace NPLTools.IronyParser.Ast
                         return DeclarationType.None;
                     if (localDeclaration.NamesEqual(names.GetRange(0, names.Count - 1)))
                     {
-                        declaration = localDeclaration;
+                        namespaces = localDeclaration;
                         return DeclarationType.Local;
                     }
                 }
@@ -83,7 +100,7 @@ namespace NPLTools.IronyParser.Ast
                         return DeclarationType.None;
                     if (globalDeclaration.NamesEqual(names.GetRange(0, names.Count - 1)))
                     {
-                        declaration = globalDeclaration;
+                        namespaces = globalDeclaration;
                         return DeclarationType.Global;
                     }
                 }

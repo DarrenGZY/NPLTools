@@ -110,7 +110,7 @@ namespace NPLTools.Language
                 }
                 else
                 {
-                    NPLPackage.NavigateTo(_serviceProvider, span.Value.Key, Guid.Empty, 1, 1); // TODO: translate position to line and col
+                    NPLPackage.NavigateTo(_serviceProvider, span.Value.Key, Guid.Empty, span.Value.Value.StartPosition); 
                 }
             }
         }

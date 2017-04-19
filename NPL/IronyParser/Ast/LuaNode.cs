@@ -39,7 +39,6 @@ namespace NPLTools.IronyParser.Ast
                     return (this.ChildNodes.Last<AstNode>() as LuaNode).EndLine;
             }
         }
-
     }
 
     public class LuaNodeList : List<LuaNode> { }

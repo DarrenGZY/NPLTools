@@ -97,6 +97,11 @@ namespace NPLTools
             VsUtilities.NavigateTo(serviceProvider, filename, docViewGuidType, line, col);
         }
 
+        internal static void NavigateTo(System.IServiceProvider serviceProvider, string filename, Guid docViewGuidType, int pos)
+        {
+            VsUtilities.NavigateTo(serviceProvider, filename, docViewGuidType, pos);
+        }
+
         #endregion
     }
 }

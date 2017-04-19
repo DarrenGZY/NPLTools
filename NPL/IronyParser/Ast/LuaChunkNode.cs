@@ -8,7 +8,6 @@ namespace NPLTools.IronyParser.Ast
     public class LuaChunkNode : LuaNode
     {
         public LuaBlockNode Block { get; set; }
-        public List<LuaNode> Globals { get; set; }
 
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
