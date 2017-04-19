@@ -47,10 +47,9 @@ namespace NPLTools.Language.Outlining
             if (!project.GetAnalyzer().HasMonitoredTextBuffer(textBuffer))
                 project.GetAnalyzer().MonitorTextBuffer(textBuffer);
             _analysisEntry = _textBuffer.GetAnalysisAtCaret(provider.ServiceProvider);
-            _analysisEntry.NewParseTree += OnNewParseTree;
             _regions = new List<Region>();
-            ReParse();
-            //_buffer.Changed += BufferChanged;
+            _analysisEntry.NewParseTree += OnNewParseTree;
+            //ReParse();
         }
 
         private void OnNewParseTree(object sender, ParseTreeChangedEventArgs e)
@@ -77,11 +76,6 @@ namespace NPLTools.Language.Outlining
                         new OutliningRegionTag(false, false, "...", spans[0].Snapshot.GetText().Substring(region.Start, region.Length)));
                 }
             }
-        }
-
-        async void BufferChanged(object sender, TextContentChangedEventArgs e)
-        {
-            await ReParse();
         }
 
         private Task ReParse()
