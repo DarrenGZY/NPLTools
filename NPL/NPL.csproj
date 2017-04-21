@@ -120,6 +120,7 @@
     <Compile Include="Project\LuaConstants.cs" />
     <Compile Include="Project\NativeMethods.cs" />
     <Compile Include="Project\NPLFileNode.cs" />
+    <Compile Include="Project\NPLFolderNode.cs" />
     <Compile Include="Project\NPLProjectConstants.cs" />
     <Compile Include="Project\NPLProjectFactory.cs" />
     <Compile Include="Project\NPLProjectLauncher.cs" />

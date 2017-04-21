@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace NPLTools.Project
 {
-    internal class NPLFileNode : CommonFileNode
+    internal class NPLFolderNode : CommonFolderNode
     {
-        internal NPLFileNode(NPLProjectNode root, ProjectElement e) : base(root, e)
+        public NPLFolderNode(NPLProjectNode root, ProjectElement e) : base(root, e)
         {
 
         }

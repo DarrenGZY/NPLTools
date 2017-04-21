@@ -9,7 +9,7 @@ using System.Diagnostics;
 
 namespace NPLTools.Project
 {
-    class NPLProjectLauncher : IProjectLauncher
+    internal class NPLProjectLauncher : IProjectLauncher
     {
         private NPLProjectNode _project;
         public NPLProjectLauncher(NPLProjectNode project)

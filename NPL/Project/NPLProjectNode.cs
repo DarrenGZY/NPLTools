@@ -273,220 +273,222 @@ namespace NPLTools.Project
                 public override CommonProjectConfig MakeConfiguration(string activeConfigName) {
                     return new LuaProjectConfig(this, activeConfigName);
                 }
-
-                protected internal override FolderNode CreateFolderNode(ProjectElement element) {
-                    return new LuaFolderNode(this, element);
-                }
-*/
-                public override FileNode CreateFileNode(ProjectElement item) {
-                    var newNode = base.CreateFileNode(item);
-                    string include = item.GetMetadata(ProjectFileConstants.Include);
-
-                    //if (XamlDesignerSupport.DesignerContextType != null &&
-                    //    newNode is CommonFileNode &&
-                    //    !string.IsNullOrEmpty(include) &&
-                    //    Path.GetExtension(include).Equals(".xaml", StringComparison.OrdinalIgnoreCase)) {
-                    //    //Create a DesignerContext for the XAML designer for this file
-                    //    newNode.OleServiceProvider.AddService(XamlDesignerSupport.DesignerContextType, ((CommonFileNode)newNode).ServiceCreator, false);
-                    //}
-
-                    return newNode;
-                }
-/*s
-                protected override bool FilterItemTypeToBeAddedToHierarchy(string itemType) {
-                    if (MSBuildProjectInterpreterFactoryProvider.InterpreterReferenceItem.Equals(itemType, StringComparison.Ordinal) ||
-                        MSBuildProjectInterpreterFactoryProvider.InterpreterItem.Equals(itemType, StringComparison.Ordinal)) {
-                        return true;
-                    }
-                    return base.FilterItemTypeToBeAddedToHierarchy(itemType);
-                }
-
-                public override void Load(string filename, string location, string name, uint flags, ref Guid iidProject, out int canceled) {
-                    base.Load(filename, location, name, flags, ref iidProject, out canceled);
-
-                    if (XamlDesignerSupport.DesignerContextType != null) {
-                        //If this is a WPFFlavor-ed project, then add a project-level DesignerContext service to provide
-                        //event handler generation (EventBindingProvider) for the XAML designer.
-                        OleServiceProvider.AddService(XamlDesignerSupport.DesignerContextType, new OleServiceProvider.ServiceCreatorCallback(this.CreateServices), false);
-                    }
-                }
-
-                protected override object CreateServices(Type serviceType) {
-                    if (XamlDesignerSupport.DesignerContextType == serviceType) {
-                        return DesignerContext;
-                    }
-
-                    var res = base.CreateServices(serviceType);
-                    return res;
-                }
-
-                protected override void Reload() {
-                    _searchPathContainer = new CommonSearchPathContainerNode(this);
-                    this.AddChild(_searchPathContainer);
-                    RefreshCurrentWorkingDirectory();
-                    RefreshSearchPaths();
-                    _interpretersContainer = new InterpretersContainerNode(this);
-                    this.AddChild(_interpretersContainer);
-                    RefreshInterpreters();
-
-                    OnProjectPropertyChanged += LuaProjectNode_OnProjectPropertyChanged;
-                    base.Reload();
-
-                    string id;
-                    if (_interpreters.IsActiveInterpreterGlobalDefault &&
-                        !string.IsNullOrEmpty(id = GetProjectProperty(MSBuildProjectInterpreterFactoryProvider.InterpreterIdProperty))) {
-                        // The interpreter in the project file has no reference, so
-                        // find and add it.
-                        var interpreterService = LuaToolsPackage.ComponentModel.GetService<IInterpreterOptionsService>();
-                        if (interpreterService != null) {
-                            var existing = interpreterService.FindInterpreter(
-                                id,
-                                GetProjectProperty(MSBuildProjectInterpreterFactoryProvider.InterpreterVersionProperty));
-                            if (existing != null && QueryEditProjectFile(false)) {
-                                _interpreters.AddInterpreter(existing);
-                                Debug.Assert(_interpreters.ActiveInterpreter == existing);
-                            }
-                        }
-                    }
-
-                    LuaToolsPackage.Instance.CheckSurveyNews(false);
-                }
-
-                private void RefreshCurrentWorkingDirectory() {
-                    try {
-                        IsRefreshing = true;
-                        string projHome = ProjectHome;
-                        string workDir = GetWorkingDirectory();
-
-                        //Refresh CWD node
-                        bool needCWD = !CommonUtils.IsSameDirectory(projHome, workDir);
-                        var cwdNode = FindImmediateChild<CurrentWorkingDirectoryNode>(_searchPathContainer);
-                        if (needCWD) {
-                            if (cwdNode == null) {
-                                //No cwd node yet
-                                _searchPathContainer.AddChild(new CurrentWorkingDirectoryNode(this, workDir));
-                            } else if (!CommonUtils.IsSameDirectory(cwdNode.Url, workDir)) {
-                                //CWD has changed, recreate the node
-                                cwdNode.Remove(false);
-                                _searchPathContainer.AddChild(new CurrentWorkingDirectoryNode(this, workDir));
-                            }
-                        } else {
-                            //No need to show CWD, remove if exists
-                            if (cwdNode != null) {
-                                cwdNode.Remove(false);
-                            }
-                        }
-                    } finally {
-                        IsRefreshing = false;
-                    }
-                }
-
-                private void RefreshSearchPaths() {
-                    try {
-                        IsRefreshing = true;
-
-                        string projHome = ProjectHome;
-                        string workDir = GetWorkingDirectory();
-                        IList<string> searchPath = ParseSearchPath();
-
-                        //Refresh regular search path nodes
-
-                        //We need to update search path nodes according to the search path property.
-                        //It's quite expensive to remove all and build all nodes from scratch, 
-                        //so we are going to perform some smarter update.
-                        //We are looping over paths in the search path and if a corresponding node
-                        //exists, we only update its index (sort order), creating new node otherwise.
-                        //At the end all nodes that haven't been updated have to be removed - they are
-                        //not in the search path anymore.
-                        var searchPathNodes = new List<CommonSearchPathNode>();
-                        this.FindNodesOfType<CommonSearchPathNode>(searchPathNodes);
-                        bool[] updatedNodes = new bool[searchPathNodes.Count];
-                        int index;
-                        for (int i = 0; i < searchPath.Count; i++) {
-                            string path = searchPath[i];
-                            //ParseSearchPath() must resolve all paths
-                            Debug.Assert(Path.IsPathRooted(path));
-                            var node = FindSearchPathNodeByPath(searchPathNodes, path, out index);
-                            if (node != null) {
-                                //existing path, update index (sort order)
-                                node.Index = i;
-                                updatedNodes[index] = true;
-                            } else {
-                                //new path - create new node
-                                _searchPathContainer.AddChild(new CommonSearchPathNode(this, path, i));
-                            }
-                        }
-
-                        //Refresh nodes and remove non-updated ones
-                        for (int i = 0; i < searchPathNodes.Count; i++) {
-                            if (!updatedNodes[i]) {
-                                searchPathNodes[i].Remove();
-                            }
-                        }
-                    } finally {
-                        IsRefreshing = false;
-                    }
-                }
-
-                private void RefreshInterpreters() {
-                    if (IsClosed) {
-                        return;
-                    }
-
-                    if (_uiSync.InvokeRequired) {
-                        _uiSync.BeginInvoke((Action)RefreshInterpreters, null);
-                        return;
-                    }
-
-                    var node = _interpretersContainer;
-                    if (node == null) {
-                        return;
-                    }
-
-                    var remaining = node.AllChildren.OfType<InterpretersNode>().ToDictionary(n => n._factory);
-
-                    var interpreters = Interpreters;
-                    if (interpreters != null) {
-                        foreach (var fact in interpreters.GetInterpreterFactories()) {
-                            if (!remaining.Remove(fact)) {
-                                node.AddChild(new InterpretersNode(
-                                    this,
-                                    Interpreters.GetProjectItem(fact),
-                                    fact,
-                                    isInterpreterReference: !interpreters.IsProjectSpecific(fact),
-                                    canDelete:
-                                        interpreters.IsProjectSpecific(fact) &&
-                                        Directory.Exists(fact.Configuration.PrefixPath)
-                                ));
-                            }
-                        }
-                    }
-
-                    foreach (var child in remaining.Values) {
-                        node.RemoveChild(child);
-                    }
-
-                    bool wasExpanded = node.GetIsExpanded();
-                    var expandAfter = node.AllChildren.Where(n => n.GetIsExpanded()).ToArray();
-                    OnInvalidateItems(node);
-                    if (wasExpanded) {
-                        node.ExpandItem(EXPANDFLAGS.EXPF_ExpandFolder);
-                    }
-                    foreach (var child in expandAfter) {
-                        child.ExpandItem(EXPANDFLAGS.EXPF_ExpandFolder);
-                    }
-                    BoldActiveEnvironment();
-                }
-
-                private void BoldActiveEnvironment() {
-                    var node = _interpretersContainer;
-                    if (node != null) {
-                        foreach (var child in node.AllChildren.OfType<InterpretersNode>()) {
-                            BoldItem(child, child._factory == Interpreters.ActiveInterpreter);
-                        }
-                    }
-                }
         */
+        protected internal override FolderNode CreateFolderNode(ProjectElement element)
+        {
+            return new NPLFolderNode(this, element);
+        }
+
+        public override FileNode CreateFileNode(ProjectElement item)
+        {
+            var newNode = base.CreateFileNode(item);
+            string include = item.GetMetadata(ProjectFileConstants.Include);
+
+            //if (XamlDesignerSupport.DesignerContextType != null &&
+            //    newNode is CommonFileNode &&
+            //    !string.IsNullOrEmpty(include) &&
+            //    Path.GetExtension(include).Equals(".xaml", StringComparison.OrdinalIgnoreCase)) {
+            //    //Create a DesignerContext for the XAML designer for this file
+            //    newNode.OleServiceProvider.AddService(XamlDesignerSupport.DesignerContextType, ((CommonFileNode)newNode).ServiceCreator, false);
+            //}
+
+            return newNode;
+        }
+        /*s
+                        protected override bool FilterItemTypeToBeAddedToHierarchy(string itemType) {
+                            if (MSBuildProjectInterpreterFactoryProvider.InterpreterReferenceItem.Equals(itemType, StringComparison.Ordinal) ||
+                                MSBuildProjectInterpreterFactoryProvider.InterpreterItem.Equals(itemType, StringComparison.Ordinal)) {
+                                return true;
+                            }
+                            return base.FilterItemTypeToBeAddedToHierarchy(itemType);
+                        }
+
+                        public override void Load(string filename, string location, string name, uint flags, ref Guid iidProject, out int canceled) {
+                            base.Load(filename, location, name, flags, ref iidProject, out canceled);
+
+                            if (XamlDesignerSupport.DesignerContextType != null) {
+                                //If this is a WPFFlavor-ed project, then add a project-level DesignerContext service to provide
+                                //event handler generation (EventBindingProvider) for the XAML designer.
+                                OleServiceProvider.AddService(XamlDesignerSupport.DesignerContextType, new OleServiceProvider.ServiceCreatorCallback(this.CreateServices), false);
+                            }
+                        }
+
+                        protected override object CreateServices(Type serviceType) {
+                            if (XamlDesignerSupport.DesignerContextType == serviceType) {
+                                return DesignerContext;
+                            }
+
+                            var res = base.CreateServices(serviceType);
+                            return res;
+                        }
+
+                        protected override void Reload() {
+                            _searchPathContainer = new CommonSearchPathContainerNode(this);
+                            this.AddChild(_searchPathContainer);
+                            RefreshCurrentWorkingDirectory();
+                            RefreshSearchPaths();
+                            _interpretersContainer = new InterpretersContainerNode(this);
+                            this.AddChild(_interpretersContainer);
+                            RefreshInterpreters();
+
+                            OnProjectPropertyChanged += LuaProjectNode_OnProjectPropertyChanged;
+                            base.Reload();
+
+                            string id;
+                            if (_interpreters.IsActiveInterpreterGlobalDefault &&
+                                !string.IsNullOrEmpty(id = GetProjectProperty(MSBuildProjectInterpreterFactoryProvider.InterpreterIdProperty))) {
+                                // The interpreter in the project file has no reference, so
+                                // find and add it.
+                                var interpreterService = LuaToolsPackage.ComponentModel.GetService<IInterpreterOptionsService>();
+                                if (interpreterService != null) {
+                                    var existing = interpreterService.FindInterpreter(
+                                        id,
+                                        GetProjectProperty(MSBuildProjectInterpreterFactoryProvider.InterpreterVersionProperty));
+                                    if (existing != null && QueryEditProjectFile(false)) {
+                                        _interpreters.AddInterpreter(existing);
+                                        Debug.Assert(_interpreters.ActiveInterpreter == existing);
+                                    }
+                                }
+                            }
+
+                            LuaToolsPackage.Instance.CheckSurveyNews(false);
+                        }
+
+                        private void RefreshCurrentWorkingDirectory() {
+                            try {
+                                IsRefreshing = true;
+                                string projHome = ProjectHome;
+                                string workDir = GetWorkingDirectory();
+
+                                //Refresh CWD node
+                                bool needCWD = !CommonUtils.IsSameDirectory(projHome, workDir);
+                                var cwdNode = FindImmediateChild<CurrentWorkingDirectoryNode>(_searchPathContainer);
+                                if (needCWD) {
+                                    if (cwdNode == null) {
+                                        //No cwd node yet
+                                        _searchPathContainer.AddChild(new CurrentWorkingDirectoryNode(this, workDir));
+                                    } else if (!CommonUtils.IsSameDirectory(cwdNode.Url, workDir)) {
+                                        //CWD has changed, recreate the node
+                                        cwdNode.Remove(false);
+                                        _searchPathContainer.AddChild(new CurrentWorkingDirectoryNode(this, workDir));
+                                    }
+                                } else {
+                                    //No need to show CWD, remove if exists
+                                    if (cwdNode != null) {
+                                        cwdNode.Remove(false);
+                                    }
+                                }
+                            } finally {
+                                IsRefreshing = false;
+                            }
+                        }
+
+                        private void RefreshSearchPaths() {
+                            try {
+                                IsRefreshing = true;
+
+                                string projHome = ProjectHome;
+                                string workDir = GetWorkingDirectory();
+                                IList<string> searchPath = ParseSearchPath();
+
+                                //Refresh regular search path nodes
+
+                                //We need to update search path nodes according to the search path property.
+                                //It's quite expensive to remove all and build all nodes from scratch, 
+                                //so we are going to perform some smarter update.
+                                //We are looping over paths in the search path and if a corresponding node
+                                //exists, we only update its index (sort order), creating new node otherwise.
+                                //At the end all nodes that haven't been updated have to be removed - they are
+                                //not in the search path anymore.
+                                var searchPathNodes = new List<CommonSearchPathNode>();
+                                this.FindNodesOfType<CommonSearchPathNode>(searchPathNodes);
+                                bool[] updatedNodes = new bool[searchPathNodes.Count];
+                                int index;
+                                for (int i = 0; i < searchPath.Count; i++) {
+                                    string path = searchPath[i];
+                                    //ParseSearchPath() must resolve all paths
+                                    Debug.Assert(Path.IsPathRooted(path));
+                                    var node = FindSearchPathNodeByPath(searchPathNodes, path, out index);
+                                    if (node != null) {
+                                        //existing path, update index (sort order)
+                                        node.Index = i;
+                                        updatedNodes[index] = true;
+                                    } else {
+                                        //new path - create new node
+                                        _searchPathContainer.AddChild(new CommonSearchPathNode(this, path, i));
+                                    }
+                                }
+
+                                //Refresh nodes and remove non-updated ones
+                                for (int i = 0; i < searchPathNodes.Count; i++) {
+                                    if (!updatedNodes[i]) {
+                                        searchPathNodes[i].Remove();
+                                    }
+                                }
+                            } finally {
+                                IsRefreshing = false;
+                            }
+                        }
+
+                        private void RefreshInterpreters() {
+                            if (IsClosed) {
+                                return;
+                            }
+
+                            if (_uiSync.InvokeRequired) {
+                                _uiSync.BeginInvoke((Action)RefreshInterpreters, null);
+                                return;
+                            }
+
+                            var node = _interpretersContainer;
+                            if (node == null) {
+                                return;
+                            }
+
+                            var remaining = node.AllChildren.OfType<InterpretersNode>().ToDictionary(n => n._factory);
+
+                            var interpreters = Interpreters;
+                            if (interpreters != null) {
+                                foreach (var fact in interpreters.GetInterpreterFactories()) {
+                                    if (!remaining.Remove(fact)) {
+                                        node.AddChild(new InterpretersNode(
+                                            this,
+                                            Interpreters.GetProjectItem(fact),
+                                            fact,
+                                            isInterpreterReference: !interpreters.IsProjectSpecific(fact),
+                                            canDelete:
+                                                interpreters.IsProjectSpecific(fact) &&
+                                                Directory.Exists(fact.Configuration.PrefixPath)
+                                        ));
+                                    }
+                                }
+                            }
+
+                            foreach (var child in remaining.Values) {
+                                node.RemoveChild(child);
+                            }
+
+                            bool wasExpanded = node.GetIsExpanded();
+                            var expandAfter = node.AllChildren.Where(n => n.GetIsExpanded()).ToArray();
+                            OnInvalidateItems(node);
+                            if (wasExpanded) {
+                                node.ExpandItem(EXPANDFLAGS.EXPF_ExpandFolder);
+                            }
+                            foreach (var child in expandAfter) {
+                                child.ExpandItem(EXPANDFLAGS.EXPF_ExpandFolder);
+                            }
+                            BoldActiveEnvironment();
+                        }
+
+                        private void BoldActiveEnvironment() {
+                            var node = _interpretersContainer;
+                            if (node != null) {
+                                foreach (var child in node.AllChildren.OfType<InterpretersNode>()) {
+                                    BoldItem(child, child._factory == Interpreters.ActiveInterpreter);
+                                }
+                            }
+                        }
+                */
         /// <summary>
         /// Returns first immediate child node (non-recursive) of a given type.
         /// </summary>
