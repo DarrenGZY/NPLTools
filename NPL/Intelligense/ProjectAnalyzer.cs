@@ -10,6 +10,7 @@ using NPLTools.Language;
 using SourceSpan = NPLTools.Intelligense.SourceSpan;
 using Microsoft.VisualStudio.Text.Editor;
 using NPLTools.IronyParser.Ast;
+using System.IO;
 
 namespace NPLTools.Intelligense
 {
@@ -157,41 +158,55 @@ namespace NPLTools.Intelligense
         /// <returns></returns>
         internal string GetDescription(AnalysisEntry entry, ITextBuffer textBuffer, SnapshotPoint point)
         {
-            int spanStart, spanEnd;
-            for (spanEnd = point.Position; spanEnd < point.Snapshot.Length; ++spanEnd)
-            {
-                if (point.Snapshot.GetText().Substring(spanEnd, 1).ToLower().ToCharArray()[0] < 'a' ||
-                    point.Snapshot.GetText().Substring(spanEnd, 1).ToLower().ToCharArray()[0] > 'z')
-                    break;
-            }
-
-            for (spanStart = point.Position; spanStart > 0; --spanStart)
-            {
-                if (point.Snapshot.GetText().Substring(spanStart - 1, 1).ToLower().ToCharArray()[0] < 'a' ||
-                    point.Snapshot.GetText().Substring(spanStart - 1, 1).ToLower().ToCharArray()[0] > 'z')
-                    break;
-            }
-            string word = point.Snapshot.GetText().Substring(spanStart, spanEnd - spanStart);
-            ScopeSpan span = new ScopeSpan(spanStart, point.GetContainingLine().LineNumber, spanEnd, point.GetContainingLine().LineNumber);
-
-            ScopeSpan? res = entry.Model.GetDeclarationLocation(word, span);
-
-            if (!res.HasValue)
-                return null;
-
             string description = String.Empty;
-            Irony.Parsing.Scanner scanner = new Irony.Parsing.Parser(IronyParser.LuaGrammar.Instance).Scanner;
-            int funcDefLine = res.Value.StartLine;
-            for (int i = funcDefLine - 1; i >= 0; --i)
+            IdentifierSource word = ReverseParser.ParseIdentifier(point);
+            // Try to get description in the file
+            ScopeSpan? inFileDeclaration = entry.Model.GetDeclarationLocation(word.Identifier, word.Span);
+            if (inFileDeclaration.HasValue)
             {
-                string lineText = textBuffer.CurrentSnapshot.GetLineFromLineNumber(i).GetText();
-                int state = 0;
-                scanner.VsSetSource(lineText, 0);
-                Irony.Parsing.Token token = scanner.VsReadToken(ref state);
-                if (token == null || token.Terminal.Name != "block-comment")
-                    break;
-                if (token.Terminal.Name == "block-comment")
-                    description = (description == String.Empty) ? token.ValueString : token.ValueString + "\n" + description;
+                Irony.Parsing.Scanner scanner = new Irony.Parsing.Parser(IronyParser.LuaGrammar.Instance).Scanner;
+                int funcDefLine = inFileDeclaration.Value.StartLine;
+                for (int i = funcDefLine - 1; i >= 0; --i)
+                {
+                    string lineText = textBuffer.CurrentSnapshot.GetLineFromLineNumber(i).GetText();
+                    int state = 0;
+                    scanner.VsSetSource(lineText, 0);
+                    Irony.Parsing.Token token = scanner.VsReadToken(ref state);
+                    if (token == null || token.Terminal.Name != "block-comment")
+                        break;
+                    if (token.Terminal.Name == "block-comment")
+                        description = (description == String.Empty) ? token.ValueString : token.ValueString + "\n" + description;
+                }
+                return description;
+            }
+            // Not find declaration in the file, try to get description from loaded file 
+            var loadedFileDeclaration = GetDeclarationinFiles(word.Identifier);
+            if (loadedFileDeclaration.HasValue)
+            {
+                ScopeSpan declarationScope = loadedFileDeclaration.Value.Value;
+                string declarationFile = loadedFileDeclaration.Value.Key;
+                try
+                {
+                    Irony.Parsing.Scanner scanner = new Irony.Parsing.Parser(IronyParser.LuaGrammar.Instance).Scanner;
+                    int funcDefLine = declarationScope.StartLine;
+                    string[] lines = File.ReadAllLines(declarationFile);
+                    for (int i = funcDefLine - 1; i >= 0; --i)
+                    {
+                        string lineText = lines[i];
+                        int state = 0;
+                        scanner.VsSetSource(lineText, 0);
+                        Irony.Parsing.Token token = scanner.VsReadToken(ref state);
+                        if (token == null || token.Terminal.Name != "block-comment")
+                            break;
+                        if (token.Terminal.Name == "block-comment")
+                            description = (description == String.Empty) ? token.ValueString : token.ValueString + "\n" + description;
+                    }
+                    return description;
+                }
+                catch (Exception)
+                {
+
+                }
             }
 
             return description;

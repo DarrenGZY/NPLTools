@@ -7,7 +7,6 @@ using Irony.Parsing;
 
 namespace NPLTools.IronyParser.Ast
 {
-
     //A node representing function definition
     public class LuaFunctionDefNode : LuaNode, IDeclaration
     {
@@ -65,12 +64,23 @@ namespace NPLTools.IronyParser.Ast
                 }
                 else
                 {
+                    // if its namespace is in local scope, add it to local declaration list
                     foreach (var local in block.Locals)
                     {
                         if (local.NamesEqual(NameNode.Namespaces))
                         {
                             block.Locals.Add(new Declaration(NameNode.Name,
                                 new ScopeSpan(NameNode.Span.EndPosition, NameNode.EndLine, block.Span.EndPosition, block.EndLine), new List<Declaration>() { local }));
+                            break;
+                        }
+                    }
+                    // if its namespace is in global scope, add it to global declaration list
+                    foreach (var global in block.Globals)
+                    {
+                        if (global.NamesEqual(NameNode.Namespaces))
+                        {
+                            block.Globals.Add(new Declaration(NameNode.Name,
+                                new ScopeSpan(NameNode.Span.EndPosition, NameNode.EndLine, block.Span.EndPosition, block.EndLine), new List<Declaration>() { global }));
                             break;
                         }
                     }

@@ -9,7 +9,7 @@ using Irony.Parsing;
 
 namespace NPLTools.IronyParser.Ast
 {
-    public class LuaElseIfListNode : AstNode
+    public class LuaElseIfListNode : LuaNode
     {
         public List<LuaElseIfNode> ElseIfNodes { get; private set; }
 
