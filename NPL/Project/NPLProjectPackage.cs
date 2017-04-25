@@ -17,7 +17,7 @@ namespace NPLTools.Project
     [PackageRegistration(UseManagedResourcesOnly = true)]
     [ProvideProjectFactory(typeof(NPLProjectFactory), null,
     "NPL Project Files (*.nplproj);*.nplproj", "nplproj", "nplproj",
-    ".\\NullPath", LanguageVsTemplate = "NPL")]
+    @"Templates\Projects\WebApplication", LanguageVsTemplate = "NPL")]
     [ProvideProjectItem(typeof(NPLProjectFactory), "NPL Items", ".\\NullPath", 500)]
     [Guid(NPLProjectPackageGuidString)]
     [ProvideObject(typeof(NPLPropertyPage))]

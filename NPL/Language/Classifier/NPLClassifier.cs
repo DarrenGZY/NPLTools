@@ -26,6 +26,11 @@ namespace NPLTools.Language.Classifier
         [ContentType("NPL")]
         internal static FileExtensionToContentTypeDefinition NPLFileType = null;
 
+        [Export]
+        [FileExtension(".lua")]
+        [ContentType("NPL")]
+        internal static FileExtensionToContentTypeDefinition LuaFileType = null;
+
         [Import]
         internal IClassificationTypeRegistryService ClassificationTypeRegistry = null;
 

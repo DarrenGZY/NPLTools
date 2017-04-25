@@ -68,6 +68,7 @@
     <Compile Include="IronyParser\Ast\IDeclaration.cs" />
     <Compile Include="IronyParser\Ast\LuaElseIfListNode.cs" />
     <Compile Include="IronyParser\Ast\LuaElseIfNode.cs" />
+    <Compile Include="IronyParser\Ast\LuaLastStatementNode.cs" />
     <Compile Include="IronyParser\Ast\LuaNode.cs" />
     <Compile Include="IronyParser\Ast\LuaBinaryExpressionNode.cs" />
     <Compile Include="IronyParser\Ast\LuaBlockNode.cs" />
@@ -142,6 +143,33 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <Content Include="ProjectTemplates\3DApplication.zip">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <ZipProject Include="Templates\Projects\NPLExpress\NPLExpress.nplproj">
+      <SubType>Designer</SubType>
+    </ZipProject>
+    <ZipProject Include="Templates\Projects\NPLExpress\config.lua" />
+    <ZipProject Include="Templates\Projects\NPLExpress\cookie.lua" />
+    <ZipProject Include="Templates\Projects\NPLExpress\express.lua" />
+    <ZipProject Include="Templates\Projects\NPLExpress\handler.lua" />
+    <ZipProject Include="Templates\Projects\NPLExpress\httpfile.lua" />
+    <ZipProject Include="Templates\Projects\NPLExpress\main.lua" />
+    <ZipProject Include="Templates\Projects\NPLExpress\package.json" />
+    <ZipProject Include="Templates\Projects\NPLExpress\request.lua" />
+    <ZipProject Include="Templates\Projects\NPLExpress\response.lua" />
+    <ZipProject Include="Templates\Projects\NPLExpress\route.lua" />
+    <ZipProject Include="Templates\Projects\NPLExpress\router.lua" />
+    <ZipProject Include="Templates\Projects\NPLExpress\session.lua" />
+    <ZipProject Include="Templates\Projects\NPLExpress\sessionitem.lua" />
+    <Content Include="ProjectTemplates\NPLExpress.zip">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <ZipProject Include="Templates\Projects\3DApplication\test.npl">
+      <OutputSubPath>NPL 3D Application</OutputSubPath>
+    </ZipProject>
     <None Include="Tests\test.lua" />
     <ZipItem Include="Templates\ProjectItems\Text\Text.txt" />
     <ZipItem Include="Templates\ProjectItems\XML\XML.vstemplate" />
@@ -165,19 +193,26 @@
     <ZipItem Include="Templates\ProjectItems\HTML\HTML.ico" />
     <ZipItem Include="Templates\ProjectItems\HTML\HTML.vstemplate" />
     <ZipItem Include="Templates\ProjectItems\Lua\Lua.lua" />
-    <ZipProject Include="Templates\Projects\WebApplication\WebApplication.ico">
+    <ZipProject Include="Templates\Projects\NPLExpress\NPLExpress.ico" />
+    <ZipProject Include="Templates\Projects\NPLExpress\NPLExpress.vstemplate" />
+    <Content Include="Templates\Projects\WebApplication\WebApplication.ico">
       <OutputSubPath>Web Application</OutputSubPath>
-    </ZipProject>
-    <ZipProject Include="Templates\Projects\WebApplication\WebApplication.vstemplate">
-      <OutputSubPath>Web Application</OutputSubPath>
-    </ZipProject>
-    <ZipProject Include="Templates\Projects\WebApplication\main.npl">
-      <OutputSubPath>Web Application</OutputSubPath>
-    </ZipProject>
-    <ZipProject Include="Templates\Projects\WebApplication\WebApplication.nplproj">
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Templates\Projects\WebApplication\WebApplication.vstemplate">
       <OutputSubPath>Web Application</OutputSubPath>
       <SubType>Designer</SubType>
-    </ZipProject>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Templates\Projects\WebApplication\main.npl">
+      <OutputSubPath>Web Application</OutputSubPath>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Templates\Projects\WebApplication\WebApplication.nplproj">
+      <OutputSubPath>Web Application</OutputSubPath>
+      <SubType>Designer</SubType>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <ZipProject Include="Templates\Projects\3DApplication\3DApplication.ico">
       <OutputSubPath>NPL 3D Application</OutputSubPath>
     </ZipProject>

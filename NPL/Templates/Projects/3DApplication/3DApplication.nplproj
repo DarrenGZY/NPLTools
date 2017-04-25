@@ -13,5 +13,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="main.npl"/>
+    <Compile Include="packages/test.npl"/>
   </ItemGroup>
 </Project>

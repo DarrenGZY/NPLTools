@@ -96,7 +96,7 @@ namespace NPLTools.IronyParser
             // will have an AST type by definition
 
             var Statement = new NonTerminal("statement");
-            var LastStatement = new NonTerminal("last statement");
+            var LastStatement = new NonTerminal("last statement", typeof(LuaLastStatementNode));
             var Statements = new NonTerminal("statement list");
             var StatementsEnd = new NonTerminal("statement list end");
             var SingleStatementWithTermOpt = new NonTerminal("single statement", Statement | Statement + ";");
