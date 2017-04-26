@@ -105,6 +105,10 @@ namespace NPLTools.Language.Classifier
                 yield break;
             foreach (Token token in _tokens)
             {
+                // if spanshot changed, but tokens not changed and exceed the length of snapshot, stop emunerate.
+                if (token.Location.Position + token.Length >= spans[0].Snapshot.Length)
+                    yield break;
+                
                 // Handle EOF token
                 if (token.Category != TokenCategory.Outline && token.EditorInfo != null)
                     yield return

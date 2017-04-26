@@ -103,7 +103,7 @@ namespace NPLTools.IronyParser.Ast
 
             for(int i = 0; i < NameSpaces.Count; ++i)
             {
-                if (NameSpaces[i].Name != names[i])
+                if (NameSpaces[i] == null || NameSpaces[i].Name != names[i]) //TODO: why NameSpaces[i] may be null
                     return false;
             }
 

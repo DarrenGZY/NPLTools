@@ -40,7 +40,7 @@ namespace NPLTools.IronyParser.Ast
 
         public void GetDeclarations(LuaBlockNode block)
         {
-            for (int i = 0; i < VariableList.Count; ++i)
+            for (int i = 0; i < VariableList.Count && i < ExpressionList.Count; ++i)
             {
                 LuaNode variable = VariableList[i];
                 Declaration declaration = new Declaration(variable.AsString,

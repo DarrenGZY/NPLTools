@@ -91,7 +91,7 @@ namespace NPLTools.Language.BraceMatching
 
             char currentText = currentChar.Position == currentChar.Snapshot.Length ? '\0' : currentChar.GetChar();
             SnapshotPoint lastChar = currentChar == 0 ? currentChar : currentChar - 1;
-            char lastText = lastChar.GetChar();
+            char lastText = lastChar.Position == lastChar.Snapshot.Length ? '\0' : lastChar.GetChar();
             SnapshotSpan pairSpan = new SnapshotSpan();
 
             if (_braceList.ContainsKey(currentText))

@@ -82,7 +82,7 @@ namespace NPLTools.IronyParser
             //var FALSE = new ConstantTerminal("false", typeof(LuaLiteralNode));
             //var TRUE = new ConstantTerminal("true", typeof(LuaLiteralNode));
 
-            KeyTerm ELLIPSIS = Keyword("...");
+            KeyTerm ELLIPSIS = LiteralKeyword("...");
 
             #endregion
 
