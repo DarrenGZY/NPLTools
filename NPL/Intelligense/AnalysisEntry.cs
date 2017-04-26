@@ -47,6 +47,7 @@ namespace NPLTools.Intelligense
             return Task.Run(() =>
             {
                 ParseTree parseTree = _parser.Parse(source);
+
                 if (parseTree.Root != null)
                     _model.Update(parseTree);
 

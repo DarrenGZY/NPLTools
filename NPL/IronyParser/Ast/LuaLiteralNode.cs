@@ -36,6 +36,9 @@ namespace NPLTools.IronyParser.Ast
                 case "string":
                     Type = LuaType.String;
                     break;
+                case "long-string":
+                    Type = LuaType.String;
+                    break;
                 default:
                     Type = LuaType.Unknown;
                     break;

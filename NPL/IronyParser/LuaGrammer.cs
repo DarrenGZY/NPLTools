@@ -32,7 +32,7 @@ namespace NPLTools.IronyParser
             NumberLiteral NUMBER = CreateLuaNumber("number");
 
             var LONGSTRING = new LuaLongStringTerminal("long-string");
-
+            LONGSTRING.AstConfig.NodeType = typeof(LuaLiteralNode);
             // This includes both single-line and block comments
             var Comment = new LuaCommentTerminal("block-comment");
 

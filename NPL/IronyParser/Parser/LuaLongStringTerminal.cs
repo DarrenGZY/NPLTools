@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using Irony.Parsing;
 using System.Text.RegularExpressions;
 
@@ -9,48 +12,48 @@ namespace NPLTools.IronyParser.Parser
         public LuaLongStringTerminal(string name)
             : base(name, TokenCategory.Content)
         {
-          
+            this.SetFlag(TermFlags.IsMultiline);
         }
 
         public string StartSymbol = "[";
 
         #region overrides
-        public override void Init(GrammarData grammarData) 
+        public override void Init(GrammarData grammarData)
         {
             base.Init(grammarData);
-            SetFlag(TermFlags.IsMultiline);
-            
-            if (this.EditorInfo == null) 
+
+            if (this.EditorInfo == null)
             {
                 this.EditorInfo = new TokenEditorInfo(TokenType.String, TokenColor.String, TokenTriggers.None);
             }
         }
 
-        public override Token TryMatch(ParsingContext context, ISourceStream source) 
+        public override Token TryMatch(ParsingContext context, ISourceStream source)
         {
             Token result;
             if (context.VsLineScanState.Value != 0)
             {
                 byte level = context.VsLineScanState.TokenSubType;
                 result = CompleteMatch(context, source, level);
-            } 
-            else 
+            }
+            else
             {
-                //we are starting from scratch
                 byte level = 0;
-                if (!BeginMatch(context, source, ref level)) 
+                if (!BeginMatch(context, source, ref level))
                     return null;
 
                 result = CompleteMatch(context, source, level);
             }
-            
-            if (result != null) 
+
+            if (result != null)
                 return result;
 
             if (context.Mode == ParseMode.VsLineScan)
                 return CreateIncompleteToken(context, source);
 
-            return context.CreateErrorToken("Unclosed comment block");
+            this.Category = TokenCategory.Error;
+
+            return context.CreateErrorToken("unclosed comment block!");
         }
 
         private Token CreateIncompleteToken(ParsingContext context, ISourceStream source)
@@ -59,32 +62,30 @@ namespace NPLTools.IronyParser.Parser
             Token result = source.CreateToken(this.OutputTerminal);
             result.Flags |= TokenFlags.IsIncomplete;
             context.VsLineScanState.TerminalIndex = this.MultilineIndex;
-            return result; 
+            return result;
         }
 
         private bool BeginMatch(ParsingContext context, ISourceStream source, ref byte level)
         {
-            //Check starting symbol
-            if (!source.MatchSymbol(StartSymbol)) 
+            if (!source.MatchSymbol(StartSymbol))
                 return false;
 
-            //Found starting --, now determine whether this is a long comment.
             string text = source.Text.Substring(source.PreviewPosition + StartSymbol.Length);
             var match = Regex.Match(text, @"^(=*)\[");
-            if(match.Value != string.Empty)
+            if (match.Value != string.Empty)
             {
                 level = (byte)match.Groups[1].Value.Length;
                 return true;
             }
-           
-            return false; 
+
+            return false;
         }
 
         private Token CompleteMatch(ParsingContext context, ISourceStream source, byte level)
         {
             string text = source.Text.Substring(source.PreviewPosition);
             var matches = Regex.Matches(text, @"\](=*)\]");
-            foreach(Match match in matches) 
+            foreach (Match match in matches)
             {
                 if (match.Groups[1].Value.Length == (int)level)
                 {
@@ -93,7 +94,6 @@ namespace NPLTools.IronyParser.Parser
 
                     if (context.VsLineScanState.Value != 0)
                     {
-                        //We are using line-mode and begin terminal was on previous line.
                         SourceLocation tokenStart = new SourceLocation();
                         tokenStart.Position = 0;
 
@@ -104,18 +104,17 @@ namespace NPLTools.IronyParser.Parser
                     }
                     else
                     {
-                        return source.CreateToken(this.OutputTerminal); 
+                        return source.CreateToken(this.OutputTerminal);
                     }
                 }
             }
 
-            //The full match wasn't found, store the state for future parsing.
             context.VsLineScanState.TerminalIndex = this.MultilineIndex;
             context.VsLineScanState.TokenSubType = level;
             return null;
         }
 
-        public override IList<string> GetFirsts() 
+        public override IList<string> GetFirsts()
         {
             return new string[] { StartSymbol };
         }
@@ -123,5 +122,3 @@ namespace NPLTools.IronyParser.Parser
         #endregion
     }
 }
-
-
