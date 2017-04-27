@@ -115,7 +115,9 @@
     <Compile Include="Language\Tooltip\NPLQuickInfoSource.cs" />
     <Compile Include="NPLConstants.cs" />
     <Compile Include="Language\NPLLanguageInfo.cs" />
-    <Compile Include="NPLPackage.cs" />
+    <Compile Include="NPLToolsPackage.cs" />
+    <Compile Include="Project\Command1.cs" />
+    <Compile Include="Project\CustomCommand.cs" />
     <Compile Include="Project\Guids.cs" />
     <Compile Include="Project\ILuaProject.cs" />
     <Compile Include="Project\LuaConstants.cs" />
@@ -420,6 +422,7 @@
     <EmbeddedResource Include="VSPackage.resx">
       <MergeWithCTO>true</MergeWithCTO>
       <ManifestResourceName>VSPackage</ManifestResourceName>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
@@ -427,7 +430,9 @@
   </PropertyGroup>
   <Import Project="$(BuildRoot)\Common\Product\SharedProject\SharedProject.proj" />
   <ItemGroup>
-    <VSCTCompile Include="NPL.vsct" />
+    <VSCTCompile Include="NPLTools.vsct">
+      <ResourceName>Menus.ctmenu</ResourceName>
+    </VSCTCompile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Irony.Interpreter\Irony.Interpreter.csproj">

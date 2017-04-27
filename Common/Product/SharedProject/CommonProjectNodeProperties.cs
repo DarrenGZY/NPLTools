@@ -320,13 +320,26 @@ namespace Microsoft.VisualStudioTools.Project {
         }
 
         [Browsable(false)]
-        public VSLangProj.prjOutputType OutputType {
+        public virtual VSLangProj.prjOutputType OutputTypeEx {
             get {
-                throw new System.NotImplementedException();
+                return VSLangProj.prjOutputType.prjOutputTypeExe; 
             }
             set {
                 throw new System.NotImplementedException();
         }
+        }
+
+        [Browsable(false)]
+        public virtual VSLangProj.prjOutputType OutputType
+        {
+            get
+            {
+                throw new System.NotImplementedException();
+            }
+            set
+            {
+                throw new System.NotImplementedException();
+            }
         }
 
         [Browsable(false)]

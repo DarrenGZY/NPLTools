@@ -33,23 +33,24 @@ namespace NPLTools
     /// </remarks>
     [PackageRegistration(UseManagedResourcesOnly = true)]
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)] // Info on this package for Help/About
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
+    [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(Guids.NPLPackageGuidString)]
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
     [ProvideLanguageService(typeof(NPLLanguageInfo), NPLConstants.NPLExtension, 106, RequestStockColors = true, ShowSmartIndent = true, ShowCompletion = true, DefaultToInsertSpaces = true, HideAdvancedMembersByDefault = true, EnableAdvancedMembersOption = true, ShowDropDownOptions = true)]
     //[ProvideLanguageExtension(typeof(NPLLanguageInfo), NPLConstants.LuaFileExtension)]
     [ProvideEditorExtension2(typeof(NPLEditorFactory), NPLConstants.NPLFileExtension, 50, __VSPHYSICALVIEWATTRIBUTES.PVA_SupportsPreview, "*:1", ProjectGuid = LuaConstants.ProjectFactoryGuid, NameResourceID = 3004, DefaultName = "module")]
     [ProvideEditorExtension2(typeof(NPLEditorFactory), NPLConstants.LuaFileExtension, 50, __VSPHYSICALVIEWATTRIBUTES.PVA_SupportsPreview, "*:1", ProjectGuid = LuaConstants.ProjectFactoryGuid, NameResourceID = 3004, DefaultName = "module")]
     [ProvideLanguageExtension(typeof(NPLEditorFactory), NPLConstants.NPLFileExtension)]
     [ProvideLanguageExtension(typeof(NPLEditorFactory), NPLConstants.LuaFileExtension)]
-    [ProvideAutoLoad(UIContextGuids80.NoSolution)]
-    public sealed class NPLPackage : CommonPackage
+    //[ProvideAutoLoad(UIContextGuids80.NoSolution)]
+    public sealed class NPLToolsPackage : CommonPackage
     {
-        public static NPLPackage Instance;
+        public static NPLToolsPackage Instance;
         
         /// <summary>
         /// Initializes a new instance of the <see cref="NPLPackage"/> class.
         /// </summary>
-        public NPLPackage()
+        public NPLToolsPackage()
         {
             // Inside this method you can place any initialization code that does not require
             // any Visual Studio service because at this point the package object is created but
@@ -65,12 +66,9 @@ namespace NPLTools
         /// </summary>
         protected override void Initialize()
         {
+            CustomCommand.Initialize(this);
             base.Initialize();
-            if (Instance == null)
-                Instance = new NPLPackage();
-            DTE dte = GetService(typeof(DTE)) as DTE;
-            string a = dte.FileName;
-            //this.OnIdle += NPLPackage_OnIdle;
+            //RegisterCommands(new Microsoft.VisualStudioTools.Command[] { new Command1(this, 0x0100) }, new Guid("abed0028-4b50-4159-bfd9-6ee0fab8e26f"));
         }
 
         private void NPLPackage_OnIdle(object sender, ComponentManagerEventArgs e)

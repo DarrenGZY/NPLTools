@@ -7,7 +7,7 @@ namespace NPLTools
         public const string NPLLanguageInfoGuidString =
             "CF2A07F9-34D8-43A4-B54F-BD796850A0B4";
         public const string NPLPackageGuidString =
-            "D1B6571E-0282-4E91-81B6-11A3E2B26D2D";
+            "d1b6571e-0282-4e91-81b6-11a3e2b26d2d";
         public const string NPLEditorFactoryGuidString =
             "E2FCEC54-5522-453B-81FC-8FB57FAD5E4D";
         public static readonly Guid NPLDebugLanguage =

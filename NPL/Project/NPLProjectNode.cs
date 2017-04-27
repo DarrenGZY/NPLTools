@@ -71,10 +71,8 @@ namespace NPLTools.Project
             : base(package, Utilities.GetImageList(new FileStream("../../Resources/Solution.png", FileMode.Open)))//Images.png
         {
             //RegisterFileChangeNotification()
-            /*
-                        Type projectNodePropsType = typeof(LuaProjectNodeProperties);
-                        AddCATIDMapping(projectNodePropsType, projectNodePropsType.GUID);
-            */
+            Type projectNodePropsType = typeof(NPLProjectNodeProperties);
+            AddCATIDMapping(projectNodePropsType, projectNodePropsType.GUID);
         }
 
         public ProjectAnalyzer GetAnalyzer()
@@ -265,15 +263,16 @@ namespace NPLTools.Project
         {
             return typeof(ILibraryManager);
         }
-        /*
-                protected override NodeProperties CreatePropertiesObject() {
-                    return new LuaProjectNodeProperties(this);
-                }
 
-                public override CommonProjectConfig MakeConfiguration(string activeConfigName) {
-                    return new LuaProjectConfig(this, activeConfigName);
-                }
-        */
+        protected override NodeProperties CreatePropertiesObject()
+        {
+            return new CommonProjectNodeProperties(this);
+        }
+        /*
+                        public override CommonProjectConfig MakeConfiguration(string activeConfigName) {
+                            return new LuaProjectConfig(this, activeConfigName);
+                        }
+                */
         protected internal override FolderNode CreateFolderNode(ProjectElement element)
         {
             return new NPLFolderNode(this, element);
@@ -968,130 +967,124 @@ namespace NPLTools.Project
             }
             return base.ExecCommandOnNode(cmdGroup, cmd, nCmdexecopt, pvaIn, pvaOut);
         }
+
+        internal override int QueryStatusOnNode(Guid cmdGroup, uint cmd, IntPtr pCmdText, ref QueryStatusResult result)
+        {
+            if (cmdGroup == Guids.guidNPLProjectCmdSet)
+            {
+                // Display the custom menu only on the Project node.
+                if (cmd == LuaConstants.CustomProjectCommandsMenu)
+                {
+                    return VSConstants.S_OK;
+                }
+            }
+            return base.QueryStatusOnNode(cmdGroup, cmd, pCmdText, ref result);
+        }
         /*
-                internal override int QueryStatusOnNode(Guid cmdGroup, uint cmd, IntPtr pCmdText, ref QueryStatusResult result) {
-                    if (cmdGroup == GuidList.guidLuaToolsCmdSet) {
-                        // Display the custom menu only on the Project node.
-                        if (cmd == LuaConstants.CustomProjectCommandsMenu) {
-                            if (_customCommands != null && _customCommands.Any()) {
-                                result |= QueryStatusResult.SUPPORTED | QueryStatusResult.ENABLED;
-                            } else {
-                                result |= QueryStatusResult.INVISIBLE;
-                            }
+                       private CustomCommand GetCustomCommand(uint cmdId) {
+                           if ((int)cmdId >= LuaConstants.FirstCustomCmdId && (int)cmdId <= LuaConstants.LastCustomCmdId) {
 
-                            if (pCmdText != IntPtr.Zero && NativeMethods.OLECMDTEXT.GetFlags(pCmdText) == NativeMethods.OLECMDTEXT.OLECMDTEXTF.OLECMDTEXTF_NAME) {
-                                NativeMethods.OLECMDTEXT.SetText(pCmdText, _customCommandsDisplayLabel);
-                            }
-                            return VSConstants.S_OK;
-                        }
-                    }
-                    return base.QueryStatusOnNode(cmdGroup, cmd, pCmdText, ref result);
-                }
+                               int i = (int)cmdId - LuaConstants.FirstCustomCmdId;
+                               if (_customCommands == null || i >= _customCommands.Count) {
+                                   return null;
+                               }
 
-                private CustomCommand GetCustomCommand(uint cmdId) {
-                    if ((int)cmdId >= LuaConstants.FirstCustomCmdId && (int)cmdId <= LuaConstants.LastCustomCmdId) {
+                               return _customCommands[i];
+                           } else {
+                               return _customCommands.FirstOrDefault(c => c.AlternateCmdId == cmdId);
+                           }
+                       }
 
-                        int i = (int)cmdId - LuaConstants.FirstCustomCmdId;
-                        if (_customCommands == null || i >= _customCommands.Count) {
-                            return null;
-                        }
+                       protected override QueryStatusResult QueryStatusSelectionOnNodes(IList<HierarchyNode> selectedNodes, Guid cmdGroup, uint cmd, IntPtr pCmdText) {
+                           if (cmdGroup == GuidList.guidLuaToolsCmdSet) {
+                               var command = GetCustomCommand(cmd);
+                               if (command != null) {
+                                   // Update display text for the menu commands.
+                                   if ((int)cmd >= LuaConstants.FirstCustomCmdId && (int)cmd <= LuaConstants.LastCustomCmdId) {
+                                       if (pCmdText != IntPtr.Zero && NativeMethods.OLECMDTEXT.GetFlags(pCmdText) == NativeMethods.OLECMDTEXT.OLECMDTEXTF.OLECMDTEXTF_NAME) {
+                                           NativeMethods.OLECMDTEXT.SetText(pCmdText, command.DisplayLabel);
+                                       }
+                                   }
 
-                        return _customCommands[i];
-                    } else {
-                        return _customCommands.FirstOrDefault(c => c.AlternateCmdId == cmdId);
-                    }
-                }
+                                   var result = QueryStatusResult.SUPPORTED;
+                                   if (command.CanExecute) {
+                                       result |= QueryStatusResult.ENABLED;
+                                   }
+                                   return result;
+                               }
 
-                protected override QueryStatusResult QueryStatusSelectionOnNodes(IList<HierarchyNode> selectedNodes, Guid cmdGroup, uint cmd, IntPtr pCmdText) {
-                    if (cmdGroup == GuidList.guidLuaToolsCmdSet) {
-                        var command = GetCustomCommand(cmd);
-                        if (command != null) {
-                            // Update display text for the menu commands.
-                            if ((int)cmd >= LuaConstants.FirstCustomCmdId && (int)cmd <= LuaConstants.LastCustomCmdId) {
-                                if (pCmdText != IntPtr.Zero && NativeMethods.OLECMDTEXT.GetFlags(pCmdText) == NativeMethods.OLECMDTEXT.OLECMDTEXTF.OLECMDTEXTF_NAME) {
-                                    NativeMethods.OLECMDTEXT.SetText(pCmdText, command.DisplayLabel);
-                                }
-                            }
+                               if ((int)cmd >= LuaConstants.FirstCustomCmdId && (int)cmd <= LuaConstants.LastCustomCmdId) {
+                                   // All unspecified custom commands are hidden
+                                   return QueryStatusResult.INVISIBLE | QueryStatusResult.NOTSUPPORTED;
+                               }
+                           }
 
-                            var result = QueryStatusResult.SUPPORTED;
-                            if (command.CanExecute) {
-                                result |= QueryStatusResult.ENABLED;
-                            }
-                            return result;
-                        }
+                           return base.QueryStatusSelectionOnNodes(selectedNodes, cmdGroup, cmd, pCmdText);
+                       }
 
-                        if ((int)cmd >= LuaConstants.FirstCustomCmdId && (int)cmd <= LuaConstants.LastCustomCmdId) {
-                            // All unspecified custom commands are hidden
-                            return QueryStatusResult.INVISIBLE | QueryStatusResult.NOTSUPPORTED;
-                        }
-                    }
+                       protected override int ExecCommandIndependentOfSelection(Guid cmdGroup, uint cmdId, uint cmdExecOpt, IntPtr vaIn, IntPtr vaOut, CommandOrigin commandOrigin, out bool handled) {
+                           if (cmdGroup == GuidList.guidLuaToolsCmdSet) {
+                               var command = GetCustomCommand(cmdId);
 
-                    return base.QueryStatusSelectionOnNodes(selectedNodes, cmdGroup, cmd, pCmdText);
-                }
+                               if (command != null) {
+                                   handled = true;
+                                   if (command.CanExecute) {
+                                       if (!Utilities.SaveDirtyFiles()) {
+                                           return VSConstants.S_OK;
+                                       }
 
-                protected override int ExecCommandIndependentOfSelection(Guid cmdGroup, uint cmdId, uint cmdExecOpt, IntPtr vaIn, IntPtr vaOut, CommandOrigin commandOrigin, out bool handled) {
-                    if (cmdGroup == GuidList.guidLuaToolsCmdSet) {
-                        var command = GetCustomCommand(cmdId);
+                                       command.Execute(this).ContinueWith(t => {
+                                           if (t.Exception != null) {
+                                               MessageBox.Show(
+                                                   SR.GetString(
+                                                       SR.ErrorRunningCustomCommand,
+                                                       command.DisplayLabelWithoutAccessKeys,
+                                                       t.Exception.InnerException.Message
+                                                   ),
+                                                   SR.GetString(SR.LuaToolsForVisualStudio)
+                                               );
+                                           }
+                                       },
+                                           CancellationToken.None,
+                                           TaskContinuationOptions.None,
+                                           TaskScheduler.FromCurrentSynchronizationContext()
+                                       );
+                                   }
+                                   return VSConstants.S_OK;
+                               }
+                           }
 
-                        if (command != null) {
-                            handled = true;
-                            if (command.CanExecute) {
-                                if (!Utilities.SaveDirtyFiles()) {
-                                    return VSConstants.S_OK;
-                                }
+                           return base.ExecCommandIndependentOfSelection(cmdGroup, cmdId, cmdExecOpt, vaIn, vaOut, commandOrigin, out handled);
+                       }
 
-                                command.Execute(this).ContinueWith(t => {
-                                    if (t.Exception != null) {
-                                        MessageBox.Show(
-                                            SR.GetString(
-                                                SR.ErrorRunningCustomCommand,
-                                                command.DisplayLabelWithoutAccessKeys,
-                                                t.Exception.InnerException.Message
-                                            ),
-                                            SR.GetString(SR.LuaToolsForVisualStudio)
-                                        );
-                                    }
-                                },
-                                    CancellationToken.None,
-                                    TaskContinuationOptions.None,
-                                    TaskScheduler.FromCurrentSynchronizationContext()
-                                );
-                            }
-                            return VSConstants.S_OK;
-                        }
-                    }
+                       protected override bool DisableCmdInCurrentMode(Guid cmdGroup, uint cmd) {
+                           if (cmdGroup == GuidList.guidLuaToolsCmdSet) {
+                               if (IsCurrentStateASuppressCommandsMode()) {
+                                   switch ((int)cmd) {
+                                       case CommonConstants.AddSearchPathCommandId:
+                                       case CommonConstants.StartDebuggingCmdId:
+                                       case CommonConstants.StartWithoutDebuggingCmdId:
+                                           return true;
+                                       case LuaConstants.ActivateEnvironment:
+                                       case LuaConstants.AddEnvironment:
+                                       case LuaConstants.AddExistingVirtualEnv:
+                                       case LuaConstants.AddVirtualEnv:
+                                       case LuaConstants.InstallLuaPackage:
+                                       case LuaConstants.AddSearchPathZipCommandId:
+                                       case LuaConstants.AddLuaPathToSearchPathCommandId:
+                                           return true;
+                                       default:
+                                           if (cmd >= LuaConstants.FirstCustomCmdId && cmd <= LuaConstants.LastCustomCmdId) {
+                                               return true;
+                                           }
+                                           break;
+                                   }
+                               }
+                           }
 
-                    return base.ExecCommandIndependentOfSelection(cmdGroup, cmdId, cmdExecOpt, vaIn, vaOut, commandOrigin, out handled);
-                }
-
-                protected override bool DisableCmdInCurrentMode(Guid cmdGroup, uint cmd) {
-                    if (cmdGroup == GuidList.guidLuaToolsCmdSet) {
-                        if (IsCurrentStateASuppressCommandsMode()) {
-                            switch ((int)cmd) {
-                                case CommonConstants.AddSearchPathCommandId:
-                                case CommonConstants.StartDebuggingCmdId:
-                                case CommonConstants.StartWithoutDebuggingCmdId:
-                                    return true;
-                                case LuaConstants.ActivateEnvironment:
-                                case LuaConstants.AddEnvironment:
-                                case LuaConstants.AddExistingVirtualEnv:
-                                case LuaConstants.AddVirtualEnv:
-                                case LuaConstants.InstallLuaPackage:
-                                case LuaConstants.AddSearchPathZipCommandId:
-                                case LuaConstants.AddLuaPathToSearchPathCommandId:
-                                    return true;
-                                default:
-                                    if (cmd >= LuaConstants.FirstCustomCmdId && cmd <= LuaConstants.LastCustomCmdId) {
-                                        return true;
-                                    }
-                                    break;
-                            }
-                        }
-                    }
-
-                    return base.DisableCmdInCurrentMode(cmdGroup, cmd);
-                }
-        */
+                           return base.DisableCmdInCurrentMode(cmdGroup, cmd);
+                       }
+               */
         #region ILuaProject Members
 
         string ILuaProject.ProjectName

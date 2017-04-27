@@ -110,7 +110,7 @@ namespace NPLTools.Language
                 }
                 else
                 {
-                    NPLPackage.NavigateTo(_serviceProvider, span.Value.Key, Guid.Empty, span.Value.Value.StartPosition); 
+                    NPLToolsPackage.NavigateTo(_serviceProvider, span.Value.Key, Guid.Empty, span.Value.Value.StartPosition); 
                 }
             }
         }
