@@ -36,7 +36,8 @@
          other menus or buttons (commands); from a visual point of view you can see the
          group as the part of a menu contained between two lines. The parent of a group
          must be a menu. -->
-    <Menus>
+   <!-- 
+   <Menus>
       <Menu guid="guidCommand1PackageCmdSet" id="NPLMenu" priority="0x0000" type="Menu">
         <Parent guid="guidSHLMainMenu" id="IDG_VS_MM_PROJECT"/>
         <Strings>
@@ -53,6 +54,7 @@
         <Parent guid="guidCommand1PackageCmdSet" id="NPLMenu"/>
       </Group>
     </Groups>
+    -->
     <!--Buttons section. -->
     <!--This section defines the elements the user can interact with, like a menu command or a button
         or combo box in a toolbar. -->
@@ -64,15 +66,19 @@
               <CommandFlag>DefaultInvisible</CommandFlag>
               <CommandFlag>DynamicVisibility</CommandFlag>
           If you do not want an image next to your command, remove the Icon node /> -->
+      <!--
       <Button guid="guidCommand1PackageCmdSet" id="Command1Id" priority="0x0100" type="Button">
         <Parent guid="guidCommand1PackageCmdSet" id="MyMenuGroup" />
         <Strings>
           <ButtonText>Invoke Command1</ButtonText>
         </Strings>
       </Button>
-
-      <Button guid="guidCommand1PackageCmdSet" id="OpenCommandPrompt" priority="0x0000" type="Button">
-        <Parent guid="guidCommand1PackageCmdSet" id="NPLGroup"/>
+      -->
+      <Button guid="guidCommand1PackageCmdSet" id="OpenCommandPrompt" priority="0x0100" type="Button">
+        <Parent guid="guidSHLMainMenu" id="IDG_VS_CTXT_PROJECT_EXPLORE"/>
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <CommandFlag>DefaultDisabled</CommandFlag>
         <Strings>
           <ButtonText>Open Command &amp;Prompt Here...</ButtonText>
           <ToolTipText>Opens Command Prompt at the selected file or directory.</ToolTipText>
@@ -84,9 +90,12 @@
   </Commands>
 
   <CommandPlacements>
+    <!--<CommandPlacement guid="guidCommand1PackageCmdSet" id="OpenCommandPrompt" priority="0x0100">
+      <Parent guid="guidCommand1PackageCmdSet" id="MyMenuGroup"/>
+    </CommandPlacement>-->
     <CommandPlacement guid="guidCommand1PackageCmdSet" id="OpenCommandPrompt" priority="0x0100">
-      <Parent guid="guidCommand1PackageCmdSet" id="IDG_VS_CTXT_PROJECT_EXPLORE"/>
-    </CommandPlacement>  
+      <Parent guid="guidSHLMainMenu" id="IDG_VS_CTXT_FOLDER_EXPLORE"/>
+    </CommandPlacement>
   </CommandPlacements>
     
   <Symbols>
@@ -95,11 +104,11 @@
 
     <!-- This is the guid used to group the menu commands together -->
     <GuidSymbol name="guidCommand1PackageCmdSet" value="{DD092ECF-972B-471B-AA9B-20845E1DFE4C}">
-      <IDSymbol name="MyMenuGroup" value="0x1020" />
+      <!--<IDSymbol name="MyMenuGroup" value="0x1020" />
       <IDSymbol name="Command1Id" value="0x0100" />
       <IDSymbol name="NPLMenu" value="0x0101"/>
-      <IDSymbol name="NPLGroup" value="0x0102"/>
-      <IDSymbol name="OpenCommandPrompt" value="0x0103"/>
+      <IDSymbol name="NPLGroup" value="0x0102"/>-->
+      <IDSymbol name="OpenCommandPrompt" value="0x10002"/>
     </GuidSymbol>
   </Symbols>
 </CommandTable>

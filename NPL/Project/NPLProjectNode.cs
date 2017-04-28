@@ -939,7 +939,6 @@ namespace NPLTools.Project
             {
                 Received.Append(e.Data);
             }
-
         }
 
         protected override string AddReferenceExtensions
@@ -965,9 +964,13 @@ namespace NPLTools.Project
                         return VSConstants.S_OK;
                 }
             }
-            else if (cmdGroup == Guids.guidNPLProjectCmdSet)
+            else if (cmdGroup == ProjectMgr.SharedCommandGuid)
             {
-
+                switch ((SharedCommands)cmd)
+                {
+                    case SharedCommands.OpenCommandPromptHere:
+                        return OpenCommandPrompt(FullPathToChildren);
+                }
             }
             return base.ExecCommandOnNode(cmdGroup, cmd, nCmdexecopt, pvaIn, pvaOut);
         }
@@ -983,6 +986,17 @@ namespace NPLTools.Project
                 }
             }
             return base.QueryStatusOnNode(cmdGroup, cmd, pCmdText, ref result);
+        }
+
+        internal int OpenCommandPrompt(string path, string subtitle = null)
+        {
+            var psi = new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "cmd.exe"));
+            psi.UseShellExecute = false;
+            psi.WorkingDirectory = path;
+
+            Process.Start(psi);
+            return VSConstants.S_OK;
+
         }
         /*
                        private CustomCommand GetCustomCommand(uint cmdId) {

@@ -424,7 +424,7 @@ namespace Microsoft.VisualStudioTools.Project {
 
         [Browsable(false)]
         public string __id {
-            get { throw new NotImplementedException(); }
+            get { return String.Empty; }
         }
 
         [Browsable(false)]
