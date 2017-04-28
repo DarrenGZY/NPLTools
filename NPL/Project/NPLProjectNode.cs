@@ -266,7 +266,7 @@ namespace NPLTools.Project
 
         protected override NodeProperties CreatePropertiesObject()
         {
-            return new CommonProjectNodeProperties(this);
+            return new NPLProjectNodeProperties(this);
         }
         /*
                         public override CommonProjectConfig MakeConfiguration(string activeConfigName) {
@@ -965,6 +965,10 @@ namespace NPLTools.Project
                         return VSConstants.S_OK;
                 }
             }
+            else if (cmdGroup == Guids.guidNPLProjectCmdSet)
+            {
+
+            }
             return base.ExecCommandOnNode(cmdGroup, cmd, nCmdexecopt, pvaIn, pvaOut);
         }
 
@@ -973,7 +977,7 @@ namespace NPLTools.Project
             if (cmdGroup == Guids.guidNPLProjectCmdSet)
             {
                 // Display the custom menu only on the Project node.
-                if (cmd == LuaConstants.CustomProjectCommandsMenu)
+                if (cmd == 256)
                 {
                     return VSConstants.S_OK;
                 }
@@ -1284,13 +1288,15 @@ namespace NPLTools.Project
                 }
 
                 #endregion
-
-                public override Guid SharedCommandGuid {
-                    get {
-                        return GuidList.guidLuaToolsCmdSet;
-                    }
-                }
-
+        */
+        public override Guid SharedCommandGuid
+        {
+            get
+            {
+                return Guids.guidNPLProjectCmdSet;
+            }
+        }
+        /*
                 protected internal override int ShowAllFiles() {
                     int hr = base.ShowAllFiles();
                     BoldActiveEnvironment();

@@ -12,15 +12,23 @@ namespace NPLTools.Project
     [ComVisible(true)]
     [ClassInterface(ClassInterfaceType.AutoDual)]
     [Guid("F30D83A9-D13E-4FF2-A7BD-3685618EFA89")]
-    internal class NPLProjectNodeProperties : CommonProjectNodeProperties
+    public class NPLProjectNodeProperties : CommonProjectNodeProperties
     {
-        public NPLProjectNodeProperties(ProjectNode node) : base(node)
+        internal NPLProjectNodeProperties(NPLProjectNode node) : base(node)
         {
         }
 
         [Browsable(false)]
-        public string NodeExeArguments
-        { get; set;
+        public VSLangProj.prjOutputType OutputTypeEx
+        {
+            get
+            {
+                return VSLangProj.prjOutputType.prjOutputTypeExe;
+            }
+            set
+            {
+                throw new System.NotImplementedException();
+            }
         }
 
         [Browsable(false)]

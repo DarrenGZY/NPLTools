@@ -19,7 +19,8 @@
 
   <!--This header contains the command ids for the menus provided by the shell. -->
   <Extern href="vsshlids.h"/>
-
+  <Extern href="VSDbgCmd.h"/>
+  <Extern href="VsDebugGuids.h"/>
   <!--The Commands section is where commands, menus, and menu groups are defined.
       This section uses a Guid to identify the package that provides the command defined inside it. -->
   <Commands package="guidCommand1Package">
@@ -35,12 +36,23 @@
          other menus or buttons (commands); from a visual point of view you can see the
          group as the part of a menu contained between two lines. The parent of a group
          must be a menu. -->
+    <Menus>
+      <Menu guid="guidCommand1PackageCmdSet" id="NPLMenu" priority="0x0000" type="Menu">
+        <Parent guid="guidSHLMainMenu" id="IDG_VS_MM_PROJECT"/>
+        <Strings>
+          <ButtonText>NPL</ButtonText>
+        </Strings>
+      </Menu>
+    </Menus>
     <Groups>
       <Group guid="guidCommand1PackageCmdSet" id="MyMenuGroup" priority="0x0600">
         <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS"/>
       </Group>
-    </Groups>
 
+      <Group guid="guidCommand1PackageCmdSet" id ="NPLGroup" priority="0x0000">
+        <Parent guid="guidCommand1PackageCmdSet" id="NPLMenu"/>
+      </Group>
+    </Groups>
     <!--Buttons section. -->
     <!--This section defines the elements the user can interact with, like a menu command or a button
         or combo box in a toolbar. -->
@@ -58,17 +70,36 @@
           <ButtonText>Invoke Command1</ButtonText>
         </Strings>
       </Button>
+
+      <Button guid="guidCommand1PackageCmdSet" id="OpenCommandPrompt" priority="0x0000" type="Button">
+        <Parent guid="guidCommand1PackageCmdSet" id="NPLGroup"/>
+        <Strings>
+          <ButtonText>Open Command &amp;Prompt Here...</ButtonText>
+          <ToolTipText>Opens Command Prompt at the selected file or directory.</ToolTipText>
+          <CanonicalName>.Python.Open Command Prompt Here</CanonicalName>
+          <LocCanonicalName>.Python.Open Command Prompt Here</LocCanonicalName>
+        </Strings>
+      </Button>
     </Buttons>
   </Commands>
 
+  <CommandPlacements>
+    <CommandPlacement guid="guidCommand1PackageCmdSet" id="OpenCommandPrompt" priority="0x0100">
+      <Parent guid="guidCommand1PackageCmdSet" id="IDG_VS_CTXT_PROJECT_EXPLORE"/>
+    </CommandPlacement>  
+  </CommandPlacements>
+    
   <Symbols>
     <!-- This is the package guid. -->
-    <GuidSymbol name="guidCommand1Package" value="{f5573684-48e1-4998-af39-4ebbd60d191e}" />
+    <GuidSymbol name="guidCommand1Package" value="{d1b6571e-0282-4e91-81b6-11a3e2b26d2d}" />
 
     <!-- This is the guid used to group the menu commands together -->
-    <GuidSymbol name="guidCommand1PackageCmdSet" value="{8cc9a6e8-3c55-487c-bac5-7b5759af6103}">
+    <GuidSymbol name="guidCommand1PackageCmdSet" value="{DD092ECF-972B-471B-AA9B-20845E1DFE4C}">
       <IDSymbol name="MyMenuGroup" value="0x1020" />
       <IDSymbol name="Command1Id" value="0x0100" />
+      <IDSymbol name="NPLMenu" value="0x0101"/>
+      <IDSymbol name="NPLGroup" value="0x0102"/>
+      <IDSymbol name="OpenCommandPrompt" value="0x0103"/>
     </GuidSymbol>
   </Symbols>
 </CommandTable>
