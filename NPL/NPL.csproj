@@ -116,8 +116,6 @@
     <Compile Include="NPLConstants.cs" />
     <Compile Include="Language\NPLLanguageInfo.cs" />
     <Compile Include="NPLToolsPackage.cs" />
-    <Compile Include="Project\Command1.cs" />
-    <Compile Include="Project\CustomCommand.cs" />
     <Compile Include="Project\Guids.cs" />
     <Compile Include="Project\ILuaProject.cs" />
     <Compile Include="Project\LuaConstants.cs" />

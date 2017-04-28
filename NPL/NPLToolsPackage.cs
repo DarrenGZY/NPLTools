@@ -66,9 +66,7 @@ namespace NPLTools
         /// </summary>
         protected override void Initialize()
         {
-            CustomCommand.Initialize(this);
             base.Initialize();
-            //RegisterCommands(new Microsoft.VisualStudioTools.Command[] { new Command1(this, 0x0100) }, new Guid("abed0028-4b50-4159-bfd9-6ee0fab8e26f"));
         }
 
         private void NPLPackage_OnIdle(object sender, ComponentManagerEventArgs e)

@@ -218,7 +218,7 @@ namespace NPLTools.Intelligense
         }
 
         /// <summary>
-        /// 
+        /// Format selection block
         /// </summary>
         /// <param name="entry"></param>
         /// <param name="textView"></param>

@@ -21,15 +21,15 @@ namespace NPL.Test
             //LuaGrammar grammar = new LuaGrammar();
             Irony.Parsing.Parser parser = new Irony.Parsing.Parser(new NPLTools.IronyParser.LuaGrammar());
 
-            string code = "";
-            try
-            {
-                code = File.ReadAllText("test.lua");
-            }
-            catch(Exception e)
-            {
+            string code = "local a = { a = 1, b = 1, }";
+            //try
+            //{
+            //    code = File.ReadAllText("test.lua");
+            //}
+            //catch(Exception e)
+            //{
 
-            }
+            //}
             Irony.Parsing.ParseTree tree = parser.Parse(code);
             
             PrintTree(tree);
