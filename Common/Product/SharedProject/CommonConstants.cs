@@ -1,16 +1,18 @@
-/* ****************************************************************************
- *
- * Copyright (c) Microsoft Corporation. 
- *
- * This source code is subject to terms and conditions of the Apache License, Version 2.0. A 
- * copy of the license can be found in the License.html file at the root of this distribution. If 
- * you cannot locate the Apache License, Version 2.0, please send an email to 
- * vspython@microsoft.com. By using this source code in any fashion, you are agreeing to be bound 
- * by the terms of the Apache License, Version 2.0.
- *
- * You must not remove this notice, or any other, from this software.
- *
- * ***************************************************************************/
+// Visual Studio Shared Project
+// Copyright(c) Microsoft Corporation
+// All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the License); you may not use
+// this file except in compliance with the License. You may obtain a copy of the
+// License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// THIS CODE IS PROVIDED ON AN  *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS
+// OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY
+// IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+// MERCHANTABLITY OR NON-INFRINGEMENT.
+//
+// See the Apache Version 2.0 License for specific language governing
+// permissions and limitations under the License.
 
 using System;
 using Microsoft.VisualStudio;
@@ -36,6 +38,8 @@ namespace Microsoft.VisualStudioTools {
         /// </summary>
         internal const string AddReferenceMRUPageGuid = "{19B97F03-9594-4c1c-BE28-25FF030113B3}";
 
+        internal const string TextEditorPackage = "{F5E7E720-1401-11D1-883B-0000F87579D2}";
+
         /// <summary>
         /// Do not change this constant. This is Visual Studio core text editor GUID.
         /// </summary>
@@ -57,20 +61,11 @@ namespace Microsoft.VisualStudioTools {
         public const int ConsoleHorizontalScrollbar = 0;
         public const int ConsoleVerticalScrollbar = 1;
 
-        //Search Paths container node context menu
-        public const int AddSearchPathCommandId = 0x4002;
-
         //Start Without Debugging command
         public const int StartWithoutDebuggingCmdId = 0x4004;
 
         //Start Debugging command
         public const int StartDebuggingCmdId = 0x4005;
-
-        //Search Path project property
-        public const string SearchPath = "SearchPath";
-
-        //Interpreter Path project property
-        public const string InterpreterPath = "InterpreterPath";
 
         //Working Directory project property
         public const string WorkingDirectory = "WorkingDirectory";
@@ -83,13 +78,6 @@ namespace Microsoft.VisualStudioTools {
         //We want this node to be the first node in the Search Path subtree
         public const int WorkingDirectorySortPriority = 100;
 
-        //Sort priority for the Search Path container node
-        //We want this node to come after References, but before project home folders
-        public const int SearchPathContainerNodeSortPriority = 400;
-
-        //Maximal sort priority for Search Path nodes
-        public const int SearchPathNodeMaxSortPriority = 110;
-        
         //Project Home project property
         public const string ProjectHome = "ProjectHome";
 
@@ -103,8 +91,6 @@ namespace Microsoft.VisualStudioTools {
 
         public const string PublishUrl = "PublishUrl";
 
-        public const string InterpreterArguments = "InterpreterArguments";
-
         //These are VS internal constants - don't change them
         public static Guid Std97CmdGroupGuid = typeof(VSConstants.VSStd97CmdID).GUID;
         public static Guid Std2KCmdGroupGuid = typeof(VSConstants.VSStd2KCmdID).GUID;
@@ -112,7 +98,7 @@ namespace Microsoft.VisualStudioTools {
         //Command statuses
         public const int NotSupportedInvisibleCmdStatus = (int)OleConstants.OLECMDERR_E_NOTSUPPORTED |
                             (int)OleConstants.OLECMDSTATE_INVISIBLE;
-        public const int SupportedEnabledCmdStatus = (int)(OLECMDF.OLECMDF_SUPPORTED | 
+        public const int SupportedEnabledCmdStatus = (int)(OLECMDF.OLECMDF_SUPPORTED |
                             OLECMDF.OLECMDF_ENABLED);
         public const int SupportedCmdStatus = (int)OLECMDF.OLECMDF_SUPPORTED;
 
@@ -129,5 +115,9 @@ namespace Microsoft.VisualStudioTools {
         /// </summary>
         public const string ProjectView = "ProjectView";
 
+        /// <summary>
+        /// Item meta data for whether or not a item in msbuild is visible in the project
+        /// </summary>
+        public const string Visible = "Visible";
     }
 }

@@ -45,7 +45,7 @@ using OleConstants = Microsoft.VisualStudio.OLE.Interop.Constants;
 using Task = System.Threading.Tasks.Task;
 using VsCommands2K = Microsoft.VisualStudio.VSConstants.VSStd2KCmdID;
 using VsMenus = Microsoft.VisualStudioTools.Project.VsMenus;
-
+using IServiceProvider = System.IServiceProvider;
 using Microsoft.VisualStudio.OLE.Interop;
 using NPLTools.Intelligense;
 using NPLTools.Language;
@@ -66,7 +66,7 @@ namespace NPLTools.Project
         private readonly HashSet<string> _warningFiles = new HashSet<string>();
         private readonly HashSet<string> _errorFiles = new HashSet<string>();
 
-        public NPLProjectNode(CommonProjectPackage package)
+        public NPLProjectNode(IServiceProvider package)
             //            : base(package, Utilities.GetImageList(typeof(LuaProjectNode).Assembly.GetManifestResourceStream(LuaConstants.ProjectImageList))) {
             : base(package, Utilities.GetImageList(new FileStream("../../Resources/Solution.png", FileMode.Open)))//Images.png
         {
@@ -829,46 +829,46 @@ namespace NPLTools.Project
         /// will be created immediately unless another project in the solution
         /// can provide a matching analyzer.
         /// </summary>
-        private void ActiveInterpreterChanged(object sender, EventArgs e)
-        {
-            if (IsClosed)
-            {
-                return;
-            }
+        //private void ActiveInterpreterChanged(object sender, EventArgs e)
+        //{
+        //    if (IsClosed)
+        //    {
+        //        return;
+        //    }
 
-            if (_uiSync.InvokeRequired)
-            {
-                _uiSync.Invoke((EventHandler)ActiveInterpreterChanged, sender, e);
-                return;
-            }
-            /*
-                        RefreshInterpreters();
+        //    if (_uiSync.InvokeRequired)
+        //    {
+        //        _uiSync.Invoke((EventHandler)ActiveInterpreterChanged, sender, e);
+        //        return;
+        //    }
+        //    /*
+        //                RefreshInterpreters();
 
-                        if (_analyzer != null) {
-                            UnHookErrorsAndWarnings(_analyzer);
-                        }
-                        var analyzer = CreateAnalyzer();
+        //                if (_analyzer != null) {
+        //                    UnHookErrorsAndWarnings(_analyzer);
+        //                }
+        //                var analyzer = CreateAnalyzer();
 
-                        Reanalyze(this, analyzer);
-                        if (_analyzer != null) {
-                            analyzer.SwitchAnalyzers(_analyzer);
-                            if (_analyzer.RemoveUser()) {
-                                _analyzer.Dispose();
-                            }
-                        }
+        //                Reanalyze(this, analyzer);
+        //                if (_analyzer != null) {
+        //                    analyzer.SwitchAnalyzers(_analyzer);
+        //                    if (_analyzer.RemoveUser()) {
+        //                        _analyzer.Dispose();
+        //                    }
+        //                }
 
-                        _analyzer = analyzer;
-                        var searchPath = ParseSearchPath();
-                        if (searchPath != null && _analyzer != null) {
-                            AnalyzeSearchPaths(searchPath);
-                        }
-            */
-            var analyzerChanged = ProjectAnalyzerChanged;
-            if (analyzerChanged != null)
-            {
-                analyzerChanged(this, EventArgs.Empty);
-            }
-        }
+        //                _analyzer = analyzer;
+        //                var searchPath = ParseSearchPath();
+        //                if (searchPath != null && _analyzer != null) {
+        //                    AnalyzeSearchPaths(searchPath);
+        //                }
+        //    */
+        //    var analyzerChanged = ProjectAnalyzerChanged;
+        //    if (analyzerChanged != null)
+        //    {
+        //        analyzerChanged(this, EventArgs.Empty);
+        //    }
+        //}
         /*
                 private void Reanalyze(HierarchyNode node, VsProjectAnalyzer newAnalyzer) {
                     if (node != null) {
@@ -1296,12 +1296,20 @@ namespace NPLTools.Project
                 return Guids.guidNPLProjectCmdSet;
             }
         }
+
+        internal override string IssueTrackerUrl
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
         /*
-                protected internal override int ShowAllFiles() {
-                    int hr = base.ShowAllFiles();
-                    BoldActiveEnvironment();
-                    return hr;
-                }
-        */
+       protected internal override int ShowAllFiles() {
+           int hr = base.ShowAllFiles();
+           BoldActiveEnvironment();
+           return hr;
+       }
+*/
     }
 }

@@ -1,16 +1,18 @@
-/* ****************************************************************************
- *
- * Copyright (c) Microsoft Corporation. 
- *
- * This source code is subject to terms and conditions of the Apache License, Version 2.0. A 
- * copy of the license can be found in the License.html file at the root of this distribution. If 
- * you cannot locate the Apache License, Version 2.0, please send an email to 
- * vspython@microsoft.com. By using this source code in any fashion, you are agreeing to be bound 
- * by the terms of the Apache License, Version 2.0.
- *
- * You must not remove this notice, or any other, from this software.
- *
- * ***************************************************************************/
+// Visual Studio Shared Project
+// Copyright(c) Microsoft Corporation
+// All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the License); you may not use
+// this file except in compliance with the License. You may obtain a copy of the
+// License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// THIS CODE IS PROVIDED ON AN  *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS
+// OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY
+// IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+// MERCHANTABLITY OR NON-INFRINGEMENT.
+//
+// See the Apache Version 2.0 License for specific language governing
+// permissions and limitations under the License.
 
 using System;
 using System.Collections.Generic;
@@ -47,18 +49,28 @@ namespace Microsoft.VisualStudioTools {
 
         #endregion
 
-        static CommonPackage() {
-            // ensure the UI thread is initialized
-            UIThread.Instance.Run(() => { });
-        }
-
         internal CommonPackage() {
-            IServiceContainer container = this as IServiceContainer;
-            ServiceCreatorCallback callback = new ServiceCreatorCallback(CreateService);
-            //container.AddService(GetLanguageServiceType(), callback, true);
-            container.AddService(GetLibraryManagerType(), callback, true);
+#if DEBUG
+            AppDomain.CurrentDomain.UnhandledException += (sender, e) => {
+                if (e.IsTerminating) {
+                    var ex = e.ExceptionObject as Exception;
+                    if (ex != null) {
+                        Debug.Fail(
+                            string.Format("An unhandled exception is about to terminate the process:\n\n{0}", ex.Message),
+                            ex.ToString()
+                        );
+                    } else {
+                        Debug.Fail(string.Format(
+                            "An unhandled exception is about to terminate the process:\n\n{0}",
+                            e.ExceptionObject
+                        ));
+                    }
+                }
+            };
+#endif
         }
 
+        
         internal static Dictionary<Command, MenuCommand> Commands {
             get {
                 return _commands;
@@ -103,16 +115,12 @@ namespace Microsoft.VisualStudioTools {
                     foreach (var command in commands) {
                         var beforeQueryStatus = command.BeforeQueryStatus;
                         CommandID toolwndCommandID = new CommandID(cmdSet, command.CommandId);
-                        if (beforeQueryStatus == null) {
-                            MenuCommand menuToolWin = new MenuCommand(command.DoCommand, toolwndCommandID);
-                            mcs.AddCommand(menuToolWin);
-                            _commands[command] = menuToolWin;
-                        } else {
-                            OleMenuCommand menuToolWin = new OleMenuCommand(command.DoCommand, toolwndCommandID);
+                        OleMenuCommand menuToolWin = new OleMenuCommand(command.DoCommand, toolwndCommandID);
+                        if (beforeQueryStatus != null) {
                             menuToolWin.BeforeQueryStatus += beforeQueryStatus;
-                            mcs.AddCommand(menuToolWin);
-                            _commands[command] = menuToolWin;
                         }
+                        mcs.AddCommand(menuToolWin);
+                        _commands[command] = menuToolWin;
                     }
                 }
             }
@@ -122,8 +130,8 @@ namespace Microsoft.VisualStudioTools {
         /// Gets the current IWpfTextView that is the active document.
         /// </summary>
         /// <returns></returns>
-        public static IWpfTextView GetActiveTextView() {
-            var monitorSelection = (IVsMonitorSelection)Package.GetGlobalService(typeof(SVsShellMonitorSelection));
+        public static IWpfTextView GetActiveTextView(System.IServiceProvider serviceProvider) {
+            var monitorSelection = (IVsMonitorSelection)serviceProvider.GetService(typeof(SVsShellMonitorSelection));
             if (monitorSelection == null) {
                 return null;
             }
@@ -144,7 +152,20 @@ namespace Microsoft.VisualStudioTools {
                 // TODO: Report error
                 return null;
             }
-
+#if DEV11_OR_LATER
+            if (docView is IVsDifferenceCodeWindow) {
+                var diffWindow = (IVsDifferenceCodeWindow)docView;
+                switch (diffWindow.DifferenceViewer.ActiveViewType) {
+                    case VisualStudio.Text.Differencing.DifferenceViewType.InlineView:
+                        return diffWindow.DifferenceViewer.InlineView;
+                    case VisualStudio.Text.Differencing.DifferenceViewType.LeftView:
+                        return diffWindow.DifferenceViewer.LeftView;
+                    case VisualStudio.Text.Differencing.DifferenceViewType.RightView:
+                        return diffWindow.DifferenceViewer.RightView;
+                }
+                return null;
+            }
+#endif
             if (docView is IVsCodeWindow) {
                 IVsTextView textView;
                 if (ErrorHandler.Failed(((IVsCodeWindow)docView).GetPrimaryView(out textView))) {
@@ -152,7 +173,7 @@ namespace Microsoft.VisualStudioTools {
                     return null;
                 }
 
-                var model = (IComponentModel)GetGlobalService(typeof(SComponentModel));
+                var model = (IComponentModel)serviceProvider.GetService(typeof(SComponentModel));
                 var adapterFactory = model.GetService<IVsEditorAdaptersFactoryService>();
                 var wpfTextView = adapterFactory.GetWpfTextView(textView);
                 return wpfTextView;
@@ -160,14 +181,15 @@ namespace Microsoft.VisualStudioTools {
             return null;
         }
 
+        [Obsolete("ComponentModel should be retrieved from an IServiceProvider")]
         public static IComponentModel ComponentModel {
             get {
                 return (IComponentModel)GetGlobalService(typeof(SComponentModel));
             }
         }
 
-        internal static CommonProjectNode GetStartupProject() {
-            var buildMgr = (IVsSolutionBuildManager)Package.GetGlobalService(typeof(IVsSolutionBuildManager));
+        internal static CommonProjectNode GetStartupProject(System.IServiceProvider serviceProvider) {
+            var buildMgr = (IVsSolutionBuildManager)serviceProvider.GetService(typeof(IVsSolutionBuildManager));
             IVsHierarchy hierarchy;
             if (buildMgr != null && ErrorHandler.Succeeded(buildMgr.get_StartupProject(out hierarchy)) && hierarchy != null) {
                 return hierarchy.GetProject().GetCommonProject();
@@ -176,6 +198,10 @@ namespace Microsoft.VisualStudioTools {
         }
 
         protected override void Initialize() {
+            var container = (IServiceContainer)this;
+            UIThread.EnsureService(this);
+            container.AddService(GetLibraryManagerType(), CreateService, true);
+
             var componentManager = _compMgr = (IOleComponentManager)GetService(typeof(SOleComponentManager));
             OLECRINFO[] crinfo = new OLECRINFO[1];
             crinfo[0].cbSize = (uint)Marshal.SizeOf(typeof(OLECRINFO));
@@ -193,16 +219,18 @@ namespace Microsoft.VisualStudioTools {
             return;
         }
 
-        internal static void OpenVsWebBrowser(string url) {
-            var web = GetGlobalService(typeof(SVsWebBrowsingService)) as IVsWebBrowsingService;
-            if (web == null) {
-                OpenWebBrowser(url);
-                return;
-            }
+        internal static void OpenVsWebBrowser(System.IServiceProvider serviceProvider, string url) {
+            serviceProvider.GetUIThread().Invoke(() => {
+                var web = serviceProvider.GetService(typeof(SVsWebBrowsingService)) as IVsWebBrowsingService;
+                if (web == null) {
+                    OpenWebBrowser(url);
+                    return;
+                }
 
-            IVsWindowFrame frame;
-            ErrorHandler.ThrowOnFailure(web.Navigate(url, (uint)__VSWBNAVIGATEFLAGS.VSNWB_ForceNew, out frame));
-            frame.Show();
+                IVsWindowFrame frame;
+                ErrorHandler.ThrowOnFailure(web.Navigate(url, (uint)__VSWBNAVIGATEFLAGS.VSNWB_ForceNew, out frame));
+                frame.Show();
+            });
         }
 
         #region IOleComponent Members
@@ -211,7 +239,7 @@ namespace Microsoft.VisualStudioTools {
             return 1;
         }
 
-        public int FDoIdle(uint grfidlef) {
+        public virtual int FDoIdle(uint grfidlef) {
             if (null != _libraryManager) {
                 _libraryManager.OnIdle(_compMgr);
             }

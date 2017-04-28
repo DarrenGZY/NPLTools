@@ -1,24 +1,24 @@
-/* ****************************************************************************
- *
- * Copyright (c) Microsoft Corporation. 
- *
- * This source code is subject to terms and conditions of the Apache License, Version 2.0. A 
- * copy of the license can be found in the License.html file at the root of this distribution. If 
- * you cannot locate the Apache License, Version 2.0, please send an email to 
- * vspython@microsoft.com. By using this source code in any fashion, you are agreeing to be bound 
- * by the terms of the Apache License, Version 2.0.
- *
- * You must not remove this notice, or any other, from this software.
- *
- * ***************************************************************************/
+// Visual Studio Shared Project
+// Copyright(c) Microsoft Corporation
+// All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the License); you may not use
+// this file except in compliance with the License. You may obtain a copy of the
+// License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// THIS CODE IS PROVIDED ON AN  *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS
+// OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY
+// IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+// MERCHANTABLITY OR NON-INFRINGEMENT.
+//
+// See the Apache Version 2.0 License for specific language governing
+// permissions and limitations under the License.
 
 using System;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.VisualStudioTools.Project
-{
-    internal static class UnsafeNativeMethods
-    {
+namespace Microsoft.VisualStudioTools.Project {
+    internal static class UnsafeNativeMethods {
         [DllImport(ExternDll.Kernel32, EntryPoint = "GlobalLock", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
         internal static extern IntPtr GlobalLock(IntPtr h);
 
@@ -26,7 +26,7 @@ namespace Microsoft.VisualStudioTools.Project
         internal static extern bool GlobalUnLock(IntPtr h);
 
         [DllImport(ExternDll.Kernel32, EntryPoint = "GlobalSize", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
-        internal static extern int GlobalSize(IntPtr h);
+        internal static extern IntPtr GlobalSize(IntPtr h);
 
         [DllImport(ExternDll.Ole32, ExactSpelling = true, CharSet = CharSet.Unicode)]
         internal static extern int OleSetClipboard(Microsoft.VisualStudio.OLE.Interop.IDataObject dataObject);
@@ -55,14 +55,8 @@ namespace Microsoft.VisualStudioTools.Project
         [DllImport(ExternDll.Shell32, EntryPoint = "DragQueryFileW", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
         internal static extern uint DragQueryFile(IntPtr hDrop, uint iFile, char[] lpszFile, uint cch);
 
-        [DllImport(ExternDll.User32, EntryPoint = "RegisterClipboardFormatW", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true, CallingConvention = CallingConvention.StdCall)]
-        internal static extern ushort RegisterClipboardFormat(string format);
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode"), DllImport(ExternDll.Shell32, EntryPoint = "SHGetSpecialFolderLocation")]
-        internal static extern int SHGetSpecialFolderLocation(IntPtr hwnd, int csidl, [Out, MarshalAs(UnmanagedType.LPArray)] IntPtr[] ppidl);
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode"), DllImport(ExternDll.Shell32, EntryPoint = "SHGetPathFromIDList", CharSet = System.Runtime.InteropServices.CharSet.Auto)]
-        internal static extern bool SHGetPathFromIDList(IntPtr pidl, IntPtr pszPath);
+        [DllImport(ExternDll.User32, SetLastError = true, CharSet = CharSet.Unicode, CallingConvention = CallingConvention.StdCall)]
+        internal static extern uint RegisterClipboardFormat(string format);
     }
 }
 

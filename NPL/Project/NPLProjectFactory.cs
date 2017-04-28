@@ -7,22 +7,20 @@ using IOleServiceProvider = Microsoft.VisualStudio.OLE.Interop.IServiceProvider;
 namespace NPLTools.Project
 {
     [Guid(Guids.NPLProjectFactoryGuidString)]
-    internal class NPLProjectFactory : ProjectFactory
+    class NPLProjectFactory : ProjectFactory
     {
-        private NPLProjectPackage package;
 
-        public NPLProjectFactory(NPLProjectPackage package)
+        public NPLProjectFactory(IServiceProvider package)
             : base(package)
         {
-            this.package = package;
         }
 
         internal override ProjectNode CreateProject()
         {
-            NPLProjectNode project = new NPLProjectNode(this.package);
+            // Ensure our package is properly loaded
+            // var pyService = Site.GetPythonToolsService();
 
-            project.SetSite((IOleServiceProvider)((IServiceProvider)this.package).GetService(typeof(IOleServiceProvider)));
-            return project;
+            return new NPLProjectNode(Site);
         }
     }
 }

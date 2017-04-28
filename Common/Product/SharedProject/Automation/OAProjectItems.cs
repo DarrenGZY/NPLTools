@@ -1,16 +1,18 @@
-/* ****************************************************************************
- *
- * Copyright (c) Microsoft Corporation. 
- *
- * This source code is subject to terms and conditions of the Apache License, Version 2.0. A 
- * copy of the license can be found in the License.html file at the root of this distribution. If 
- * you cannot locate the Apache License, Version 2.0, please send an email to 
- * vspython@microsoft.com. By using this source code in any fashion, you are agreeing to be bound 
- * by the terms of the Apache License, Version 2.0.
- *
- * You must not remove this notice, or any other, from this software.
- *
- * ***************************************************************************/
+// Visual Studio Shared Project
+// Copyright(c) Microsoft Corporation
+// All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the License); you may not use
+// this file except in compliance with the License. You may obtain a copy of the
+// License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// THIS CODE IS PROVIDED ON AN  *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS
+// OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY
+// IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+// MERCHANTABLITY OR NON-INFRINGEMENT.
+//
+// See the Apache Version 2.0 License for specific language governing
+// permissions and limitations under the License.
 
 using System;
 using System.Diagnostics;
@@ -26,7 +28,6 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
     /// <summary>
     /// Contains ProjectItem objects
     /// </summary>
-    [SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
     [ComVisible(true)]
     public class OAProjectItems : OANavigableProjectItems {
         #region ctor
@@ -46,7 +47,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
         public override ProjectItem AddFromDirectory(string directory) {
             CheckProjectIsValid();
 
-            return UIThread.Instance.RunSync<EnvDTE.ProjectItem>(() => {
+            return Project.ProjectNode.Site.GetUIThread().Invoke<EnvDTE.ProjectItem>(() => {
                 ProjectItem result = AddFolder(directory, null);
 
                 foreach (string subdirectory in Directory.EnumerateDirectories(directory)) {
@@ -79,7 +80,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
                 // We should run the wizard only if the extension is vstemplate
                 // otherwise it's a clone operation
                 VSADDITEMOPERATION op;
-                UIThread.Instance.RunSync(() => {
+                Project.ProjectNode.Site.GetUIThread().Invoke(() => {
                     if (Utilities.IsTemplateFile(fileName)) {
                         op = VSADDITEMOPERATION.VSADDITEMOP_RUNWIZARD;
                     } else {
@@ -128,24 +129,29 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
                 throw new ArgumentException("Parameter specification for AddFolder was not meet", "kind");
             }
 
-            var existingChild = this.NodeWithItems.FindImmediateChildByName(name);
-            if (existingChild != null) {
-                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, "Folder already exists with the name '{0}'", name));
-            }
+            return Project.ProjectNode.Site.GetUIThread().Invoke<EnvDTE.ProjectItem>(() => {
+                var existingChild = this.NodeWithItems.FindImmediateChildByName(name);
+                if (existingChild != null) {
+                    if (existingChild.IsNonMemberItem && ErrorHandler.Succeeded(existingChild.IncludeInProject(false))) {
+                        return existingChild.GetAutomationObject() as ProjectItem;
+                    }
+                    throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, "Folder already exists with the name '{0}'", name));
+                }
 
-            ProjectNode proj = this.Project.ProjectNode;
+                ProjectNode proj = this.Project.ProjectNode;
 
-            HierarchyNode newFolder = null;
-            using (AutomationScope scope = new AutomationScope(this.Project.ProjectNode.Site)) {
+                HierarchyNode newFolder = null;
+                using (AutomationScope scope = new AutomationScope(this.Project.ProjectNode.Site)) {
 
-                //In the case that we are adding a folder to a folder, we need to build up
-                //the path to the project node.
-                name = Path.Combine(NodeWithItems.FullPathToChildren, name);
+                    //In the case that we are adding a folder to a folder, we need to build up
+                    //the path to the project node.
+                    name = Path.Combine(NodeWithItems.FullPathToChildren, name);
 
-                newFolder = proj.CreateFolderNodes(name);
-            }
+                    newFolder = proj.CreateFolderNodes(name);
+                }
 
-            return newFolder.GetAutomationObject() as ProjectItem;
+                return newFolder.GetAutomationObject() as ProjectItem;
+            });
         }
 
         /// <summary>
@@ -177,7 +183,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
         /// <returns>A ProjectItem object. </returns>
         protected virtual EnvDTE.ProjectItem AddItem(string path, VSADDITEMOPERATION op) {
             CheckProjectIsValid();
-            return UIThread.Instance.RunSync<EnvDTE.ProjectItem>(() => {
+            return Project.ProjectNode.Site.GetUIThread().Invoke<EnvDTE.ProjectItem>(() => {
                 ProjectNode proj = this.Project.ProjectNode;
                 EnvDTE.ProjectItem itemAdded = null;
                 using (AutomationScope scope = new AutomationScope(this.Project.ProjectNode.Site)) {
@@ -206,9 +212,8 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
         /// <param name="result">The <paramref name="VSADDRESULT"/> returned by the Add methods</param>
         /// <param name="path">The full path of the item added.</param>
         /// <returns>A ProjectItem object.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1800:DoNotCastUnnecessarily")]
         private EnvDTE.ProjectItem EvaluateAddResult(VSADDRESULT result, string path) {
-            return UIThread.Instance.RunSync<EnvDTE.ProjectItem>(() => {
+            return Project.ProjectNode.Site.GetUIThread().Invoke<EnvDTE.ProjectItem>(() => {
                 if (result != VSADDRESULT.ADDRESULT_Failure) {
                     if (Directory.Exists(path)) {
                         path = CommonUtils.EnsureEndSeparator(path);

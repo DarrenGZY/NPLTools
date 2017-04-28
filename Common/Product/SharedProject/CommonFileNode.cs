@@ -1,16 +1,18 @@
-﻿/* ****************************************************************************
- *
- * Copyright (c) Microsoft Corporation. 
- *
- * This source code is subject to terms and conditions of the Apache License, Version 2.0. A 
- * copy of the license can be found in the License.html file at the root of this distribution. If 
- * you cannot locate the Apache License, Version 2.0, please send an email to 
- * vspython@microsoft.com. By using this source code in any fashion, you are agreeing to be bound 
- * by the terms of the Apache License, Version 2.0.
- *
- * You must not remove this notice, or any other, from this software.
- *
- * ***************************************************************************/
+﻿// Visual Studio Shared Project
+// Copyright(c) Microsoft Corporation
+// All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the License); you may not use
+// this file except in compliance with the License. You may obtain a copy of the
+// License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// THIS CODE IS PROVIDED ON AN  *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS
+// OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY
+// IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+// MERCHANTABLITY OR NON-INFRINGEMENT.
+//
+// See the Apache Version 2.0 License for specific language governing
+// permissions and limitations under the License.
 
 using System;
 using System.Diagnostics;
@@ -29,6 +31,10 @@ using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudioTools.Project.Automation;
 using VsCommands2K = Microsoft.VisualStudio.VSConstants.VSStd2KCmdID;
 using VSConstants = Microsoft.VisualStudio.VSConstants;
+#if DEV14_OR_LATER
+using Microsoft.VisualStudio.Imaging;
+using Microsoft.VisualStudio.Imaging.Interop;
+#endif
 
 namespace Microsoft.VisualStudioTools.Project {
     internal class CommonFileNode : FileNode {
@@ -91,10 +97,45 @@ namespace Microsoft.VisualStudioTools.Project {
                 return this.VSProjectItem;
             }
         }
+
         #endregion
 
         #region overridden methods
 
+#if DEV14_OR_LATER
+        protected override bool SupportsIconMonikers {
+            get { return true; }
+        }
+
+        protected virtual ImageMoniker CodeFileIconMoniker {
+            get { return KnownMonikers.Document; }
+        }
+
+        protected virtual ImageMoniker StartupCodeFileIconMoniker {
+            get { return CodeFileIconMoniker; }
+        }
+
+        protected virtual ImageMoniker FormFileIconMoniker {
+            get { return KnownMonikers.WindowsForm; }
+        }
+
+        protected override ImageMoniker GetIconMoniker(bool open) {
+            if (ItemNode.IsExcluded) {
+                return KnownMonikers.HiddenFile;
+            } else if (!File.Exists(Url)) {
+                return KnownMonikers.DocumentWarning;
+            } else if (IsFormSubType) {
+                return FormFileIconMoniker;
+            } else if (this._project.IsCodeFile(FileName)) {
+                if (CommonUtils.IsSamePath(this.Url, _project.GetStartupFile())) {
+                    return StartupCodeFileIconMoniker;
+                } else {
+                    return CodeFileIconMoniker;
+                }
+            }
+            return default(ImageMoniker);
+        }
+#else
         public override int ImageIndex {
             get {
                 if (ItemNode.IsExcluded) {
@@ -113,6 +154,8 @@ namespace Microsoft.VisualStudioTools.Project {
                 return base.ImageIndex;
             }
         }
+#endif
+
 
         /// <summary>
         /// Open a file depending on the SubType property associated with the file item in the project file
@@ -121,10 +164,12 @@ namespace Microsoft.VisualStudioTools.Project {
             FileDocumentManager manager = this.GetDocumentManager() as FileDocumentManager;
             Utilities.CheckNotNull(manager, "Could not get the FileDocumentManager");
 
-            Guid viewGuid =
-                (IsFormSubType ? VSConstants.LOGVIEWID_Designer : VSConstants.LOGVIEWID_Code);
             IVsWindowFrame frame;
-            manager.Open(false, false, viewGuid, out frame, WindowFrameShowAction.Show);
+            if (IsFormSubType)
+                manager.Open(false, false, VSConstants.LOGVIEWID_Designer, out frame, WindowFrameShowAction.Show);
+            else
+                //manager.Open(false, false, VSConstants.LOGVIEWID_Code, out frame, WindowFrameShowAction.Show);    // Do not use, as in VS2010 css files are opened as plain text
+                manager.Open(false, false, WindowFrameShowAction.Show);
         }
 
         private static Guid CLSID_VsTextBuffer = new Guid("{8E7B96A8-E33D-11d0-A6D5-00C04FB67F6A}");
@@ -132,27 +177,17 @@ namespace Microsoft.VisualStudioTools.Project {
         /// <summary>
         /// Gets the text buffer for the file opening the document if necessary.
         /// </summary>
-        public ITextBuffer GetTextBuffer() {
-            if (UIThread.Instance.IsUIThread) {
-                // http://pytools.codeplex.com/workitem/672
-                // When we FindAndLockDocument we marshal on the main UI thread, and the docdata we get
-                // back is marshalled back so that we'll marshal any calls on it back.  When we pass it
-                // into IVsEditorAdaptersFactoryService we don't go through a COM boundary (it's a managed
-                // call) and we therefore don't get the marshaled value, and it doesn't know what we're
-                // talking about.  So run the whole operation on the UI thread.
-                return GetTextBufferOnUIThread();
-            }
-
-            ITextBuffer res = null;
-            UIThread.Instance.RunSync(
-                () => {
-                    res = GetTextBufferOnUIThread();
-                }
-            );
-            return res;
+        public ITextBuffer GetTextBuffer(bool create = true) {
+            // http://pytools.codeplex.com/workitem/672
+            // When we FindAndLockDocument we marshal on the main UI thread, and the docdata we get
+            // back is marshalled back so that we'll marshal any calls on it back.  When we pass it
+            // into IVsEditorAdaptersFactoryService we don't go through a COM boundary (it's a managed
+            // call) and we therefore don't get the marshaled value, and it doesn't know what we're
+            // talking about.  So run the whole operation on the UI thread.
+            return ProjectMgr.Site.GetUIThread().Invoke(() => GetTextBufferOnUIThread(create));
         }
 
-        private ITextBuffer GetTextBufferOnUIThread() {
+        private ITextBuffer GetTextBufferOnUIThread(bool create) {
             IVsTextManager textMgr = (IVsTextManager)GetService(typeof(SVsTextManager));
             var model = GetService(typeof(SComponentModel)) as IComponentModel;
             var adapter = model.GetService<IVsEditorAdaptersFactoryService>();
@@ -170,6 +205,9 @@ namespace Microsoft.VisualStudioTools.Project {
                     //Getting a read lock on the document. Must be released later.
                     hr = rdt.FindAndLockDocument((uint)_VSRDTFLAGS.RDT_ReadLock, GetMkDocument(), out hier, out itemid, out docData, out cookie);
                     if (ErrorHandler.Failed(hr) || docData == IntPtr.Zero) {
+                        if (!create) {
+                            return null;
+                        }
                         Guid iid = VSConstants.IID_IUnknown;
                         cookie = 0;
                         docInRdt = false;
@@ -244,15 +282,15 @@ namespace Microsoft.VisualStudioTools.Project {
         internal override int ExcludeFromProject() {
             Debug.Assert(this.ProjectMgr != null, "The project item " + this.ToString() + " has not been initialised correctly. It has a null ProjectMgr");
             if (!ProjectMgr.QueryEditProjectFile(false) ||
-                !ProjectMgr.Tracker.CanRemoveItems(new[] { Url }, new [] { VSQUERYREMOVEFILEFLAGS.VSQUERYREMOVEFILEFLAGS_NoFlags })) {
+                !ProjectMgr.Tracker.CanRemoveItems(new[] { Url }, new[] { VSQUERYREMOVEFILEFLAGS.VSQUERYREMOVEFILEFLAGS_NoFlags })) {
                 return VSConstants.E_FAIL;
             }
 
             ResetNodeProperties();
             ItemNode.RemoveFromProjectFile();
             if (!File.Exists(Url) || IsLinkFile) {
-                Parent.RemoveChild(this);
                 ProjectMgr.OnItemDeleted(this);
+                Parent.RemoveChild(this);
             } else {
                 ItemNode = new AllFilesProjectElement(Url, ItemNode.ItemTypeName, ProjectMgr);
                 if (!ProjectMgr.IsShowingAllFiles) {
@@ -262,7 +300,9 @@ namespace Microsoft.VisualStudioTools.Project {
                 ProjectMgr.ReDrawNode(this, UIHierarchyElement.Icon);
                 ProjectMgr.OnPropertyChanged(this, (int)__VSHPROPID.VSHPROPID_IsNonMemberItem, 0);
             }
-            ((IVsUIShell)GetService(typeof(SVsUIShell))).RefreshPropertyBrowser(0);
+
+            // For performance reasons we don't want to call RefreshPropertyBrowser here. 
+            // We just want to call refresh once in ExcludeFromProjectWithRefresh
             return VSConstants.S_OK;
         }
 
@@ -281,20 +321,20 @@ namespace Microsoft.VisualStudioTools.Project {
             }
 
             ResetNodeProperties();
+
             ItemNode = ProjectMgr.CreateMsBuildFileItem(
-                CommonUtils.GetRelativeFilePath(ProjectMgr.ProjectHome, Url),
-                ProjectMgr.IsCodeFile(Url) ? ProjectFileConstants.Compile : ProjectFileConstants.Content
+                CommonUtils.GetRelativeFilePath(ProjectMgr.ProjectHome, Url), ProjectMgr.GetItemType(Url)
             );
+
             IsVisible = true;
             ProjectMgr.ReDrawNode(this, UIHierarchyElement.Icon);
             ProjectMgr.OnPropertyChanged(this, (int)__VSHPROPID.VSHPROPID_IsNonMemberItem, 0);
 
-            // https://nodejstools.codeplex.com/workitem/273, refresh the property browser...
-            ((IVsUIShell)GetService(typeof(SVsUIShell))).RefreshPropertyBrowser(0);
+            // For performance reasons (99%) we don't want to call RefreshPropertyBrowser and 
+            // bold startup file here. We just want to call it once in IncludeInProjectWithRefresh
 
-            if (CommonUtils.IsSamePath(ProjectMgr.GetStartupFile(), Url)) {
-                ProjectMgr.BoldItem(this, true);
-            }
+            // On include, the file should be added to source control.
+            this.ProjectMgr.Tracker.OnItemAdded(this.Url, VSADDFILEFLAGS.VSADDFILEFLAGS_NoFlags);
 
             return VSConstants.S_OK;
         }
@@ -311,7 +351,7 @@ namespace Microsoft.VisualStudioTools.Project {
                     case VsCommands2K.EXCLUDEFROMPROJECT:
                         if (ItemNode.IsExcluded) {
                             result |= QueryStatusResult.NOTSUPPORTED | QueryStatusResult.INVISIBLE;
-                        return VSConstants.S_OK;
+                            return VSConstants.S_OK;
                         }
                         break;
                     case VsCommands2K.INCLUDEINPROJECT:
@@ -321,7 +361,7 @@ namespace Microsoft.VisualStudioTools.Project {
                         }
                         break;
                 }
-            } 
+            }
 
             return base.QueryStatusOnNode(guidCmdGroup, cmd, pCmdText, ref result);
         }
@@ -340,20 +380,13 @@ namespace Microsoft.VisualStudioTools.Project {
         }
         #endregion
 
-        #region methods
-
-        internal OleServiceProvider.ServiceCreatorCallback ServiceCreator {
-            get { return new OleServiceProvider.ServiceCreatorCallback(this.CreateServices); }
-        }
-
-        protected virtual object CreateServices(Type serviceType) {
-            object service = null;
-            if (typeof(EnvDTE.ProjectItem) == serviceType) {
-                service = GetAutomationObject();
+        public override int QueryService(ref Guid guidService, out object result) {
+            if (guidService == typeof(VSLangProj.VSProject).GUID) {
+                result = ProjectMgr.VSProject;
+                return VSConstants.S_OK;
             }
-            return service;
-        }
 
-        #endregion
+            return base.QueryService(ref guidService, out result);
+        }
     }
 }

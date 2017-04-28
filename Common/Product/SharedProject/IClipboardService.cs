@@ -1,4 +1,4 @@
-﻿// Visual Studio Shared Project
+// Visual Studio Shared Project
 // Copyright(c) Microsoft Corporation
 // All rights reserved.
 //
@@ -15,18 +15,20 @@
 // permissions and limitations under the License.
 
 using System;
-using System.Windows;
+using Microsoft.VisualStudio.OLE.Interop;
 
-namespace Microsoft.VisualStudioTools.Wpf {
-    public static class LambdaProperties {
-        public static readonly DependencyProperty ImportedNamespacesProperty = DependencyProperty.RegisterAttached(
-            "ImportedNamespaces", typeof(string), typeof(LambdaProperties));
+namespace Microsoft.VisualStudioTools {
+    interface IClipboardService {
+        void SetClipboard(IDataObject dataObject);
 
-        public static string GetImportedNamespaces(object obj) {
-            return null;
-        }
+        IDataObject GetClipboard();
 
-        public static void SetImportedNamespaces(object obj, string value) {
-        }
+        void FlushClipboard();
+
+        bool OpenClipboard();
+
+        void EmptyClipboard();
+
+        void CloseClipboard();
     }
 }

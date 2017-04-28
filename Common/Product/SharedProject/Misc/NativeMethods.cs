@@ -1,18 +1,24 @@
-/* ****************************************************************************
- *
- * Copyright (c) Microsoft Corporation. 
- *
- * This source code is subject to terms and conditions of the Apache License, Version 2.0. A 
- * copy of the license can be found in the License.html file at the root of this distribution. If 
- * you cannot locate the Apache License, Version 2.0, please send an email to 
- * vspython@microsoft.com. By using this source code in any fashion, you are agreeing to be bound 
- * by the terms of the Apache License, Version 2.0.
- *
- * You must not remove this notice, or any other, from this software.
- *
- * ***************************************************************************/
+// Visual Studio Shared Project
+// Copyright(c) Microsoft Corporation
+// All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the License); you may not use
+// this file except in compliance with the License. You may obtain a copy of the
+// License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// THIS CODE IS PROVIDED ON AN  *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS
+// OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY
+// IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+// MERCHANTABLITY OR NON-INFRINGEMENT.
+//
+// See the Apache Version 2.0 License for specific language governing
+// permissions and limitations under the License.
 
 using System;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -416,7 +422,8 @@ namespace Microsoft.VisualStudioTools.Project {
         TVM_GETEDITCONTROL = (0x1100 + 15);
 
         public const int
-        FILE_ATTRIBUTE_READONLY = 0x00000001;
+            FILE_ATTRIBUTE_READONLY = 0x00000001,
+            FILE_ATTRIBUTE_DIRECTORY = 0x00000010;
 
         public const int
             PSP_DEFAULT = 0x00000000,
@@ -562,7 +569,7 @@ namespace Microsoft.VisualStudioTools.Project {
         [DllImport("user32", CallingConvention = CallingConvention.Winapi)]
         public static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
-        [DllImport("user32", CallingConvention = CallingConvention.Winapi, CharSet=CharSet.Unicode)]
+        [DllImport("user32", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode)]
         public static extern IntPtr SendMessageW(IntPtr hWnd, uint msg, IntPtr wParam, string lParam);
 
         [DllImport("user32", CallingConvention = CallingConvention.Winapi)]
@@ -570,41 +577,6 @@ namespace Microsoft.VisualStudioTools.Project {
 
         [DllImport("user32", CallingConvention = CallingConvention.Winapi)]
         public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-
-        /// <devdoc>
-        /// Please use this "approved" method to compare file names.
-        /// </devdoc>
-        /*public static bool IsSamePath(string file1, string file2)
-        {
-            if (file1 == null || file1.Length == 0)
-            {
-                return (file2 == null || file2.Length == 0);
-            }
-
-            Uri uri1 = null;
-            Uri uri2 = null;
-
-            try
-            {
-                if (!Uri.TryCreate(file1, UriKind.Absolute, out uri1) || !Uri.TryCreate(file2, UriKind.Absolute, out uri2))
-                {
-                    return false;
-                }
-
-                if (uri1 != null && uri1.IsFile && uri2 != null && uri2.IsFile)
-                {
-                    return 0 == String.Compare(uri1.LocalPath, uri2.LocalPath, StringComparison.OrdinalIgnoreCase);
-                }
-
-                return file1 == file2;
-            }
-            catch (UriFormatException e)
-            {
-                Trace.WriteLine("Exception " + e.Message);
-            }
-
-            return false;
-        }*/
 
         public static void SetErrorDescription(string description, params object[] args) {
             ICreateErrorInfo errInfo;
@@ -794,7 +766,7 @@ namespace Microsoft.VisualStudioTools.Project {
         public extern static bool DuplicateToken(IntPtr ExistingTokenHandle,
            int SECURITY_IMPERSONATION_LEVEL, ref IntPtr DuplicateTokenHandle);
 
-        [DllImport("ADVAPI32.dll", SetLastError = true)]
+        [DllImport("ADVAPI32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern bool LogonUser(
             [In] string lpszUsername,
             [In] string lpszDomain,
@@ -808,7 +780,7 @@ namespace Microsoft.VisualStudioTools.Project {
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool CloseHandle(IntPtr handle);
 
-        [DllImport("kernel32.dll", SetLastError = true)]
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern uint GetFinalPathNameByHandle(
             SafeHandle hFile,
             [Out]StringBuilder lpszFilePath,
@@ -816,7 +788,7 @@ namespace Microsoft.VisualStudioTools.Project {
             uint dwFlags
         );
 
-        [DllImport("kernel32.dll", SetLastError = true)]
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern SafeFileHandle CreateFile(
             string lpFileName,
             FileDesiredAccess dwDesiredAccess,
@@ -850,6 +822,7 @@ namespace Microsoft.VisualStudioTools.Project {
         }
 
         public static IntPtr INVALID_FILE_HANDLE = new IntPtr(-1);
+        public static IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
 
         public enum LogonType {
             LOGON32_LOGON_INTERACTIVE = 2,
@@ -868,45 +841,91 @@ namespace Microsoft.VisualStudioTools.Project {
             LOGON32_PROVIDER_WINNT50
         }
 
-        [DllImport("msi.dll", CharSet = CharSet.Auto)]
-        internal static extern MsiInstallState MsiGetComponentPath(string szProduct, string szComponent, [Out]StringBuilder lpPathBuf, ref uint pcchBuf);
+        [DllImport("user32", CallingConvention = CallingConvention.Winapi)]
+        public static extern bool AllowSetForegroundWindow(int dwProcessId);
 
-        /// <summary>
-        /// Buffer for lpProductBuf must be 39 characters long.
-        /// </summary>
-        /// <param name="szComponent"></param>
-        /// <param name="lpProductBuf"></param>
-        /// <returns></returns>
-        [DllImport("msi.dll", CharSet = CharSet.Auto)]
-        internal static extern uint MsiGetProductCode(string szComponent, [Out]StringBuilder lpProductBuf);
+        [DllImport("mpr", CharSet = CharSet.Unicode)]
+        public static extern uint WNetAddConnection3(IntPtr handle, ref _NETRESOURCE lpNetResource, string lpPassword, string lpUsername, uint dwFlags);
 
+        public const int CONNECT_INTERACTIVE = 0x08;
+        public const int CONNECT_PROMPT = 0x10;
+        public const int RESOURCETYPE_DISK = 1;
 
-        internal enum MsiInstallState {
-            NotUsed = -7,  // component disabled
-            BadConfig = -6,  // configuration data corrupt
-            Incomplete = -5,  // installation suspended or in progress
-            SourceAbsent = -4,  // run from source, source is unavailable
-            MoreData = -3,  // return buffer overflow
-            InvalidArg = -2,  // invalid function argument
-            Unknown = -1,  // unrecognized product or feature
-            Broken = 0,  // broken
-            Advertised = 1,  // advertised feature
-            Removed = 1,  // component being removed (action state, not settable)
-            Absent = 2,  // uninstalled (or action state absent but clients remain)
-            Local = 3,  // installed on local drive
-            Source = 4,  // run from source, CD or net
-            Default = 5  // use default, local or source
+        public struct _NETRESOURCE {
+            public uint dwScope;
+            public uint dwType;
+            public uint dwDisplayType;
+            public uint dwUsage;
+            public string lpLocalName;
+            public string lpRemoteName;
+            public string lpComment;
+            public string lpProvider;
         }
 
+        [DllImport(ExternDll.Kernel32, EntryPoint = "GetFinalPathNameByHandleW", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern int GetFinalPathNameByHandle(SafeFileHandle handle, [In, Out] StringBuilder path, int bufLen, int flags);
 
-        [DllImport("comctl32.dll", SetLastError = true)]
-        internal static extern int TaskDialogIndirect(
-            ref TASKDIALOGCONFIG pTaskConfig,
-            out int pnButton,
-            out int pnRadioButton,
-            [MarshalAs(UnmanagedType.Bool)] out bool pfverificationFlagChecked);
+        [DllImport(ExternDll.Kernel32, EntryPoint = "CreateFileW", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern SafeFileHandle CreateFile(
+            string lpFileName,
+            int dwDesiredAccess,
+            [MarshalAs(UnmanagedType.U4)] FileShare dwShareMode,
+            IntPtr SecurityAttributes,
+            [MarshalAs(UnmanagedType.U4)] FileMode dwCreationDisposition,
+            int dwFlagsAndAttributes,
+            IntPtr hTemplateFile);
+
+        /// <summary>
+        /// Given a directory, actual or symbolic, return the actual directory path.
+        /// </summary>
+        /// <param name="symlink">DirectoryInfo object for the suspected symlink.</param>
+        /// <returns>A string of the actual path.</returns>
+        internal static string GetAbsolutePathToDirectory(string symlink) {
+            const int FILE_FLAG_BACKUP_SEMANTICS = 0x02000000;
+            const int DEVICE_QUERY_ACCESS = 0;
+
+            using (SafeFileHandle directoryHandle = CreateFile(
+                symlink,
+                DEVICE_QUERY_ACCESS,
+                FileShare.Write,
+                System.IntPtr.Zero,
+                FileMode.Open,
+                FILE_FLAG_BACKUP_SEMANTICS,
+                System.IntPtr.Zero)) {
+                if (directoryHandle.IsInvalid) {
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                }
+
+                StringBuilder path = new StringBuilder(512);
+                int pathSize = GetFinalPathNameByHandle(directoryHandle, path, path.Capacity, 0);
+                if (pathSize < 0) {
+                    Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                }
+
+                // UNC Paths will start with \\?\.  Remove this if present as this isn't really expected on a path.
+                var pathString = path.ToString();
+                return pathString.StartsWith(@"\\?\") ? pathString.Substring(4) : pathString;
+            }
+        }
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern IntPtr FindFirstFile(string lpFileName, out WIN32_FIND_DATA lpFindFileData);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern bool FindNextFile(IntPtr hFindFile, out WIN32_FIND_DATA lpFindFileData);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern bool FindClose(IntPtr hFindFile);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern bool DeleteFile(string lpFileName);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern bool RemoveDirectory(string lpPathName);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        internal static extern bool MoveFile(String src, String dst);
     }
-
 
     internal class CredUI {
         private const string advapi32Dll = "advapi32.dll";
@@ -1012,47 +1031,51 @@ namespace Microsoft.VisualStudioTools.Project {
             public string userName;
         };
 
+        [SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
         [DllImport(advapi32Dll, CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "CredReadW")]
         public static extern bool
         CredRead(
             [MarshalAs(UnmanagedType.LPWStr)]
-			string targetName,
+            string targetName,
             [MarshalAs(UnmanagedType.U4)]
-			uint type,
+            uint type,
             [MarshalAs(UnmanagedType.U4)]
-			uint flags,
+            uint flags,
             out IntPtr credential
             );
 
+        [SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
         [DllImport(advapi32Dll, CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "CredWriteW")]
         public static extern bool
         CredWrite(
             ref NativeCredential Credential,
             [MarshalAs(UnmanagedType.U4)]
-			uint flags
+            uint flags
             );
 
+        [SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
         [DllImport(advapi32Dll, SetLastError = true)]
         public static extern bool
         CredFree(
             IntPtr buffer
             );
 
+        [SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
         [DllImport(credUIDll, EntryPoint = "CredUIPromptForCredentialsW", CharSet = CharSet.Unicode)]
         public static extern CredUIReturnCodes CredUIPromptForCredentials(
             CREDUI_INFO pUiInfo,  // Optional (one can pass null here)
             [MarshalAs(UnmanagedType.LPWStr)]
-			string targetName,
+            string targetName,
             IntPtr Reserved,      // Must be 0 (IntPtr.Zero)
             int iError,
             [MarshalAs(UnmanagedType.LPWStr)]
-			StringBuilder pszUserName,
+            StringBuilder pszUserName,
             [MarshalAs(UnmanagedType.U4)]
-			uint ulUserNameMaxChars,
+            uint ulUserNameMaxChars,
             [MarshalAs(UnmanagedType.LPWStr)]
-			StringBuilder pszPassword,
+            StringBuilder pszPassword,
             [MarshalAs(UnmanagedType.U4)]
-			uint ulPasswordMaxChars,
+            uint ulPasswordMaxChars,
             ref int pfSave,
             CREDUI_FLAGS dwFlags);
 
@@ -1063,21 +1086,20 @@ namespace Microsoft.VisualStudioTools.Project {
         /// ERROR_INSUFFICIENT_BUFFER
         /// ERROR_INVALID_PARAMETER
         /// </returns>
+        [SuppressMessage("Microsoft.Design", "CA1060:MovePInvokesToNativeMethodsClass")]
         [DllImport(credUIDll, CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "CredUIParseUserNameW")]
         public static extern CredUIReturnCodes CredUIParseUserName(
             [MarshalAs(UnmanagedType.LPWStr)]
             string strUserName,
             [MarshalAs(UnmanagedType.LPWStr)]
-			StringBuilder strUser,
+            StringBuilder strUser,
             [MarshalAs(UnmanagedType.U4)]
-			uint iUserMaxChars,
+            uint iUserMaxChars,
             [MarshalAs(UnmanagedType.LPWStr)]
-			StringBuilder strDomain,
+            StringBuilder strDomain,
             [MarshalAs(UnmanagedType.U4)]
-			uint iDomainMaxChars
+            uint iDomainMaxChars
             );
-
-
     }
 
     struct User32RECT {
@@ -1115,78 +1137,20 @@ namespace Microsoft.VisualStudioTools.Project {
         int SetHelpContext(uint dwHelpContext);
     }
 
-    internal enum TASKDIALOG_FLAGS {
-        TDF_ENABLE_HYPERLINKS = 0x0001,
-        TDF_USE_HICON_MAIN = 0x0002,
-        TDF_USE_HICON_FOOTER = 0x0004,
-        TDF_ALLOW_DIALOG_CANCELLATION = 0x0008,
-        TDF_USE_COMMAND_LINKS = 0x0010,
-        TDF_USE_COMMAND_LINKS_NO_ICON = 0x0020,
-        TDF_EXPAND_FOOTER_AREA = 0x0040,
-        TDF_EXPANDED_BY_DEFAULT = 0x0080,
-        TDF_VERIFICATION_FLAG_CHECKED = 0x0100,
-        TDF_SHOW_PROGRESS_BAR = 0x0200,
-        TDF_SHOW_MARQUEE_PROGRESS_BAR = 0x0400,
-        TDF_CALLBACK_TIMER = 0x0800,
-        TDF_POSITION_RELATIVE_TO_WINDOW = 0x1000,
-        TDF_RTL_LAYOUT = 0x2000,
-        TDF_NO_DEFAULT_RADIO_BUTTON = 0x4000,
-        TDF_CAN_BE_MINIMIZED = 0x8000,
-        TDF_SIZE_TO_CONTENT = 0x01000000
-    }
-
-    internal enum TASKDIALOG_COMMON_BUTTON_FLAGS {
-        TDCBF_OK_BUTTON = 0x0001,
-        TDCBF_YES_BUTTON = 0x0002,
-        TDCBF_NO_BUTTON = 0x0004,
-        TDCBF_CANCEL_BUTTON = 0x0008,
-        TDCBF_RETRY_BUTTON = 0x0010,
-        TDCBF_CLOSE_BUTTON = 0x0020
-    }
-
-    internal delegate int PFTASKDIALOGCALLBACK(IntPtr hwnd, uint uNotification, UIntPtr wParam, IntPtr lParam, IntPtr lpRefData);
-
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    internal struct TASKDIALOG_BUTTON {
-        public int nButtonID;
-        [MarshalAs(UnmanagedType.LPWStr)]
-        public string pszButtonText;
-    }
-
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    internal struct TASKDIALOGCONFIG {
-        public uint cbSize;
-        public IntPtr hwndParent;
-        public IntPtr hInstance;
-        public TASKDIALOG_FLAGS dwFlags;
-        public TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons;
-        [MarshalAs(UnmanagedType.LPWStr)]
-        public string pszWindowTitle;
-        public IntPtr hMainIcon;
-        [MarshalAs(UnmanagedType.LPWStr)]
-        public string pszMainInstruction;
-        [MarshalAs(UnmanagedType.LPWStr)]
-        public string pszContent;
-        public uint cButtons;
-        public IntPtr pButtons;
-        public int nDefaultButton;
-        public uint cRadioButtons;
-        public IntPtr pRadioButtons;
-        public int nDefaultRadioButton;
-        [MarshalAs(UnmanagedType.LPWStr)]
-        public string pszVerificationText;
-        [MarshalAs(UnmanagedType.LPWStr)]
-        public string pszExpandedInformation;
-        [MarshalAs(UnmanagedType.LPWStr)]
-        public string pszExpandedControlText;
-        [MarshalAs(UnmanagedType.LPWStr)]
-        public string pszCollapsedControlText;
-        public IntPtr hFooterIcon;
-        [MarshalAs(UnmanagedType.LPWStr)]
-        public string pszFooter;
-        public PFTASKDIALOGCALLBACK pfCallback;
-        public IntPtr lpCallbackData;
-        public uint cxWidth;
+    struct WIN32_FIND_DATA {
+        public uint dwFileAttributes;
+        public System.Runtime.InteropServices.ComTypes.FILETIME ftCreationTime;
+        public System.Runtime.InteropServices.ComTypes.FILETIME ftLastAccessTime;
+        public System.Runtime.InteropServices.ComTypes.FILETIME ftLastWriteTime;
+        public uint nFileSizeHigh;
+        public uint nFileSizeLow;
+        public uint dwReserved0;
+        public uint dwReserved1;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+        public string cFileName;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 14)]
+        public string cAlternateFileName;
     }
 }
 

@@ -1,18 +1,21 @@
-/* ****************************************************************************
- *
- * Copyright (c) Microsoft Corporation. 
- *
- * This source code is subject to terms and conditions of the Apache License, Version 2.0. A 
- * copy of the license can be found in the License.html file at the root of this distribution. If 
- * you cannot locate the Apache License, Version 2.0, please send an email to 
- * vspython@microsoft.com. By using this source code in any fashion, you are agreeing to be bound 
- * by the terms of the Apache License, Version 2.0.
- *
- * You must not remove this notice, or any other, from this software.
- *
- * ***************************************************************************/
+// Visual Studio Shared Project
+// Copyright(c) Microsoft Corporation
+// All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the License); you may not use
+// this file except in compliance with the License. You may obtain a copy of the
+// License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// THIS CODE IS PROVIDED ON AN  *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS
+// OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY
+// IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+// MERCHANTABLITY OR NON-INFRINGEMENT.
+//
+// See the Apache Version 2.0 License for specific language governing
+// permissions and limitations under the License.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.Designer.Interfaces;
@@ -28,16 +31,17 @@ namespace Microsoft.VisualStudioTools.Project {
     /// <summary>
     /// Common factory for creating our editor
     /// </summary>    
+    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable")]
     public abstract class CommonEditorFactory : IVsEditorFactory {
-        private CommonProjectPackage _package;
+        private Package _package;
         private ServiceProvider _serviceProvider;
         private readonly bool _promptEncodingOnLoad;
 
-        public CommonEditorFactory(CommonProjectPackage package) {
+        public CommonEditorFactory(Package package) {
             _package = package;
         }
 
-        public CommonEditorFactory(CommonProjectPackage package, bool promptEncodingOnLoad) {
+        public CommonEditorFactory(Package package, bool promptEncodingOnLoad) {
             _package = package;
             _promptEncodingOnLoad = promptEncodingOnLoad;
         }
@@ -273,7 +277,7 @@ namespace Microsoft.VisualStudioTools.Project {
             }
         }
 
-        private IntPtr CreateCodeView(string documentMoniker, IVsTextLines textLines, ref string editorCaption, ref Guid cmdUI) {
+        protected virtual IntPtr CreateCodeView(string documentMoniker, IVsTextLines textLines, ref string editorCaption, ref Guid cmdUI) {
             Type codeWindowType = typeof(IVsCodeWindow);
             Guid riid = codeWindowType.GUID;
             Guid clsid = typeof(VsCodeWindowClass).GUID;
@@ -307,5 +311,27 @@ namespace Microsoft.VisualStudioTools.Project {
         }
 
         #endregion
+
+        protected void InitializeLanguageService(IVsTextLines textLines, Guid langSid) {
+            IVsUserData userData = textLines as IVsUserData;
+            if (userData != null) {
+                if (langSid != Guid.Empty) {
+                    Guid vsCoreSid = new Guid("{8239bec4-ee87-11d0-8c98-00c04fc2ab22}");
+                    Guid currentSid;
+                    ErrorHandler.ThrowOnFailure(textLines.GetLanguageServiceID(out currentSid));
+                    // If the language service is set to the default SID, then
+                    // set it to our language
+                    if (currentSid == vsCoreSid) {
+                        ErrorHandler.ThrowOnFailure(textLines.SetLanguageServiceID(ref langSid));
+                    } else if (currentSid != langSid) {
+                        // Some other language service has it, so return VS_E_INCOMPATIBLEDOCDATA
+                        throw new COMException("Incompatible doc data", VSConstants.VS_E_INCOMPATIBLEDOCDATA);
+                    }
+
+                    Guid bufferDetectLang = VSConstants.VsTextBufferUserDataGuid.VsBufferDetectLangSID_guid;
+                    ErrorHandler.ThrowOnFailure(userData.SetData(ref bufferDetectLang, false));
+                }
+            }
+        }
     }
 }

@@ -21,8 +21,7 @@ namespace NPLTools.Project
     [ProvideProjectItem(typeof(NPLProjectFactory), "NPL Items", ".\\NullPath", 500)]
     [Guid(NPLProjectPackageGuidString)]
     [ProvideObject(typeof(NPLPropertyPage))]
-    [ProvideMenuResource("Menus.ctmenu", 1)]
-    [DeveloperActivity("NPLTest", typeof(NPLProjectPackage))]
+    [DeveloperActivity("NPL", typeof(NPLProjectPackage))]
     public sealed class NPLProjectPackage : CommonProjectPackage
     {
         /// <summary>

@@ -1,19 +1,24 @@
-/* ****************************************************************************
- *
- * Copyright (c) Microsoft Corporation. 
- *
- * This source code is subject to terms and conditions of the Apache License, Version 2.0. A 
- * copy of the license can be found in the License.html file at the root of this distribution. If 
- * you cannot locate the Apache License, Version 2.0, please send an email to 
- * vspython@microsoft.com. By using this source code in any fashion, you are agreeing to be bound 
- * by the terms of the Apache License, Version 2.0.
- *
- * You must not remove this notice, or any other, from this software.
- *
- * ***************************************************************************/
+// Visual Studio Shared Project
+// Copyright(c) Microsoft Corporation
+// All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the License); you may not use
+// this file except in compliance with the License. You may obtain a copy of the
+// License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// THIS CODE IS PROVIDED ON AN  *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS
+// OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY
+// IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+// MERCHANTABLITY OR NON-INFRINGEMENT.
+//
+// See the Apache Version 2.0 License for specific language governing
+// permissions and limitations under the License.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell.Interop;
 using VSConstants = Microsoft.VisualStudio.VSConstants;
@@ -23,15 +28,25 @@ namespace Microsoft.VisualStudioTools.Navigation {
     /// <summary>
     /// Implements a simple library that tracks project symbols, objects etc.
     /// </summary>
-    class Library : IVsSimpleLibrary2 {
+    sealed class Library : IVsSimpleLibrary2, IDisposable {
         private Guid _guid;
         private _LIB_FLAGS2 _capabilities;
+        private readonly SemaphoreSlim _searching;
         private LibraryNode _root;
         private uint _updateCount;
+
+        private enum UpdateType { Add, Remove }
+        private readonly List<KeyValuePair<UpdateType, LibraryNode>> _updates;
 
         public Library(Guid libraryGuid) {
             _guid = libraryGuid;
             _root = new LibraryNode(null, String.Empty, String.Empty, LibraryNodeType.Package);
+            _updates = new List<KeyValuePair<UpdateType, LibraryNode>>();
+            _searching = new SemaphoreSlim(1);
+        }
+
+        public void Dispose() {
+            _searching.Dispose();
         }
 
         public _LIB_FLAGS2 LibraryCapabilities {
@@ -39,21 +54,60 @@ namespace Microsoft.VisualStudioTools.Navigation {
             set { _capabilities = value; }
         }
 
-        internal void AddNode(LibraryNode node) {
-            lock (this) {
-                // re-create root node here because we may have handed out the node before and don't want to mutate it's list.
-                _root = _root.Clone();
-                _root.AddNode(node);
-                _updateCount++;
+        private void ApplyUpdates(bool assumeLockHeld) {
+            if (!assumeLockHeld) {
+                if (!_searching.Wait(0)) {
+                    // Didn't get the lock immediately, which means we are
+                    // currently searching. Once the search is done, updates
+                    // will be applied.
+                    return;
+                }
+            }
+
+            try {
+                lock (_updates) {
+                    if (_updates.Count == 0) {
+                        return;
+                    }
+
+                    // re-create root node here because we may have handed out
+                    // the node before and don't want to mutate it's list.
+                    _root = _root.Clone();
+                    _updateCount += 1;
+                    foreach (var kv in _updates) {
+                        switch (kv.Key) {
+                            case UpdateType.Add:
+                                _root.AddNode(kv.Value);
+                                break;
+                            case UpdateType.Remove:
+                                _root.RemoveNode(kv.Value);
+                                break;
+                            default:
+                                Debug.Fail("Unsupported update type " + kv.Key.ToString());
+                                break;
+                        }
+                    }
+                    _updates.Clear();
+                }
+            } finally {
+                if (!assumeLockHeld) {
+                    _searching.Release();
+                }
             }
         }
 
-        internal void RemoveNode(LibraryNode node) {
-            lock (this) {
-                _root = _root.Clone();
-                _root.RemoveNode(node);
-                _updateCount++;
+        internal async void AddNode(LibraryNode node) {
+            lock (_updates) {
+                _updates.Add(new KeyValuePair<UpdateType, LibraryNode>(UpdateType.Add, node));
             }
+            ApplyUpdates(false);
+        }
+
+        internal void RemoveNode(LibraryNode node) {
+            lock (_updates) {
+                _updates.Add(new KeyValuePair<UpdateType, LibraryNode>(UpdateType.Remove, node));
+            }
+            ApplyUpdates(false);
         }
 
         #region IVsSimpleLibrary2 Members
@@ -87,9 +141,9 @@ namespace Microsoft.VisualStudioTools.Navigation {
                 ppIVsSimpleObjectList2 = null;
                 return VSConstants.E_NOTIMPL;
             }
-
+            
             ICustomSearchListProvider listProvider;
-            if(pobSrch != null && 
+            if (pobSrch != null &&
                 pobSrch.Length > 0) {
                 if ((listProvider = pobSrch[0].pIVsNavInfo as ICustomSearchListProvider) != null) {
                     switch ((_LIB_LISTTYPE)ListType) {
@@ -127,10 +181,19 @@ namespace Microsoft.VisualStudioTools.Navigation {
                         }
                         ppIVsSimpleObjectList2 = lib;
                         return VSConstants.S_OK;
-                    } else {
-                        ppIVsSimpleObjectList2 = null;
-                        return VSConstants.E_FAIL;
+                    } else if ((pobSrch[0].grfOptions & (uint)_VSOBSEARCHOPTIONS.VSOBSO_LOOKINREFS) != 0
+                        && ListType == (uint)_LIB_LISTTYPE.LLT_HIERARCHY) {
+                        LibraryNode node = pobSrch[0].pIVsNavInfo as LibraryNode;
+                        if (node != null) {
+                            var refs = node.FindReferences();
+                            if (refs != null) {
+                                ppIVsSimpleObjectList2 = refs;
+                                return VSConstants.S_OK;
+                            }
+                        }
                     }
+                    ppIVsSimpleObjectList2 = null;
+                    return VSConstants.E_FAIL;
                 }
             } else {
                 ppIVsSimpleObjectList2 = _root as IVsSimpleObjectList2;
@@ -149,12 +212,16 @@ namespace Microsoft.VisualStudioTools.Navigation {
             return list;
         }
 
-        public void VisitNodes(ILibraryNodeVisitor visitor, CancellationToken ct = default(CancellationToken)) {
-            lock (this) {
-                _root.Visit(visitor, ct);
+        internal async Task VisitNodesAsync(ILibraryNodeVisitor visitor, CancellationToken ct = default(CancellationToken)) {
+            await _searching.WaitAsync(ct);
+            try {
+                await Task.Run(() => _root.Visit(visitor, ct));
+                ApplyUpdates(true);
+            } finally {
+                _searching.Release();
             }
         }
-        
+
         public int GetSeparatorStringWithOwnership(out string pbstrSeparator) {
             pbstrSeparator = ".";
             return VSConstants.S_OK;

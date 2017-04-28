@@ -1,16 +1,18 @@
-/* ****************************************************************************
- *
- * Copyright (c) Microsoft Corporation. 
- *
- * This source code is subject to terms and conditions of the Apache License, Version 2.0. A 
- * copy of the license can be found in the License.html file at the root of this distribution. If 
- * you cannot locate the Apache License, Version 2.0, please send an email to 
- * vspython@microsoft.com. By using this source code in any fashion, you are agreeing to be bound 
- * by the terms of the Apache License, Version 2.0.
- *
- * You must not remove this notice, or any other, from this software.
- *
- * ***************************************************************************/
+// Visual Studio Shared Project
+// Copyright(c) Microsoft Corporation
+// All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the License); you may not use
+// this file except in compliance with the License. You may obtain a copy of the
+// License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// THIS CODE IS PROVIDED ON AN  *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS
+// OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY
+// IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+// MERCHANTABLITY OR NON-INFRINGEMENT.
+//
+// See the Apache Version 2.0 License for specific language governing
+// permissions and limitations under the License.
 
 using System;
 using System.Collections;
@@ -25,7 +27,6 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
     /// <summary>
     /// Contains all of the properties of a given object that are contained in a generic collection of properties.
     /// </summary>
-    [SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
     [ComVisible(true)]
     public class OAProperties : EnvDTE.Properties {
         private NodeProperties target;
@@ -96,14 +97,13 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
         /// <summary>
         /// Returns an indexed member of a Properties collection. 
         /// </summary>
-        /// <param name="index">The index at which to return a mamber.</param>
+        /// <param name="index">The index at which to return a member.</param>
         /// <returns>A Property object.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1800:DoNotCastUnnecessarily")]
         public virtual EnvDTE.Property Item(object index) {
             if (index is string) {
                 string indexAsString = (string)index;
                 if (this.properties.ContainsKey(indexAsString)) {
-                    return (EnvDTE.Property)this.properties[indexAsString];
+                    return this.properties[indexAsString];
                 }
             } else if (index is int) {
                 int realIndex = (int)index - 1;
@@ -119,7 +119,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
                 }
             }
 
-            throw new ArgumentException(SR.GetString(SR.InvalidParameter, CultureInfo.CurrentUICulture), "index");
+            throw new ArgumentException(SR.GetString(SR.InvalidParameter), "index");
         }
         /// <summary>
         /// Gets the immediate parent object of a Properties collection.

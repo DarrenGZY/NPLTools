@@ -1,24 +1,30 @@
-/* ****************************************************************************
- *
- * Copyright (c) Microsoft Corporation. 
- *
- * This source code is subject to terms and conditions of the Apache License, Version 2.0. A 
- * copy of the license can be found in the License.html file at the root of this distribution. If 
- * you cannot locate the Apache License, Version 2.0, please send an email to 
- * vspython@microsoft.com. By using this source code in any fashion, you are agreeing to be bound 
- * by the terms of the Apache License, Version 2.0.
- *
- * You must not remove this notice, or any other, from this software.
- *
- * ***************************************************************************/
+// Visual Studio Shared Project
+// Copyright(c) Microsoft Corporation
+// All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the License); you may not use
+// this file except in compliance with the License. You may obtain a copy of the
+// License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// THIS CODE IS PROVIDED ON AN  *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS
+// OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY
+// IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+// MERCHANTABLITY OR NON-INFRINGEMENT.
+//
+// See the Apache Version 2.0 License for specific language governing
+// permissions and limitations under the License.
 
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.VisualStudioTools.Project.Automation {
     [ComVisible(true)]
     public class OAProperty : EnvDTE.Property {
+        private const string WrappedStacktraceKey =
+            "$$Microsoft.VisualStudioTools.Project.Automation.WrappedStacktraceKey$$";
+
         #region fields
         private OAProperties parent;
         private PropertyInfo pi;
@@ -128,7 +134,7 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
         /// <param name="value">The value to set.</param>
         public void set_IndexedValue(object index1, object index2, object index3, object index4, object value) {
             Debug.Assert(pi.GetIndexParameters().Length == 0);
-            UIThread.Instance.RunSync(() => {
+            parent.Target.HierarchyNode.ProjectMgr.Site.GetUIThread().Invoke(() => {
                 this.Value = value;
             });
         }
@@ -137,11 +143,37 @@ namespace Microsoft.VisualStudioTools.Project.Automation {
         /// Gets or sets the value of the property returned by the Property object.
         /// </summary>
         public object Value {
-            get { return pi.GetValue(this.parent.Target, null); }
+            get {
+                using (AutomationScope scope = new AutomationScope(this.parent.Target.HierarchyNode.ProjectMgr.Site)) {
+                    return parent.Target.HierarchyNode.ProjectMgr.Site.GetUIThread().Invoke(() => {
+                        try {
+                            return pi.GetValue(this.parent.Target, null);
+                        } catch (TargetInvocationException ex) {
+                            // If the property raised an exception, we want to
+                            // rethrow that exception and not the outer one.
+                            if (ex.InnerException != null) {
+                                ex.InnerException.Data[WrappedStacktraceKey] = ex.InnerException.StackTrace;
+                                throw ex.InnerException;
+                            }
+                            throw;
+                        }
+                    });
+                }
+            }
             set {
                 using (AutomationScope scope = new AutomationScope(this.parent.Target.HierarchyNode.ProjectMgr.Site)) {
-                    UIThread.Instance.RunSync(() => {
-                        this.pi.SetValue(this.parent.Target, value, null);
+                    parent.Target.HierarchyNode.ProjectMgr.Site.GetUIThread().Invoke(() => {
+                        try {
+                            this.pi.SetValue(this.parent.Target, value, null);
+                        } catch (TargetInvocationException ex) {
+                            // If the property raised an exception, we want to
+                            // rethrow that exception and not the outer one.
+                            if (ex.InnerException != null) {
+                                ex.InnerException.Data[WrappedStacktraceKey] = ex.InnerException.StackTrace;
+                                throw ex.InnerException;
+                            }
+                            throw;
+                        }
                     });
                 }
             }

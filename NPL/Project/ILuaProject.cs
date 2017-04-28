@@ -124,31 +124,31 @@ namespace NPLTools.Project
         event EventHandler ProjectAnalyzerChanged;
     }
 
-    public static class ILuaProjectExtensions
-    {
-        /// <summary>
-        /// Returns a sequence of absolute search paths for the provided project.
-        /// </summary>
-        public static IEnumerable<string> GetSearchPaths(this ILuaProject project)
-        {
-            var paths = project.GetProperty(CommonConstants.SearchPath);
-            if (!string.IsNullOrEmpty(paths))
-            {
-                var seen = new HashSet<string>();
-                foreach (var path in paths.Split(';'))
-                {
-                    if (string.IsNullOrEmpty(path))
-                    {
-                        continue;
-                    }
+    //public static class ILuaProjectExtensions
+    //{
+    //    /// <summary>
+    //    /// Returns a sequence of absolute search paths for the provided project.
+    //    /// </summary>
+    //    public static IEnumerable<string> GetSearchPaths(this ILuaProject project)
+    //    {
+    //        var paths = project.GetProperty(CommonConstants.SearchPath);
+    //        if (!string.IsNullOrEmpty(paths))
+    //        {
+    //            var seen = new HashSet<string>();
+    //            foreach (var path in paths.Split(';'))
+    //            {
+    //                if (string.IsNullOrEmpty(path))
+    //                {
+    //                    continue;
+    //                }
 
-                    var absPath = CommonUtils.GetAbsoluteFilePath(project.ProjectDirectory, path);
-                    if (seen.Add(absPath))
-                    {
-                        yield return absPath;
-                    }
-                }
-            }
-        }
-    }
+    //                var absPath = CommonUtils.GetAbsoluteFilePath(project.ProjectDirectory, path);
+    //                if (seen.Add(absPath))
+    //                {
+    //                    yield return absPath;
+    //                }
+    //            }
+    //        }
+    //    }
+    //}
 }

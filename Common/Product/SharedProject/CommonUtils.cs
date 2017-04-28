@@ -1,25 +1,33 @@
-﻿/* ****************************************************************************
- *
- * Copyright (c) Microsoft Corporation. 
- *
- * This source code is subject to terms and conditions of the Apache License, Version 2.0. A 
- * copy of the license can be found in the License.html file at the root of this distribution. If 
- * you cannot locate the Apache License, Version 2.0, please send an email to 
- * vspython@microsoft.com. By using this source code in any fashion, you are agreeing to be bound 
- * by the terms of the Apache License, Version 2.0.
- *
- * You must not remove this notice, or any other, from this software.
- *
- * ***************************************************************************/
+﻿// Visual Studio Shared Project
+// Copyright(c) Microsoft Corporation
+// All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the License); you may not use
+// this file except in compliance with the License. You may obtain a copy of the
+// License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// THIS CODE IS PROVIDED ON AN  *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS
+// OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY
+// IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+// MERCHANTABLITY OR NON-INFRINGEMENT.
+//
+// See the Apache Version 2.0 License for specific language governing
+// permissions and limitations under the License.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
 namespace Microsoft.VisualStudioTools {
     internal static class CommonUtils {
-        private static char[] InvalidPathChars = GetInvalidPathChars();
+        private static readonly char[] InvalidPathChars = GetInvalidPathChars();
+
+        private static readonly char[] DirectorySeparators = new[] {
+            Path.DirectorySeparatorChar,
+            Path.AltDirectorySeparatorChar
+        };
 
         private static char[] GetInvalidPathChars() {
             return Path.GetInvalidPathChars().Concat(new[] { '*', '?' }).ToArray();
@@ -34,18 +42,18 @@ namespace Microsoft.VisualStudioTools {
         }
 
         internal static Uri MakeUri(string path, bool isDirectory, UriKind kind, string throwParameterName = "path") {
-//            try {
+            try {
                 if (isDirectory && !string.IsNullOrEmpty(path) && !HasEndSeparator(path)) {
                     path += Path.DirectorySeparatorChar;
                 }
 
                 return new Uri(path, kind);
-/*
+
             } catch (UriFormatException ex) {
                 throw new ArgumentException("Path was invalid", throwParameterName, ex);
             } catch (ArgumentException ex) {
                 throw new ArgumentException("Path was invalid", throwParameterName, ex);
-            }*/
+            }
         }
 
         /// <summary>
@@ -106,10 +114,10 @@ namespace Microsoft.VisualStudioTools {
             }
 
             Uri uri1, uri2;
-            return 
+            return
                 TryMakeUri(path1, true, UriKind.Absolute, out uri1) &&
                 TryMakeUri(path2, true, UriKind.Absolute, out uri2) &&
-                uri1 == uri2;            
+                uri1 == uri2;
         }
 
         /// <summary>
@@ -246,14 +254,6 @@ namespace Microsoft.VisualStudioTools {
                     relPath = relUri.IsFile ? relUri.LocalPath : relUri.AbsoluteUri;
                 } else {
                     relPath = Uri.UnescapeDataString(relUri.ToString());
-
-                    var rootedPath = TrimUpPaths(relPath);
-                    if (rootedPath != relPath) {
-                        rootedPath = sep + rootedPath;
-                        if (new Uri(fromUri, rootedPath) == toUri) {
-                            relPath = rootedPath;
-                        }
-                    }
                 }
             } catch (InvalidOperationException ex) {
                 Trace.WriteLine(string.Format("Error finding path from {0} to {1}", fromUri, toUri));
@@ -278,8 +278,6 @@ namespace Microsoft.VisualStudioTools {
         /// for UI strings.
         /// </summary>
         public static string GetRelativeFilePath(string fromDirectory, string toFile) {
-/*            return MakeRelativePath(fromDirectory, toFile);*/
-
             var fromUri = MakeUri(fromDirectory, true, UriKind.Absolute, "fromDirectory");
             var toUri = MakeUri(toFile, false, UriKind.Absolute, "toFile");
 
@@ -292,15 +290,6 @@ namespace Microsoft.VisualStudioTools {
                     relPath = relUri.IsFile ? relUri.LocalPath : relUri.AbsoluteUri;
                 } else {
                     relPath = Uri.UnescapeDataString(relUri.ToString());
-/*
-                    var rootedPath = TrimUpPaths(relPath);
-                    if (rootedPath != relPath) {
-                        rootedPath = sep + rootedPath;
-                        Uri newUri = new Uri(fromUri, rootedPath);
-                        if (new Uri(fromUri, rootedPath) == toUri) {
-                            relPath = rootedPath;
-                        }
-                    }*/
                 }
             } catch (InvalidOperationException ex) {
                 Trace.WriteLine(string.Format("Error finding path from {0} to {1}", fromUri, toUri));
@@ -341,12 +330,118 @@ namespace Microsoft.VisualStudioTools {
         }
 
         /// <summary>
+        /// Returns the last directory segment of a path. The last segment is
+        /// assumed to be the string between the second-last and last directory
+        /// separator characters in the path. If there is no suitable substring,
+        /// the empty string is returned.
+        /// 
+        /// The first segment of the path is only returned if it does not
+        /// contain a colon. Segments equal to "." are ignored and the preceding
+        /// segment is used.
+        /// </summary>
+        /// <remarks>
+        /// This should be used in place of:
+        /// <c>Path.GetFileName(CommonUtils.TrimEndSeparator(Path.GetDirectoryName(path)))</c>
+        /// </remarks>
+        public static string GetLastDirectoryName(string path) {
+            if (string.IsNullOrEmpty(path)) {
+                return string.Empty;
+            }
+
+            int last = path.LastIndexOfAny(DirectorySeparators);
+
+            string result = string.Empty;
+            while (last > 1) {
+                int first = path.LastIndexOfAny(DirectorySeparators, last - 1);
+                if (first < 0) {
+                    if (path.IndexOf(':') < last) {
+                        // Don't want to return scheme/drive as a directory
+                        return string.Empty;
+                    }
+                    first = -1;
+                }
+                if (first == 1 && path[0] == path[1]) {
+                    // Don't return computer name in UNC path
+                    return string.Empty;
+                }
+
+                result = path.Substring(first + 1, last - (first + 1));
+                if (!string.IsNullOrEmpty(result) && result != ".") {
+                    // Result is valid
+                    break;
+                }
+
+                last = first;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Returns the path to the parent directory segment of a path. If the
+        /// last character of the path is a directory separator, the segment
+        /// prior to that character is removed. Otherwise, the segment following
+        /// the last directory separator is removed.
+        /// </summary>
+        /// <remarks>
+        /// This should be used in place of:
+        /// <c>Path.GetDirectoryName(CommonUtils.TrimEndSeparator(path)) + Path.DirectorySeparatorChar</c>
+        /// </remarks>
+        public static string GetParent(string path) {
+            if (string.IsNullOrEmpty(path)) {
+                return string.Empty;
+            }
+
+            int last = path.Length - 1;
+            if (DirectorySeparators.Contains(path[last])) {
+                last -= 1;
+            }
+
+            if (last <= 0) {
+                return string.Empty;
+            }
+
+            last = path.LastIndexOfAny(DirectorySeparators, last);
+
+            if (last < 0) {
+                return string.Empty;
+            }
+
+            return path.Remove(last + 1);
+        }
+
+        /// <summary>
+        /// Returns the last segment of the path. If the last character is a
+        /// directory separator, this will be the segment preceding the
+        /// separator. Otherwise, it will be the segment following the last
+        /// separator.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static string GetFileOrDirectoryName(string path) {
+            if (string.IsNullOrEmpty(path)) {
+                return string.Empty;
+            }
+
+            int last = path.Length - 1;
+            if (DirectorySeparators.Contains(path[last])) {
+                last -= 1;
+            }
+
+            if (last < 0) {
+                return string.Empty;
+            }
+
+            int start = path.LastIndexOfAny(DirectorySeparators, last);
+
+            return path.Substring(start + 1, last - start);
+        }
+
+        /// <summary>
         /// Returns true if the path has a directory separator character at the end.
         /// </summary>
         public static bool HasEndSeparator(string path) {
-            return (!string.IsNullOrEmpty(path) &&
-                (path[path.Length - 1] == Path.DirectorySeparatorChar ||
-                 path[path.Length - 1] == Path.AltDirectorySeparatorChar));
+            return !string.IsNullOrEmpty(path) && DirectorySeparators.Contains(path[path.Length - 1]);
         }
 
         /// <summary>
@@ -354,6 +449,15 @@ namespace Microsoft.VisualStudioTools {
         /// </summary>
         public static string TrimEndSeparator(string path) {
             if (HasEndSeparator(path)) {
+                if (path.Length > 2 && path[path.Length - 2] == ':') {
+                    // The slash at the end of a drive specifier is not actually
+                    // a separator.
+                    return path;
+                } else if (path.Length > 3 && path[path.Length - 2] == path[path.Length - 1] && path[path.Length - 3] == ':') {
+                    // The double slash at the end of a schema is not actually a
+                    // separator.
+                    return path;
+                }
                 return path.Remove(path.Length - 1);
             } else {
                 return path;
@@ -364,7 +468,9 @@ namespace Microsoft.VisualStudioTools {
         /// Adds a directory separator character to the end of path if required.
         /// </summary>
         public static string EnsureEndSeparator(string path) {
-            if (!HasEndSeparator(path)) {
+            if (string.IsNullOrEmpty(path)) {
+                return string.Empty;
+            } else if (!HasEndSeparator(path)) {
                 return path + Path.DirectorySeparatorChar;
             } else {
                 return path;
@@ -395,6 +501,90 @@ namespace Microsoft.VisualStudioTools {
         public static bool IsValidPath(string path) {
             return !string.IsNullOrEmpty(path) &&
                 path.IndexOfAny(InvalidPathChars) < 0;
+        }
+
+        /// <summary>
+        /// Recursively searches for a file using breadth-first-search. This
+        /// ensures that the result closest to <paramref name="root"/> is
+        /// returned first.
+        /// </summary>
+        /// <param name="root">
+        /// Directory to start searching.
+        /// </param>
+        /// <param name="file">
+        /// Filename to find. Wildcards are not supported.
+        /// </param>
+        /// <param name="depthLimit">
+        /// The number of subdirectories to search in.
+        /// </param>
+        /// <param name="firstCheck">
+        /// A sequence of subdirectories to prioritize.
+        /// </param>
+        /// <returns>
+        /// The path to the file if found, including <paramref name="root"/>;
+        /// otherwise, null.
+        /// </returns>
+        public static string FindFile(
+            string root,
+            string file,
+            int depthLimit = 2,
+            IEnumerable<string> firstCheck = null
+        ) {
+            var candidate = Path.Combine(root, file);
+            if (File.Exists(candidate)) {
+                return candidate;
+            }
+            if (firstCheck != null) {
+                foreach (var subPath in firstCheck) {
+                    candidate = Path.Combine(root, subPath, file);
+                    if (File.Exists(candidate)) {
+                        return candidate;
+                    }
+                }
+            }
+
+            // Do a BFS of the filesystem to ensure we find the match closest to
+            // the root directory.
+            var dirQueue = new Queue<string>();
+            dirQueue.Enqueue(root);
+            dirQueue.Enqueue("<EOD>");
+            while (dirQueue.Any()) {
+                var dir = dirQueue.Dequeue();
+                if (dir == "<EOD>") {
+                    depthLimit -= 1;
+                    if (depthLimit <= 0) {
+                        return null;
+                    }
+                    continue;
+                }
+                var result = Directory.EnumerateFiles(dir, file, SearchOption.TopDirectoryOnly).FirstOrDefault();
+                if (result != null) {
+                    return result;
+                }
+                foreach (var subDir in Directory.EnumerateDirectories(dir)) {
+                    dirQueue.Enqueue(subDir);
+                }
+                dirQueue.Enqueue("<EOD>");
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Gets a filename in the specified location with the specified name and extension.
+        /// If the file already exist it will calculate a name with a number in it.
+        /// </summary>
+        public static string GetAvailableFilename(string location, string basename, string extension) {
+            var newPath = Path.Combine(location, basename);
+            int index = 0;
+            if (File.Exists(newPath + extension)) {
+                string candidateNewPath;
+                do {
+                    candidateNewPath = string.Format("{0}{1}", newPath, ++index);
+                } while (File.Exists(candidateNewPath + extension));
+                newPath = candidateNewPath;
+            }
+            string final = newPath + extension;
+            return final;
         }
     }
 }
