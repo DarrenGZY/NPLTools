@@ -98,6 +98,7 @@
     <Compile Include="IronyParser\Parser\LuaBlockCommentTerminal.cs" />
     <Compile Include="IronyParser\Parser\LuaLongStringTerminal.cs" />
     <Compile Include="IronyParser\Parser\LuaStringLiteral.cs" />
+    <Compile Include="IronyParser\ParseTreeExtension.cs" />
     <Compile Include="Language\BraceMatching\NPLBraceMatching.cs" />
     <Compile Include="Language\Classifier\NPLClassificationFormat.cs" />
     <Compile Include="Language\Classifier\NPLClassificationType.cs" />

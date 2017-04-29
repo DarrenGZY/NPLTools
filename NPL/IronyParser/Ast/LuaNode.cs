@@ -11,6 +11,8 @@ namespace NPLTools.IronyParser.Ast
 {
     public class LuaNode : AstNode
     {
+        private ParseTreeNode _treeNode;
+
         public void AddChild(string role, LuaNode child)
         {
             if (child == null) return;
@@ -27,17 +29,12 @@ namespace NPLTools.IronyParser.Ast
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
+            _treeNode = treeNode;
         }
 
         public int EndLine
         {
-            get
-            {
-                if (ChildNodes.Count == 0)
-                    return this.Location.Line;
-                else
-                    return (this.ChildNodes.Last<AstNode>() as LuaNode).EndLine;
-            }
+            get { return _treeNode.GetEndLine(); }
         }
     }
 
