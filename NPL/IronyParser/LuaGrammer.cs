@@ -119,10 +119,10 @@ namespace NPLTools.IronyParser
             var ColonCallOpt = new NonTerminal("colon call");
             ColonCallOpt.AstConfig.NodeType = typeof(LuaBlockNode);
             var FunctionParameters = new NonTerminal("function parameters");
-            
-
+            var FieldListOpt = new NonTerminal("field list optional");
+            var FieldSepOpt = new NonTerminal("field seperator optional");
             MarkTransient(Expr, Statement, Statements, StatementsEnd, SingleStatementWithTermOpt, /* ColonCallOpt, */
-                          FunctionParameters, 
+                          FunctionParameters, FieldListOpt, FieldSepOpt,
                           LastStatementWithTermOpt, UnOp, BinOp, PrefixExpr, Var, Args, EllipsisOpt, ArgsParameters,
                           ParentheticalExpression);
 
@@ -152,11 +152,11 @@ namespace NPLTools.IronyParser
             var TableConstructor = new NonTerminal("table constructor", typeof(LuaTableNode));
             var TableAccess = new NonTerminal("table access", typeof(LuaTableAccessNode));
             var FieldList = new NonTerminal("field list", typeof(LuaExpressionNodeList));
-            var FieldList_Q = new NonTerminal("field list question", typeof(LuaNode));
+            //var FieldList_Q = new NonTerminal("field list question", typeof(LuaNode));
             var Field = new NonTerminal("field", typeof(LuaField));
             var FieldSep = new NonTerminal("field seperator", typeof(LuaNode));
-            var FieldAndSep = new NonTerminal("field and seperator", typeof(LuaNode));
-            var FieldSep_Q = new NonTerminal("field seperator question", typeof(LuaNode));
+            var FieldAndSep = new NonTerminal("field and seperator", typeof(LuaFieldAndSeperatorNode));
+            //var FieldSep_Q = new NonTerminal("field seperator question", typeof(LuaNode));
 
             var IdentifierWithOptNamespace = new NonTerminal("identifier including namespace", typeof(LuaNode));
 
@@ -298,22 +298,22 @@ namespace NPLTools.IronyParser
             ParList.Rule = NameList + EllipsisOpt | ELLIPSIS | Empty;
 
             //tableconstructor ::= `{´ [fieldlist] `}´
-            TableConstructor.Rule = "{" + FieldList_Q + "}";
+            TableConstructor.Rule = "{" + FieldListOpt + "}";
             //TableConstructor.Rule = "{" + FieldList + "}";// | "{" + "}";
 
             //fieldlist ::= field {fieldsep field} [fieldsep]
             //FieldList.Rule = Field + (FieldSep + Field).Star() + FieldSep.Q();        
             
             FieldList.Rule = MakeStarRule(FieldList, FieldAndSep);
-            FieldList_Q.Rule = FieldList | Empty;
+            FieldListOpt.Rule = FieldList | Empty;
 
             //field ::= `[´ exp `]´ `=´ exp | Name `=´ exp | exp
             Field.Rule = "[" + Expr + "]" + "=" + Expr | Name + "=" + Expr | Expr;
-            FieldAndSep.Rule = Field + FieldSep_Q;
+            FieldAndSep.Rule = Field + FieldSepOpt;
 
             //fieldsep ::= `,´ | `;´
             FieldSep.Rule = ToTerm(",") | ";";
-            FieldSep_Q.Rule = FieldSep | Empty;
+            FieldSepOpt.Rule = FieldSep | Empty;
 
             //binop ::= `+´ | `-´ | `*´ | `/´ | `^´ | `%´ | `..´ | 
             //     `<´ | `<=´ | `>´ | `>=´ | `==´ | `~=´ | 

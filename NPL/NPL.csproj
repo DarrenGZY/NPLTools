@@ -68,6 +68,7 @@
     <Compile Include="IronyParser\Ast\IDeclaration.cs" />
     <Compile Include="IronyParser\Ast\LuaElseIfListNode.cs" />
     <Compile Include="IronyParser\Ast\LuaElseIfNode.cs" />
+    <Compile Include="IronyParser\Ast\LuaFieldAndSeperatorNode.cs" />
     <Compile Include="IronyParser\Ast\LuaLastStatementNode.cs" />
     <Compile Include="IronyParser\Ast\LuaNode.cs" />
     <Compile Include="IronyParser\Ast\LuaBinaryExpressionNode.cs" />
