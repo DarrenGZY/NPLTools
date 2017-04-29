@@ -81,7 +81,7 @@ namespace NPLTools.Project
 
         public override string GetProductName()
         {
-            return "npl";
+            return "hahahaha";
         }
 
         public override string GetProductVersion()
@@ -97,15 +97,12 @@ namespace NPLTools.Project
         {
             base.Initialize();
             this.RegisterProjectFactory(new NPLProjectFactory(this));
-            
-
         }
 
         public EnvDTE.DTE DTE
         {
             get { return GetService(typeof(EnvDTE.DTE)) as EnvDTE.DTE; }
         }
-
 
         #endregion
     }

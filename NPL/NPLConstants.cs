@@ -12,7 +12,7 @@ namespace NPLTools
         public const string NPLFileExtension = ".npl";
         public const string PageFileExtension = ".page";
         public const string LuaExtension = "lua";
-        public const string NPLExtension = "npl";
+        public const string NPLExtension = "Lua/NPL";
 
         // Parse Tree Nodes
         public const string DoBlock = "do block";

@@ -277,7 +277,7 @@ namespace NPLTools.IronyParser
             //exp ::=  nil | false | true | Number | String | `...´ | function | 
             //     prefixexp | tableconstructor | exp binop exp | unop exp 
             Expr.Rule = NIL | FALSE | TRUE | NUMBER | STRING | LONGSTRING | ELLIPSIS | Function |
-                        PrefixExpr | TableConstructor | Expr + BinOp + Expr | UnOp + Expr;
+                        PrefixExpr | TableConstructor | BinExp | UniExp;
 
             //var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name 
             TableAccess.Rule = PrefixExpr + "[" + Expr + "]" | PrefixExpr + DOT + Name;
@@ -407,7 +407,7 @@ namespace NPLTools.IronyParser
             var term = new KeyTerm(opCased, op);
             term.SetFlag(TermFlags.IsOperator, true);
             term.EditorInfo = new TokenEditorInfo(TokenType.Operator, TokenColor.Text, TokenTriggers.None);
-            term.AstConfig.NodeType = typeof(LuaBlockNode);
+            term.AstConfig.NodeType = typeof(LuaNode);
             return term;
         }
 

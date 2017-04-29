@@ -37,11 +37,11 @@ namespace NPLTools
     [Guid(Guids.NPLPackageGuidString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
     [ProvideLanguageService(typeof(NPLLanguageInfo), NPLConstants.NPLExtension, 106, RequestStockColors = true, ShowSmartIndent = true, ShowCompletion = true, DefaultToInsertSpaces = true, HideAdvancedMembersByDefault = true, EnableAdvancedMembersOption = true, ShowDropDownOptions = true)]
-    //[ProvideLanguageExtension(typeof(NPLLanguageInfo), NPLConstants.LuaFileExtension)]
-    [ProvideEditorExtension2(typeof(NPLEditorFactory), NPLConstants.NPLFileExtension, 50, __VSPHYSICALVIEWATTRIBUTES.PVA_SupportsPreview, "*:1", ProjectGuid = LuaConstants.ProjectFactoryGuid, NameResourceID = 3004, DefaultName = "module")]
-    [ProvideEditorExtension2(typeof(NPLEditorFactory), NPLConstants.LuaFileExtension, 50, __VSPHYSICALVIEWATTRIBUTES.PVA_SupportsPreview, "*:1", ProjectGuid = LuaConstants.ProjectFactoryGuid, NameResourceID = 3004, DefaultName = "module")]
-    [ProvideLanguageExtension(typeof(NPLEditorFactory), NPLConstants.NPLFileExtension)]
-    [ProvideLanguageExtension(typeof(NPLEditorFactory), NPLConstants.LuaFileExtension)]
+    //[ProvideLanguageExtension(typeof(NPLLanguageInfo), ".npl")]
+    //[ProvideEditorExtension2(typeof(NPLEditorFactory), NPLConstants.NPLFileExtension, 50, __VSPHYSICALVIEWATTRIBUTES.PVA_SupportsPreview, "*:1", ProjectGuid = LuaConstants.ProjectFactoryGuid, NameResourceID = 3004, DefaultName = "module")]
+    //[ProvideEditorExtension2(typeof(NPLEditorFactory), NPLConstants.LuaFileExtension, 50, __VSPHYSICALVIEWATTRIBUTES.PVA_SupportsPreview, "*:1", ProjectGuid = LuaConstants.ProjectFactoryGuid, NameResourceID = 3004, DefaultName = "module")]
+    //[ProvideLanguageExtension(typeof(NPLEditorFactory), NPLConstants.NPLFileExtension)]
+    //[ProvideLanguageExtension(typeof(NPLEditorFactory), NPLConstants.LuaFileExtension)]
     //[ProvideAutoLoad(UIContextGuids80.NoSolution)]
     public sealed class NPLToolsPackage : CommonPackage
     {

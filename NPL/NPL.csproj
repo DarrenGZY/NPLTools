@@ -107,7 +107,6 @@
     <Compile Include="Language\AutoCompletion\NPLCompletionCommandProvider.cs" />
     <Compile Include="Language\AutoCompletion\NPLCompletionSource.cs" />
     <Compile Include="Language\NPLEditorCommandFilter.cs" />
-    <Compile Include="Language\NPLReplWindowCreationListener.cs" />
     <Compile Include="Language\NPLTextViewCreationListener.cs" />
     <Compile Include="Language\NPLEditorFactory.cs" />
     <Compile Include="Language\NPLExtensions.cs" />

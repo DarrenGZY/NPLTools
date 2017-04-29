@@ -56,8 +56,6 @@ namespace NPLTools.Intelligense
             });
         }
         
-
-
         public string FilePath => _path;
 
         public ProjectAnalyzer Analyzer => _analyzer;
