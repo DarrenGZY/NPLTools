@@ -47,15 +47,24 @@ namespace NPLTools.IronyParser
 
             //  Standard Operators
             KeyTerm EQ = Operator("=");
-
             KeyTerm MINUS = Operator("-");
-            KeyTerm PLUS = Operator("+");
             KeyTerm UMINUS = Operator("-");
+            KeyTerm PLUS = Operator("+");
+            KeyTerm MUL = Operator("*");
+            KeyTerm MOD = Operator("%");
             KeyTerm CONCAT = Operator("..");
             KeyTerm GETN = Operator("#");
             KeyTerm NOT = Keyword("not");
             KeyTerm AND = Keyword("and");
             KeyTerm OR = Keyword("or");
+            KeyTerm EQUAL = Operator("==");
+            KeyTerm NOTEQUAL = Operator("~=");
+            KeyTerm POW = Operator("^");
+            KeyTerm DIV = Operator("/");
+            KeyTerm GT = Operator(">");
+            KeyTerm GTE = Operator(">=");
+            KeyTerm LT = Operator("<");
+            KeyTerm LTE = Operator("<="); 
             NonGrammarTerminals.Add(Comment);
 
             #region Keywords
@@ -268,7 +277,7 @@ namespace NPLTools.IronyParser
             //exp ::=  nil | false | true | Number | String | `...´ | function | 
             //     prefixexp | tableconstructor | exp binop exp | unop exp 
             Expr.Rule = NIL | FALSE | TRUE | NUMBER | STRING | LONGSTRING | ELLIPSIS | Function |
-                        PrefixExpr | TableConstructor | BinExp | UniExp;
+                        PrefixExpr | TableConstructor | Expr + BinOp + Expr | UnOp + Expr;
 
             //var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name 
             TableAccess.Rule = PrefixExpr + "[" + Expr + "]" | PrefixExpr + DOT + Name;
@@ -318,12 +327,12 @@ namespace NPLTools.IronyParser
             //binop ::= `+´ | `-´ | `*´ | `/´ | `^´ | `%´ | `..´ | 
             //     `<´ | `<=´ | `>´ | `>=´ | `==´ | `~=´ | 
             //     and | or
-            BinOp.Rule = ToTerm("+") | MINUS | "*" | "/" | "^" | "%" | CONCAT |
-                         "<" | "<=" | ">" | ">=" | "==" | "~=" |
+            BinOp.Rule = PLUS | MINUS | MUL | DIV | POW | MOD | CONCAT |
+                         LT | LTE | GT | GTE | EQUAL | NOTEQUAL |
                          AND | OR;
 
             //unop ::= `-´ | not | `#´
-            UnOp.Rule = UMINUS | NOT | GETN;
+            UnOp.Rule = NOT | MINUS | GETN;
 
             #endregion
 
@@ -345,7 +354,7 @@ namespace NPLTools.IronyParser
             RegisterOperators(4, Associativity.Right, CONCAT);
             RegisterOperators(5, MINUS, PLUS);
             RegisterOperators(6, "*", "/", "%");
-            RegisterOperators(7, NOT, UMINUS);
+            RegisterOperators(7, NOT);
             RegisterOperators(8, Associativity.Right, "^");
 
             #endregion
