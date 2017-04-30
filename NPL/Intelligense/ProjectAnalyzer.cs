@@ -255,7 +255,7 @@ namespace NPLTools.Intelligense
                     Irony.Parsing.Token currentToken = scanner.VsReadToken(ref state);
                     Irony.Parsing.Token lastToken = null;
                     // add space before the first token
-                    if (currentToken != null)
+                    if (currentToken != null && currentToken.Terminal.Name != "block-comment")
                     {
                         Span editSpan = new Span(lineOffset, currentToken.Location.Position);
                         string indentation = "";

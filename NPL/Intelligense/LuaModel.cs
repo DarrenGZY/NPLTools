@@ -199,11 +199,21 @@ namespace NPLTools.Intelligense
         {
             if (node is LuaBlockNode)
             {
-                for (int i = node.Span.Location.Line;
-                    i <= node.EndLine; ++i)
+                // if block span occupys two lines or more, add indentation for it
+                if (node.Span.Location.Line == node.EndLine)
                 {
-                    indentations[i] += 1;
-                }
+                    if (node.Span.Location.Line != node.Parent.Span.Location.Line)
+                        indentations[node.Span.Location.Line] += 1;
+                }               
+
+                if (node.Span.Location.Line != node.EndLine)
+                {
+                    for (int i = node.Span.Location.Line;
+                    i <= node.EndLine; ++i)
+                    {
+                        indentations[i] += 1;
+                    }
+                } 
             }
             foreach (LuaNode childNode in node.GetChildNodes())
             {
