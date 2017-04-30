@@ -184,15 +184,41 @@ namespace NPLTools.Intelligense
         /// 
         /// </summary>
         /// <param name="indentations"></param>
-        public void RetrieveIndentationsFromSyntaxTree(out int[] indentations)
+        public void RetrieveIndentationsFromSyntaxTree(out int[] indentations, out bool[] fixedLines)
         {
-            int lineNumber = _root.EndLine + 1;
+            int lineNumber = _parseTree.GetEndLine() + 1;
             indentations = new int[lineNumber];
+            fixedLines = new bool[lineNumber];
             for (int i = 0; i < lineNumber; ++i)
             {
                 indentations[i] = -1;
+                fixedLines[i] = false;
             }
             WalkSyntaxTreeForIndentations(_root, indentations);
+
+            for (int i = 0; i < _parseTree.Tokens.Count; ++i)
+            {
+                var curToken = _parseTree.Tokens[i];
+                if (curToken.Terminal.Name == "block-comment" ||
+                    curToken.Terminal.Name == "long-string")
+                {
+                    // check if comment token is the first token of the line
+                    if (i > 0)
+                    {
+                        var lastToken = _parseTree.Tokens[i - 1];
+                        // if comment token is not the first token, continue
+                        if (lastToken.Location.Line != curToken.Location.Line)
+                            fixedLines[curToken.Location.Line] = true;
+                    }
+
+                    // there would always be a next token, because last token would always be EOF
+                    var nextToken = _parseTree.Tokens[i + 1];
+                    for (int j = curToken.Location.Line + 1; j < nextToken.Location.Line; ++j)
+                    {
+                        fixedLines[j] = true;
+                    }
+                }
+            }
         }
 
         private void WalkSyntaxTreeForIndentations(LuaNode node, int[] indentations)

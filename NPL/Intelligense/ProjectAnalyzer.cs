@@ -230,9 +230,13 @@ namespace NPLTools.Intelligense
             ITextSnapshot snapshot = textView.TextSnapshot;
 
             int[] indentations;
-            entry.Model.RetrieveIndentationsFromSyntaxTree(out indentations);
+            bool[] fixedLines;
+            entry.Model.RetrieveIndentationsFromSyntaxTree(out indentations, out fixedLines);
 
-            // Need a new parser and scanner here
+            //Get long-string and block-comment spans, which are not to be added or removed indentations 
+
+
+            //Need a new parser and scanner here
             Irony.Parsing.Parser parser = new Irony.Parsing.Parser(IronyParser.LuaGrammar.Instance);
             Irony.Parsing.Scanner scanner = parser.Scanner;
 
@@ -245,6 +249,8 @@ namespace NPLTools.Intelligense
                 //IEnumerable<ITextSnapshotLine> lines = view.TextSnapshot.Lines;
                 for (int lineNumber = startLine; lineNumber <= endLine; lineNumber++)
                 {
+                    if (fixedLines[lineNumber]) continue;
+
                     ITextSnapshotLine line = snapshot.GetLineFromLineNumber(lineNumber);
                     int lineOffset = line.Start.Position;
                     string lineText = line.GetText();
@@ -255,7 +261,7 @@ namespace NPLTools.Intelligense
                     Irony.Parsing.Token currentToken = scanner.VsReadToken(ref state);
                     Irony.Parsing.Token lastToken = null;
                     // add space before the first token
-                    if (currentToken != null && currentToken.Terminal.Name != "block-comment")
+                    if (currentToken != null)
                     {
                         Span editSpan = new Span(lineOffset, currentToken.Location.Position);
                         string indentation = "";
@@ -264,7 +270,7 @@ namespace NPLTools.Intelligense
                         edit.Replace(editSpan, indentation);
                     }
 
-                    while (currentToken != null)
+                    while (currentToken != null && currentToken.Terminal.Name != "SYNTAX_ERROR")
                     {
                         Irony.Parsing.Token nextToken = scanner.VsReadToken(ref state);
                         if (currentToken.Text == "+" ||

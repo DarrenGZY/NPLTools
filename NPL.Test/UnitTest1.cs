@@ -21,23 +21,28 @@ namespace NPL.Test
             //LuaGrammar grammar = new LuaGrammar();
             Irony.Parsing.Parser parser = new Irony.Parsing.Parser(new NPLTools.IronyParser.LuaGrammar());
 
-            string code = "local a = { a = 1, b = 1, }";
+            string code = "local a = [[ ";
             //try
             //{
             //    code = File.ReadAllText("test.lua");
             //}
-            //catch(Exception e)
+            //catch (Exception e)
             //{
 
             //}
-            Irony.Parsing.ParseTree tree = parser.Parse(code);
-            
-            PrintTree(tree);
-            PrintAstTree(tree);
+            int state = 0;
+            parser.Scanner.VsSetSource(code, 0);
+            Token token = parser.Scanner.VsReadToken(ref state);
+            while (token != null)
+                token = parser.Scanner.VsReadToken(ref state);
+            //Irony.Parsing.ParseTree tree = parser.Scanner.VsReadToken()
+            //Irony.Parsing.ParseTree tree2 = parser.Parse(code + " ");
+            //PrintTree(tree);
+            //PrintAstTree(tree);
             //tree.
-            LogMessageList m = tree.ParserMessages;
-            if (m[0] != null)
-                Console.WriteLine(m[0].Message);
+            //LogMessageList m = tree.ParserMessages;
+            //if (m[0] != null)
+            //    Console.WriteLine(m[0].Message);
         }
 
         private void PrintTree(ParseTree tree)

@@ -1,18 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using Irony.Parsing;
 using System.Text.RegularExpressions;
 
 namespace NPLTools.IronyParser.Parser
 {
+    /// <summary>
+    /// From Lua 5.1 Reference Manual...
+    /// A comment starts with a double hyphen (--) anywhere outside a string. If the text immediately 
+    /// after -- is not an opening long bracket, the comment is a short comment, which runs until the 
+    /// end of the line. Otherwise, it is a long comment, which runs until the corresponding closing 
+    /// long bracket. Long comments are frequently used to disable code temporarily.
+    /// </summary>
+    /// <seealso cref="http://www.lua.org/manual/5.1/manual.html#2.1"/>
     class LuaLongStringTerminal : Terminal
     {
         public LuaLongStringTerminal(string name)
             : base(name, TokenCategory.Content)
         {
-            this.SetFlag(TermFlags.IsMultiline);
         }
 
         public string StartSymbol = "[";
@@ -21,6 +25,7 @@ namespace NPLTools.IronyParser.Parser
         public override void Init(GrammarData grammarData)
         {
             base.Init(grammarData);
+            SetFlag(TermFlags.IsMultiline);
 
             if (this.EditorInfo == null)
             {
@@ -33,16 +38,17 @@ namespace NPLTools.IronyParser.Parser
             Token result;
             if (context.VsLineScanState.Value != 0)
             {
-                byte level = context.VsLineScanState.TokenSubType;
-                result = CompleteMatch(context, source, level);
+                byte commentLevel = context.VsLineScanState.TokenSubType;
+                result = CompleteMatch(context, source, commentLevel);
             }
             else
             {
-                byte level = 0;
-                if (!BeginMatch(context, source, ref level))
+                //we are starting from scratch
+                byte commentLevel = 0;
+                if (!BeginMatch(context, source, ref commentLevel))
                     return null;
 
-                result = CompleteMatch(context, source, level);
+                result = CompleteMatch(context, source, commentLevel);
             }
 
             if (result != null)
@@ -51,9 +57,7 @@ namespace NPLTools.IronyParser.Parser
             if (context.Mode == ParseMode.VsLineScan)
                 return CreateIncompleteToken(context, source);
 
-            this.Category = TokenCategory.Error;
-
-            return context.CreateErrorToken("unclosed comment block!");
+            return context.CreateErrorToken("unclosed-long-string");
         }
 
         private Token CreateIncompleteToken(ParsingContext context, ISourceStream source)
@@ -65,52 +69,77 @@ namespace NPLTools.IronyParser.Parser
             return result;
         }
 
-        private bool BeginMatch(ParsingContext context, ISourceStream source, ref byte level)
+        private bool BeginMatch(ParsingContext context, ISourceStream source, ref byte commentLevel)
         {
+            //Check starting symbol
             if (!source.MatchSymbol(StartSymbol))
                 return false;
 
+            //Found starting --, now determine whether this is a long comment.
             string text = source.Text.Substring(source.PreviewPosition + StartSymbol.Length);
             var match = Regex.Match(text, @"^(=*)\[");
             if (match.Value != string.Empty)
             {
-                level = (byte)match.Groups[1].Value.Length;
-                return true;
+                commentLevel = (byte)(match.Groups[1].Value.Length + 1);
             }
 
-            return false;
+            //Increment position of comment so we don't rescan the same text.
+            source.PreviewPosition += StartSymbol.Length + commentLevel;
+
+            return true;
         }
 
-        private Token CompleteMatch(ParsingContext context, ISourceStream source, byte level)
+        private Token CompleteMatch(ParsingContext context, ISourceStream source, byte commentLevel)
         {
-            string text = source.Text.Substring(source.PreviewPosition);
-            var matches = Regex.Matches(text, @"\](=*)\]");
-            foreach (Match match in matches)
+            if (commentLevel == 0)
             {
-                if (match.Groups[1].Value.Length == (int)level)
+                var line_breaks = new char[] { '\n', '\r', '\v' };
+                var firstCharPos = source.Text.IndexOfAny(line_breaks, source.PreviewPosition);
+                if (firstCharPos > 0)
                 {
-                    source.PreviewPosition += match.Index + match.Length;
-
-
-                    if (context.VsLineScanState.Value != 0)
-                    {
-                        SourceLocation tokenStart = new SourceLocation();
-                        tokenStart.Position = 0;
-
-                        string lexeme = source.Text.Substring(0, source.PreviewPosition);
-
-                        context.VsLineScanState.Value = 0;
-                        return new Token(this, tokenStart, lexeme, null);
-                    }
-                    else
-                    {
-                        return source.CreateToken(this.OutputTerminal);
-                    }
+                    source.PreviewPosition = firstCharPos;
                 }
+                else
+                {
+                    source.PreviewPosition = source.Text.Length;
+                }
+
+                return source.CreateToken(this.OutputTerminal);
             }
 
-            context.VsLineScanState.TerminalIndex = this.MultilineIndex;
-            context.VsLineScanState.TokenSubType = level;
+            while (!source.EOF())
+            {
+                string text = source.Text.Substring(source.PreviewPosition);
+                var matches = Regex.Matches(text, @"\](=*)\]");
+                foreach (Match match in matches)
+                {
+                    if (match.Groups[1].Value.Length == (int)commentLevel - 1)
+                    {
+                        source.PreviewPosition += match.Index + match.Length;
+
+                        if (context.VsLineScanState.Value != 0)
+                        {
+                            //We are using line-mode and begin terminal was on previous line.
+                            SourceLocation tokenStart = new SourceLocation();
+                            tokenStart.Position = 0;
+
+                            string lexeme = source.Text.Substring(0, source.PreviewPosition);
+
+                            context.VsLineScanState.Value = 0;
+                            return new Token(this, tokenStart, lexeme, null);
+                        }
+                        else
+                        {
+                            return source.CreateToken(this.OutputTerminal);
+                        }
+                    }
+                }
+
+                source.PreviewPosition++;
+            }
+            //The full match wasn't found, store the state for future parsing.
+            //   context.VsLineScanState.TerminalIndex = this.MultilineIndex;
+            context.VsLineScanState.TokenSubType = commentLevel;
             return null;
         }
 
@@ -118,7 +147,8 @@ namespace NPLTools.IronyParser.Parser
         {
             return new string[] { StartSymbol };
         }
-
         #endregion
     }
 }
+
+

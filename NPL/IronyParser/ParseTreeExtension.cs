@@ -16,5 +16,10 @@ namespace NPLTools.IronyParser
             else
                 return node.ChildNodes[node.ChildNodes.Count - 1].GetEndLine();
         }
+
+        internal static int GetEndLine(this ParseTree node)
+        {
+            return node.Tokens[node.Tokens.Count - 1].Location.Line;
+        }
     }
 }
