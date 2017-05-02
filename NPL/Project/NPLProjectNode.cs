@@ -68,7 +68,7 @@ namespace NPLTools.Project
 
         public NPLProjectNode(IServiceProvider package)
             //            : base(package, Utilities.GetImageList(typeof(LuaProjectNode).Assembly.GetManifestResourceStream(LuaConstants.ProjectImageList))) {
-            : base(package, Utilities.GetImageList(new FileStream("../../Resources/Solution.png", FileMode.Open)))//Images.png
+            : base(package, Utilities.GetImageList(typeof(NPLProjectNode).Assembly.GetManifestResourceStream("NPLProject.Resources.Solution.png")))//Images.png
         {
             //RegisterFileChangeNotification()
             Type projectNodePropsType = typeof(NPLProjectNodeProperties);
@@ -144,7 +144,7 @@ namespace NPLTools.Project
         {
             get
             {
-                return new FileStream("../../Resources/imagelis.bmp", FileMode.Open);
+                return typeof(ProjectNode).Assembly.GetManifestResourceStream("NPLProject.Resources.imagelis.bmp");
             }
         }
         /*

@@ -144,10 +144,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <Content Include="ProjectTemplates\3DApplication.zip">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
     <ZipProject Include="Templates\Projects\NPLExpress\NPLExpress.nplproj">
       <SubType>Designer</SubType>
     </ZipProject>

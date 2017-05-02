@@ -81,7 +81,7 @@ namespace NPLTools.Project
 
         public override string GetProductName()
         {
-            return "hahahaha";
+            return "npl";
         }
 
         public override string GetProductVersion()
