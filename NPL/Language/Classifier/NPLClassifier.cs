@@ -49,7 +49,7 @@ namespace NPLTools.Language.Classifier
     internal sealed class NPLClassifier : ITagger<ClassificationTag>
     {
         ITextBuffer _textBuffer;
-        IDictionary<TokenType, IClassificationType> _nplTypes;
+        IDictionary<NPLTokenType, IClassificationType> _nplTypes;
         Irony.Parsing.Parser _parser;
         TokenList _tokens;
         AnalysisEntry _analysisEntry;
@@ -71,17 +71,15 @@ namespace NPLTools.Language.Classifier
 
             _analysisEntry = textBuffer.GetAnalysisAtCaret(provider.ServiceProvider);
             _analysisEntry.NewParseTree += OnNewParseTree;
-            _nplTypes = new Dictionary<TokenType, IClassificationType>();
-            _nplTypes[TokenType.Identifier] = typeService.GetClassificationType("Id");
-            _nplTypes[TokenType.Keyword] = typeService.GetClassificationType("Keyword");
-            _nplTypes[TokenType.String] = typeService.GetClassificationType("String");
-            _nplTypes[TokenType.LineComment] = typeService.GetClassificationType("Comment");
-            _nplTypes[TokenType.Comment] = typeService.GetClassificationType("Comment");
-            _nplTypes[TokenType.Delimiter] = typeService.GetClassificationType("Text");
-            _nplTypes[TokenType.Literal] = typeService.GetClassificationType("Text");
-            _nplTypes[TokenType.Operator] = typeService.GetClassificationType("Text");
-            _nplTypes[TokenType.WhiteSpace] = typeService.GetClassificationType("Text");
-            _nplTypes[TokenType.Unknown] = typeService.GetClassificationType("Text");
+            _nplTypes = new Dictionary<NPLTokenType, IClassificationType>();
+            _nplTypes[NPLTokenType.Text] = typeService.GetClassificationType("NPLText");
+            _nplTypes[NPLTokenType.Keyword] = typeService.GetClassificationType("NPLKeyword");
+            _nplTypes[NPLTokenType.String] = typeService.GetClassificationType("NPLString");
+            _nplTypes[NPLTokenType.Comment] = typeService.GetClassificationType("NPLComment");
+            _nplTypes[NPLTokenType.Identifier] = typeService.GetClassificationType("NPLIdentifier");
+            _nplTypes[NPLTokenType.Number] = typeService.GetClassificationType("NPLNumber");
+            _nplTypes[NPLTokenType.Self] = typeService.GetClassificationType("NPLSelf");
+            _nplTypes[NPLTokenType.FunctionName] = typeService.GetClassificationType("NPLFunctionName");
         }
 
         private void OnNewParseTree(object sender, ParseTreeChangedEventArgs e)
@@ -103,8 +101,10 @@ namespace NPLTools.Language.Classifier
         {
             if (spans == null || spans.Count == 0)
                 yield break;
-            foreach (Token token in _tokens)
+            for (int i = 0; i < _tokens.Count; ++i)
             {
+                Token token = _tokens[i];
+                Token nextToken = (i + 1) == _tokens.Count ? null : _tokens[i + 1];
                 // if spanshot changed, but tokens not changed and exceed the length of snapshot, stop emunerate.
                 if (token.Location.Position + token.Length >= spans[0].Snapshot.Length)
                     yield break;
@@ -112,8 +112,66 @@ namespace NPLTools.Language.Classifier
                 // Handle EOF token
                 if (token.Category != TokenCategory.Outline && token.EditorInfo != null)
                     yield return
-                        new TagSpan<ClassificationTag>(new SnapshotSpan(spans[0].Snapshot, new Span(token.Location.Position, token.Length)), new ClassificationTag(_nplTypes[token.EditorInfo.Type]));
+                        new TagSpan<ClassificationTag>(new SnapshotSpan(spans[0].Snapshot, new Span(token.Location.Position, token.Length)), new ClassificationTag(_nplTypes[GetNPLTokenType(token, nextToken)]));
             }
         }
+
+        private NPLTokenType GetNPLTokenType(Token token, Token nextToken)
+        {
+            NPLTokenType res;
+            switch (token.EditorInfo.Type)
+            {
+                case TokenType.Text:
+                case TokenType.Literal:
+                case TokenType.Operator:
+                case TokenType.WhiteSpace:
+                case TokenType.Unknown:
+                case TokenType.Delimiter:
+                    res = NPLTokenType.Text;
+                    break;
+                case TokenType.String:
+                    res = NPLTokenType.String;
+                    break;
+                case TokenType.LineComment:
+                case TokenType.Comment:
+                    res = NPLTokenType.Comment;
+                    break;
+                case TokenType.Identifier:
+                    if (nextToken.EditorInfo.Type == TokenType.Delimiter &&
+                        nextToken.Text == "(")
+                    {
+                        res = NPLTokenType.FunctionName;
+                    }
+                    else if (token.Text == "self")
+                    {
+                        res = NPLTokenType.Self;
+                    }
+                    else
+                    {
+                        res = NPLTokenType.Identifier;
+                    }
+                    break;
+                case TokenType.Keyword:
+                    res = NPLTokenType.Keyword;
+                    break;
+                default:
+                    res = NPLTokenType.Text;
+                    break;
+            }
+
+            return res;
+        }
+    }
+
+    public enum NPLTokenType
+    {
+        Text = 1,
+        Keyword = 2,
+        Identifier = 3,
+        String = 4,
+        Comment = 5,
+        Number = 6,
+        Self = 7,
+        FunctionName = 8,
     }
 }

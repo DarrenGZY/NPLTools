@@ -12,7 +12,7 @@ namespace NPLTools.Language.Classifier
         internal static ClassificationTypeDefinition NPLKeyword = null;
 
         [Export(typeof(ClassificationTypeDefinition))]
-        [Name("Id")]
+        [Name("NPLIdentifier")]
         internal static ClassificationTypeDefinition NPLIdentifier = null;
 
         [Export(typeof(ClassificationTypeDefinition))]
@@ -24,12 +24,20 @@ namespace NPLTools.Language.Classifier
         internal static ClassificationTypeDefinition NPLComment = null;
 
         [Export(typeof(ClassificationTypeDefinition))]
-        [Name("Text")]
+        [Name("NPLText")]
         internal static ClassificationTypeDefinition NPLText = null;
 
         [Export(typeof(ClassificationTypeDefinition))]
         [Name("NPLNumber")]
         internal static ClassificationTypeDefinition NPLNumber = null;
+
+        [Export(typeof(ClassificationTypeDefinition))]
+        [Name("NPLSelf")]
+        internal static ClassificationTypeDefinition NPLSelf = null;
+
+        [Export(typeof(ClassificationTypeDefinition))]
+        [Name("NPLFunctionName")]
+        internal static ClassificationTypeDefinition NPLFunctionName = null;
 
     }
 }

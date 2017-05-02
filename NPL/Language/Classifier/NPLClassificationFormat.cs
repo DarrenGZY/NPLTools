@@ -15,21 +15,21 @@ namespace NPLTools.Language.Classifier
         public NPLKeywordFormat()
         {
             DisplayName = "NPLKeyword"; 
-            ForegroundColor = Colors.BlueViolet;
+            ForegroundColor = Colors.Blue;
         }
     }
 
 
     [Export(typeof(EditorFormatDefinition))]
-    [ClassificationType(ClassificationTypeNames = "Id")]
-    [Name("Id")]
+    [ClassificationType(ClassificationTypeNames = "NPLIdentifier")]
+    [Name("NPLIdentifier")]
     [UserVisible(false)]
     [Order(Before = Priority.Default)]
     internal sealed class NPLIdentifierFormat : ClassificationFormatDefinition
     {
         public NPLIdentifierFormat()
         {
-            DisplayName = "Id"; 
+            DisplayName = "NPLIdentifier"; 
             ForegroundColor = Colors.Black;
         }
     }
@@ -44,7 +44,7 @@ namespace NPLTools.Language.Classifier
         public NPLStringFormat()
         {
             DisplayName = "NPLString"; 
-            ForegroundColor = Colors.DarkOrange;
+            ForegroundColor = Colors.Red;
         }
     }
 
@@ -63,15 +63,15 @@ namespace NPLTools.Language.Classifier
     }
 
     [Export(typeof(EditorFormatDefinition))]
-    [ClassificationType(ClassificationTypeNames = "Text")]
-    [Name("Text")]
+    [ClassificationType(ClassificationTypeNames = "NPLText")]
+    [Name("NPLText")]
     [UserVisible(false)]
     [Order(Before = Priority.Default)]
     internal sealed class NPLTextFormat : ClassificationFormatDefinition
     {
         public NPLTextFormat()
         {
-            DisplayName = "Text"; 
+            DisplayName = "NPLText"; 
             ForegroundColor = Colors.Black;
         }
     }
@@ -87,6 +87,34 @@ namespace NPLTools.Language.Classifier
         {
             DisplayName = "NPLNumber"; 
             ForegroundColor = Colors.GreenYellow;
+        }
+    }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [ClassificationType(ClassificationTypeNames = "NPLSelf")]
+    [Name("NPLSelf")]
+    [UserVisible(false)]
+    [Order(Before = Priority.Default)]
+    internal sealed class NPLSelf : ClassificationFormatDefinition
+    {
+        public NPLSelf()
+        {
+            DisplayName = "NPLSelf";
+            ForegroundColor = Colors.Tomato;
+        }
+    }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [ClassificationType(ClassificationTypeNames = "NPLFunctionName")]
+    [Name("NPLFunctionName")]
+    [UserVisible(false)]
+    [Order(Before = Priority.Default)]
+    internal sealed class NPLFunctionName : ClassificationFormatDefinition
+    {
+        public NPLFunctionName()
+        {
+            DisplayName = "NPLNumber";
+            ForegroundColor = Colors.DarkRed;
         }
     }
 }
