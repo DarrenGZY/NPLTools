@@ -1,7 +1,5 @@
 ﻿using Irony.Interpreter.Ast;
 using Irony.Parsing;
-//using Microsoft.VisualStudio.Text;
-//using Microsoft.VisualStudio.Text.Editor;
 using NPLTools.IronyParser;
 using NPLTools.IronyParser.Ast;
 using System;
@@ -60,7 +58,9 @@ namespace NPLTools.Intelligense
             if (_root == null)
                 return null;
             List<ScopeSpan> spans = new List<ScopeSpan>();
-            GetGlobalDeclarationsByName(_root, name, spans);
+            // build a declaration with dummy scope span
+            Declaration declaration = BuildDeclaration(name, new ScopeSpan());
+            GetGlobalDeclarationsByName(_root, declaration, spans);
             spans.Sort(delegate (ScopeSpan a, ScopeSpan b)
             {
                 if (a.StartPosition >= b.StartPosition && a.EndPosition <= b.EndPosition)
@@ -116,7 +116,8 @@ namespace NPLTools.Intelligense
             if (_root == null)
                 return null;
             List<ScopeSpan> spans = new List<ScopeSpan>();
-            GetDeclarationsByName(_root, name, spans, span);
+            Declaration declaration = BuildDeclaration(name, span);
+            GetDeclarationsByName(_root, declaration, spans);
             spans.Sort(delegate (ScopeSpan a, ScopeSpan b)
             {
                 if (a.StartPosition >= b.StartPosition && a.EndPosition <= b.EndPosition)
@@ -131,53 +132,67 @@ namespace NPLTools.Intelligense
             return null;
         }
 
-        private void GetDeclarationsByName(LuaNode node, string name, List<ScopeSpan> spans, ScopeSpan span)
+        private Declaration BuildDeclaration(string name, ScopeSpan span)
+        {
+            int index = name.LastIndexOf('.');
+            if (index == -1)
+                return new Declaration(name, span);
+            else
+            {
+                //string a = name.Substring(index+1);
+                //string b = name.Substring(0, index);
+                return new Declaration(name.Substring(index+1), span, BuildDeclaration(name.Substring(0, index), span));
+            }
+                
+        }
+
+        private void GetDeclarationsByName(LuaNode node, Declaration declaration, List<ScopeSpan> spans)
         {
             if (node is LuaBlockNode)
             {
                 //node = node as LuaBlockNode;
-                foreach (var declaration in ((LuaBlockNode)node).Locals)
+                foreach (var local in ((LuaBlockNode)node).Locals)
                 {
-                    if (declaration.NamesEqual(new List<string>(name.Split('.'))))
+                    if (local.Equal(declaration))
                     {
-                        if (span.StartPosition >= declaration.Scope.StartPosition &&
-                            span.EndPosition <= declaration.Scope.EndPosition)
-                            spans.Add(declaration.Scope);
-                        else if (span.EndPosition == declaration.Scope.StartPosition)
-                            spans.Add(declaration.Scope);
+                        if (declaration.Scope.StartPosition >= local.Scope.StartPosition &&
+                            declaration.Scope.EndPosition <= local.Scope.EndPosition)
+                            spans.Add(local.Scope);
+                        else if (declaration.Scope.EndPosition == local.Scope.StartPosition)
+                            spans.Add(local.Scope);
                     }
                 }
 
-                foreach (var declaration in ((LuaBlockNode)node).Globals)
+                foreach (var global in ((LuaBlockNode)node).Globals)
                 {
-                    if (declaration.NamesEqual(new List<string>(name.Split('.'))))
+                    if (global.Equal(declaration))
                     {
-                        if (span.StartPosition >= declaration.Scope.StartPosition &&
-                            span.EndPosition <= declaration.Scope.EndPosition)
-                            spans.Add(declaration.Scope);
-                        else if (span.EndPosition == declaration.Scope.StartPosition)
-                            spans.Add(declaration.Scope);
+                        if (declaration.Scope.StartPosition >= global.Scope.StartPosition &&
+                            declaration.Scope.EndPosition <= global.Scope.EndPosition)
+                            spans.Add(global.Scope);
+                        else if (declaration.Scope.EndPosition == global.Scope.StartPosition)
+                            spans.Add(global.Scope);
                     }
                 }
             }
             foreach (LuaNode child in node.ChildNodes)
-                GetDeclarationsByName(child, name, spans, span);
+                GetDeclarationsByName(child, declaration, spans);
         }
 
-        private void GetGlobalDeclarationsByName(LuaNode node, string name, List<ScopeSpan> spans)
+        private void GetGlobalDeclarationsByName(LuaNode node, Declaration declaration, List<ScopeSpan> spans)
         {
             if (node is LuaBlockNode)
             {
-                foreach (var declaration in ((LuaBlockNode)node).Globals)
+                foreach (var global in ((LuaBlockNode)node).Globals)
                 {
-                    if (declaration.NamesEqual(new List<string>(name.Split('.'))))
+                    if (global.Equal(declaration))
                     {
-                            spans.Add(declaration.Scope);
+                        spans.Add(global.Scope);
                     }
                 }
             }
             foreach (LuaNode child in node.ChildNodes)
-                GetGlobalDeclarationsByName(child, name, spans);
+                GetGlobalDeclarationsByName(child, declaration, spans);
         }
 
         /// <summary>

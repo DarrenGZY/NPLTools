@@ -50,12 +50,12 @@ namespace NPLTools.IronyParser.Ast
                                         block.EndLine));
                 block.Locals.Add(declaration);
 
-                List<Declaration> namespaces = new List<Declaration>() { declaration };
-                AddDeclarationsForTableField(block, namespaces, ExpressionList[i]);
+                //List<Declaration> namespaces = new List<Declaration>() { declaration };
+                AddDeclarationsForTableField(block, declaration, ExpressionList[i]);
             }
         }
 
-        private void AddDeclarationsForTableField(LuaBlockNode block, List<Declaration> namespaces, LuaNode expr)
+        private void AddDeclarationsForTableField(LuaBlockNode block, Declaration namespaces, LuaNode expr)
         {
             if (expr is LuaTableNode)
             {
@@ -76,9 +76,7 @@ namespace NPLTools.IronyParser.Ast
                         namespaces);
 
                 block.Locals.Add(declaration);
-                namespaces.Add(declaration);
-                AddDeclarationsForTableField(block, namespaces, ((LuaField)expr).Expression);
-                namespaces.Remove(declaration);
+                AddDeclarationsForTableField(block, declaration, ((LuaField)expr).Expression);
             }
         }
     }

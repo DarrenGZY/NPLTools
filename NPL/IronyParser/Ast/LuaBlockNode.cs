@@ -81,35 +81,66 @@ namespace NPLTools.IronyParser.Ast
     {
         public string Name;
         public ScopeSpan Scope;
-        public List<Declaration> NameSpaces;
+        public Declaration NameSpace;
+
+        public Declaration(string name)
+        {
+            int index = name.LastIndexOf('.');
+            if (index == -1)
+            {
+                Name = name;
+                Scope = new ScopeSpan();
+                NameSpace = null;
+            }
+            else
+            {
+                Name = name.Substring(index + 1);
+                Scope = new ScopeSpan();
+                NameSpace = new Declaration(name.Substring(0, index));
+            }
+        }
+
+        public Declaration(string name, Declaration Namespace)
+        {
+            Name = name;
+            Scope = new ScopeSpan();
+            NameSpace = Namespace;
+        }
+
         public Declaration(string name, ScopeSpan scope)
         {
             Name = name;
             Scope = scope;
-            NameSpaces = new List<Declaration>();
+            NameSpace = null;
         }
 
-        public Declaration(string name, ScopeSpan scope, List<Declaration> namespaces)
+        public Declaration(string name, ScopeSpan scope, Declaration Namespace)
         {
             Name = name;
             Scope = scope;
-            NameSpaces = new List<Declaration>(namespaces);
+            NameSpace = Namespace;
         }
 
-        public bool NamesEqual(List<string> names)
+        public bool Equal(Declaration opponent)
         {
-            if (NameSpaces.Count != names.Count - 1)
+            if (opponent == null)
                 return false;
-
-            for(int i = 0; i < NameSpaces.Count; ++i)
+            if (Name == opponent.Name)
             {
-                if (NameSpaces[i] == null || NameSpaces[i].Name != names[i]) //TODO: why NameSpaces[i] may be null
-                    return false;
+                if ((NameSpace == null && opponent.NameSpace == null) ||
+                    (NameSpace != null && NameSpace.Equal(opponent.NameSpace)))
+                    return true;
             }
+            return false;
+        }
 
-            if (Name != names[names.Count - 1])
-                return false;
-            return true;
+        public bool NameEqual(string name)
+        {
+            int index = name.LastIndexOf('.');
+            if (index == -1)
+                return this.Equal(new Declaration(name));
+            else
+                return this.Equal(new Declaration(name.Substring(0, index), new Declaration(name.Substring(index+1))));
         }
     }
 

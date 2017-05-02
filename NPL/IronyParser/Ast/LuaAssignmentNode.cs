@@ -47,13 +47,13 @@ namespace NPLTools.IronyParser.Ast
                 {
                     string[] names = variable.AsString.Split('.');
                     block.Globals.Add(new Declaration(names[names.Length - 1], new ScopeSpan(variable.Span.EndPosition, variable.EndLine,
-                        int.MaxValue, int.MaxValue), new List<Declaration>() { namespaces }));
+                        int.MaxValue, int.MaxValue), namespaces));
                 }
                 else if (type == DeclarationType.Local)
                 {
                     string[] names = variable.AsString.Split('.');
                     block.Locals.Add(new Declaration(names[names.Length - 1], new ScopeSpan(variable.Span.EndPosition, variable.EndLine,
-                        block.Span.EndPosition, block.EndLine), new List<Declaration>() { namespaces }));
+                        block.Span.EndPosition, block.EndLine), namespaces ));
                 }
             }
         }
@@ -83,10 +83,11 @@ namespace NPLTools.IronyParser.Ast
             {
                 foreach (var localDeclaration in block.Locals)
                 {
-                    List<string> names = new List<string>(variable.AsString.Split('.'));
-                    if (localDeclaration.NamesEqual(names))
+                    //List<string> names = new List<string>(variable.AsString.Split('.'));
+                    Declaration dummyDeclaration = new Declaration(variable.AsString);
+                    if (dummyDeclaration.Equal(localDeclaration))
                         return DeclarationType.None;
-                    if (localDeclaration.NamesEqual(names.GetRange(0, names.Count - 1)))
+                    if (dummyDeclaration.NameSpace != null && dummyDeclaration.NameSpace.Equal(localDeclaration))
                     {
                         namespaces = localDeclaration;
                         return DeclarationType.Local;
@@ -95,10 +96,11 @@ namespace NPLTools.IronyParser.Ast
 
                 foreach (var globalDeclaration in block.Globals)
                 {
-                    List<string> names = new List<string>(variable.AsString.Split('.'));
-                    if (globalDeclaration.NamesEqual(names))
+                    //List<string> names = new List<string>(variable.AsString.Split('.'));
+                    Declaration dummyDeclaration = new Declaration(variable.AsString);
+                    if (dummyDeclaration.Equal(globalDeclaration))
                         return DeclarationType.None;
-                    if (globalDeclaration.NamesEqual(names.GetRange(0, names.Count - 1)))
+                    if (dummyDeclaration.NameSpace != null && dummyDeclaration.NameSpace.Equal(globalDeclaration))
                     {
                         namespaces = globalDeclaration;
                         return DeclarationType.Global;

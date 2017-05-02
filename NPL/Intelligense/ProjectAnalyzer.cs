@@ -118,7 +118,7 @@ namespace NPLTools.Intelligense
         }
 
         /// <summary>
-        /// 
+        /// Get the location where declaration settles
         /// </summary>
         /// <param name="entry"></param>
         /// <param name="textView"></param>

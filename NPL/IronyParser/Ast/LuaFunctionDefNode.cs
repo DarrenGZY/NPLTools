@@ -57,7 +57,7 @@ namespace NPLTools.IronyParser.Ast
             // function declaration
             else if (Type == FunctionType.Declaration)
             {
-                if (NameNode.Namespaces.Count == 0)
+                if (NameNode.Namespaces == null)
                 {
                     block.Globals.Add(new Declaration(NameNode.Name,
                         new ScopeSpan(NameNode.Span.EndPosition, NameNode.EndLine, int.MaxValue, int.MaxValue)));
@@ -67,20 +67,20 @@ namespace NPLTools.IronyParser.Ast
                     // if its namespace is in local scope, add it to local declaration list
                     foreach (var local in block.Locals)
                     {
-                        if (local.NamesEqual(NameNode.Namespaces))
+                        if (local.Equal(new Declaration(NameNode.Namespaces)))
                         {
                             block.Locals.Add(new Declaration(NameNode.Name,
-                                new ScopeSpan(NameNode.Span.EndPosition, NameNode.EndLine, block.Span.EndPosition, block.EndLine), new List<Declaration>() { local }));
+                                new ScopeSpan(NameNode.Span.EndPosition, NameNode.EndLine, block.Span.EndPosition, block.EndLine), local));
                             break;
                         }
                     }
                     // if its namespace is in global scope, add it to global declaration list
                     foreach (var global in block.Globals)
                     {
-                        if (global.NamesEqual(NameNode.Namespaces))
+                        if (global.Equal(new Declaration(NameNode.Namespaces)))
                         {
                             block.Globals.Add(new Declaration(NameNode.Name,
-                                new ScopeSpan(NameNode.Span.EndPosition, NameNode.EndLine, block.Span.EndPosition, block.EndLine), new List<Declaration>() { global }));
+                                new ScopeSpan(NameNode.Span.EndPosition, NameNode.EndLine, block.Span.EndPosition, block.EndLine), global));
                             break;
                         }
                     }
@@ -92,14 +92,14 @@ namespace NPLTools.IronyParser.Ast
                 Declaration declaration = new Declaration(NameNode.Name,
                         new ScopeSpan(NameNode.Span.EndPosition, NameNode.EndLine, block.Span.EndPosition, block.EndLine));
 
-                foreach (var local in block.Locals)
-                {
-                    if (local.NamesEqual(NameNode.Namespaces))
-                    {
-                        declaration.NameSpaces.Add(local);
-                        break;
-                    }   
-                }
+                //foreach (var local in block.Locals)
+                //{
+                //    if (local.Equal(NameNode.Namespaces))
+                //    {
+                //        declaration.NameSpaces.Add(local);
+                //        break;
+                //    }
+                //}
                 block.Locals.Add(declaration);
             } 
         }
