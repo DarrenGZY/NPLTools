@@ -91,6 +91,11 @@ namespace NPLTools.IronyParser.Ast
             }
         }
 
+        public void ClearSiblingsinFile(string path)
+        {
+            Siblings.RemoveWhere((sibling) => sibling.FilePath == path);
+        }
+
         //public bool NameEqual(string name)
         //{
         //    int index = name.LastIndexOf('.');

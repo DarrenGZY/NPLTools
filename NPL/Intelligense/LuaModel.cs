@@ -188,7 +188,7 @@ namespace NPLTools.Intelligense
         {
             foreach (var entry in _entry.Analyzer.GetAnalysisEntries())
             {
-                if (entry.FilePath != _entry.FilePath)
+                if (entry.FilePath != _entry.FilePath && entry.Model != null)
                     foreach (var declaration in entry.Model.GetGlobalDeclarations())
                         yield return declaration;
             }

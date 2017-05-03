@@ -59,7 +59,7 @@ namespace NPLTools.IronyParser.Ast
                         ExpressionList[i] is LuaTableAccessNode)
                     {
                         Declaration sibling = null;
-                        if (TryGetExpressionDeclaration(ExpressionList[i], block, out sibling))
+                        if (TryGetExpressionDeclaration(ExpressionList[i], block, model, out sibling))
                             sibling.AddSibling(declaration);
                     }
                 }
@@ -91,7 +91,7 @@ namespace NPLTools.IronyParser.Ast
             }
         }
 
-        private bool TryGetExpressionDeclaration(LuaNode expr, LuaBlockNode block, out Declaration declaration)
+        private bool TryGetExpressionDeclaration(LuaNode expr, LuaBlockNode block, LuaModel model, out Declaration declaration)
         {
             declaration = null;
             if (expr is LuaIdentifierNode)
@@ -109,6 +109,16 @@ namespace NPLTools.IronyParser.Ast
                     if (expr.AsString == globalDeclaration.Name)
                     {
                         declaration = globalDeclaration;
+                        return true;
+                    }
+                }
+                foreach (var globalDeclaration in model.GetGlobalDeclarationInProject())
+                {
+                    if (expr.AsString == globalDeclaration.Name)
+                    {
+                        declaration = globalDeclaration;
+                        // clear siblings in case of adding duplicate declaration
+                        declaration.ClearSiblingsinFile(model.FilePath);
                         return true;
                     }
                 }
@@ -130,6 +140,17 @@ namespace NPLTools.IronyParser.Ast
                     if (dummyDeclaration.Equal(globalDeclaration))
                     {
                         declaration = globalDeclaration;
+                        return true;
+                    }
+                }
+                foreach (var globalDeclaration in model.GetGlobalDeclarationInProject())
+                {
+                    Declaration dummyDeclaration = BuildDeclaration(expr.AsString);
+                    if (dummyDeclaration.Equal(globalDeclaration))
+                    {
+                        declaration = globalDeclaration;
+                        // clear siblings in case of adding duplicate declaration
+                        declaration.ClearSiblingsinFile(model.FilePath);
                         return true;
                     }
                 }

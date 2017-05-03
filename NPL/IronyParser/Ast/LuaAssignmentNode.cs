@@ -94,6 +94,8 @@ namespace NPLTools.IronyParser.Ast
                     if (expr.AsString == globalDeclaration.Name)
                     {
                         declaration = globalDeclaration;
+                        // clear siblings in case of adding duplicate declaration
+                        declaration.ClearSiblingsinFile(model.FilePath);
                         return true;
                     }
                 }
@@ -115,6 +117,17 @@ namespace NPLTools.IronyParser.Ast
                     if (dummyDeclaration.Equal(globalDeclaration))
                     {
                         declaration = globalDeclaration;
+                        return true;
+                    }
+                }
+                foreach (var globalDeclaration in model.GetGlobalDeclarationInProject())
+                {
+                    Declaration dummyDeclaration = BuildDeclaration(expr.AsString);
+                    if (dummyDeclaration.Equal(globalDeclaration))
+                    {
+                        declaration = globalDeclaration;
+                        // clear siblings in case of adding duplicate declaration
+                        declaration.ClearSiblingsinFile(model.FilePath);
                         return true;
                     }
                 }
