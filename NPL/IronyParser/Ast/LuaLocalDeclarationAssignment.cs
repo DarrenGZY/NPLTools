@@ -49,8 +49,19 @@ namespace NPLTools.IronyParser.Ast
                                         block.Span.EndPosition,
                                         block.EndLine));
                 block.Locals.Add(declaration);
-
-                AddDeclarationsForTableField(block, declaration, ExpressionList[i]);
+                
+                if (i < ExpressionList.Count)
+                {
+                    if (ExpressionList[i] is LuaTableNode)
+                        AddDeclarationsForTableField(block, declaration, ExpressionList[i]);
+                    else if (ExpressionList[i] is LuaIdentifierNode ||
+                        ExpressionList[i] is LuaTableAccessNode)
+                    {
+                        Declaration sibling = null;
+                        if (TryGetExpressionDeclaration(ExpressionList[i], block, out sibling))
+                            sibling.AddSibling(declaration);
+                    }
+                }
             }
         }
 
@@ -76,6 +87,65 @@ namespace NPLTools.IronyParser.Ast
 
                 block.Locals.Add(declaration);
                 AddDeclarationsForTableField(block, declaration, ((LuaField)expr).Expression);
+            }
+        }
+
+        private bool TryGetExpressionDeclaration(LuaNode expr, LuaBlockNode block, out Declaration declaration)
+        {
+            declaration = null;
+            if (expr is LuaIdentifierNode)
+            {
+                foreach (var localDeclaration in block.Locals)
+                {
+                    if (expr.AsString == localDeclaration.Name)
+                    {
+                        declaration = localDeclaration;
+                        return true;
+                    }
+                }
+                foreach (var globalDeclaration in block.Globals)
+                {
+                    if (expr.AsString == globalDeclaration.Name)
+                    {
+                        declaration = globalDeclaration;
+                        return true;
+                    }
+                }
+            }
+            else if (expr is LuaTableAccessNode)
+            {
+                foreach (var localDeclaration in block.Locals)
+                {
+                    Declaration dummyDeclaration = BuildDeclaration(expr.AsString);
+                    if (dummyDeclaration.Equal(localDeclaration))
+                    {
+                        declaration = localDeclaration;
+                        return true;
+                    }
+                }
+                foreach (var globalDeclaration in block.Globals)
+                {
+                    Declaration dummyDeclaration = BuildDeclaration(expr.AsString);
+                    if (dummyDeclaration.Equal(globalDeclaration))
+                    {
+                        declaration = globalDeclaration;
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private Declaration BuildDeclaration(string name)
+        {
+            int index = name.LastIndexOf('.');
+            if (index == -1)
+                return new Declaration(name);
+            else
+            {
+                //string a = name.Substring(index+1);
+                //string b = name.Substring(0, index);
+                return new Declaration(name.Substring(index + 1), BuildDeclaration(name.Substring(0, index)));
             }
         }
     }

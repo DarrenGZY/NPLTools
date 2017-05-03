@@ -78,10 +78,10 @@ namespace NPLTools.IronyParser.Ast
                 return this.Equal(new Declaration(name.Substring(0, index), new Declaration(name.Substring(index + 1))));
         }
 
-        public void AddField(Declaration field)
-        {
-            Fields.Add(field);
-        }
+        //public void AddField(Declaration field)
+        //{
+        //    Fields.Add(field);
+        //}
 
         public void AddSibling(Declaration sibling)
         {
