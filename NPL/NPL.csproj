@@ -67,6 +67,7 @@
     <Compile Include="Intelligense\SourceSpan.cs" />
     <Compile Include="Intelligense\LuaModel.cs" />
     <Compile Include="IronyParser\Ast\Declaration.cs" />
+    <Compile Include="IronyParser\Ast\DeclarationHelper.cs" />
     <Compile Include="IronyParser\Ast\IDeclaration.cs" />
     <Compile Include="IronyParser\Ast\LuaElseIfListNode.cs" />
     <Compile Include="IronyParser\Ast\LuaElseIfNode.cs" />

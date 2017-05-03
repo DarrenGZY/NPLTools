@@ -39,7 +39,7 @@ namespace NPLTools.IronyParser.Ast
                 Declaration namespaces, sibling = null; 
                 bool isDeclarationAssign = false;
                 if (i < ExpressionList.Count)
-                    isDeclarationAssign = TryGetExpressionDeclaration(ExpressionList[i], block, model, out sibling);
+                    isDeclarationAssign = DeclarationHelper.TryGetExpressionDeclaration(ExpressionList[i], block, model, out sibling);
 
                 DeclarationType type = GetDeclarationType(variable, block, out namespaces);
 
@@ -68,72 +68,7 @@ namespace NPLTools.IronyParser.Ast
             }
         }
 
-        private bool TryGetExpressionDeclaration(LuaNode expr, LuaBlockNode block, LuaModel model, out Declaration declaration)
-        {
-            declaration = null;
-            if (expr is LuaIdentifierNode)
-            {
-                foreach (var localDeclaration in block.Locals)
-                {
-                    if (expr.AsString == localDeclaration.Name)
-                    {
-                        declaration = localDeclaration;
-                        return true;
-                    }
-                }
-                foreach (var globalDeclaration in block.Globals)
-                {
-                    if (expr.AsString == globalDeclaration.Name)
-                    {
-                        declaration = globalDeclaration;
-                        return true;
-                    }
-                }
-                foreach (var globalDeclaration in model.GetGlobalDeclarationInProject())
-                {
-                    if (expr.AsString == globalDeclaration.Name)
-                    {
-                        declaration = globalDeclaration;
-                        // clear siblings in case of adding duplicate declaration
-                        declaration.ClearSiblingsinFile(model.FilePath);
-                        return true;
-                    }
-                }
-            }
-            else if (expr is LuaTableAccessNode)
-            {
-                foreach (var localDeclaration in block.Locals)
-                {
-                    Declaration dummyDeclaration = BuildDeclaration(expr.AsString);
-                    if (dummyDeclaration.Equal(localDeclaration))
-                    {
-                        declaration = localDeclaration;
-                        return true;
-                    }
-                }
-                foreach (var globalDeclaration in block.Globals)
-                {
-                    Declaration dummyDeclaration = BuildDeclaration(expr.AsString);
-                    if (dummyDeclaration.Equal(globalDeclaration))
-                    {
-                        declaration = globalDeclaration;
-                        return true;
-                    }
-                }
-                foreach (var globalDeclaration in model.GetGlobalDeclarationInProject())
-                {
-                    Declaration dummyDeclaration = BuildDeclaration(expr.AsString);
-                    if (dummyDeclaration.Equal(globalDeclaration))
-                    {
-                        declaration = globalDeclaration;
-                        // clear siblings in case of adding duplicate declaration
-                        declaration.ClearSiblingsinFile(model.FilePath);
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
+        
 
         private DeclarationType GetDeclarationType(LuaNode variable, LuaBlockNode block, out Declaration namespaces)
         {
@@ -161,7 +96,7 @@ namespace NPLTools.IronyParser.Ast
                 foreach (var localDeclaration in block.Locals)
                 {
                     //List<string> names = new List<string>(variable.AsString.Split('.'));
-                    Declaration dummyDeclaration = BuildDeclaration(variable.AsString);
+                    Declaration dummyDeclaration = DeclarationHelper.BuildDeclaration(variable.AsString);
                     if (dummyDeclaration.Equal(localDeclaration))
                         return DeclarationType.None;
                     if (dummyDeclaration.NameSpace != null && dummyDeclaration.NameSpace.Equal(localDeclaration))
@@ -174,7 +109,7 @@ namespace NPLTools.IronyParser.Ast
                 foreach (var globalDeclaration in block.Globals)
                 {
                     //List<string> names = new List<string>(variable.AsString.Split('.'));
-                    Declaration dummyDeclaration = BuildDeclaration(variable.AsString);
+                    Declaration dummyDeclaration = DeclarationHelper.BuildDeclaration(variable.AsString);
                     if (dummyDeclaration.Equal(globalDeclaration))
                         return DeclarationType.None;
                     if (dummyDeclaration.NameSpace != null && dummyDeclaration.NameSpace.Equal(globalDeclaration))
@@ -186,19 +121,6 @@ namespace NPLTools.IronyParser.Ast
             }
 
             return DeclarationType.Global;
-        }
-
-        private Declaration BuildDeclaration(string name)
-        {
-            int index = name.LastIndexOf('.');
-            if (index == -1)
-                return new Declaration(name, "");
-            else
-            {
-                //string a = name.Substring(index+1);
-                //string b = name.Substring(0, index);
-                return new Declaration(name.Substring(index + 1), "", BuildDeclaration(name.Substring(0, index)));
-            }
         }
 
         enum DeclarationType
