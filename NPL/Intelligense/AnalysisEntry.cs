@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace NPLTools.Intelligense
 {
-    internal sealed class AnalysisEntry
+    public sealed class AnalysisEntry
     {
         public event EventHandler<ParseTreeChangedEventArgs> NewParseTree;
 
@@ -35,7 +35,7 @@ namespace NPLTools.Intelligense
             await Task.Run(()=> {
                 string source = File.ReadAllText(_path);
                 ParseTree parseTree = _parser.Parse(source);
-                _model = new LuaModel(parseTree);
+                _model = new LuaModel(parseTree, this);
 
                 if (NewParseTree != null)
                     NewParseTree(this, new ParseTreeChangedEventArgs(parseTree));
@@ -63,7 +63,7 @@ namespace NPLTools.Intelligense
         public LuaModel Model => _model;
     }
 
-    internal class ParseTreeChangedEventArgs : EventArgs
+    public class ParseTreeChangedEventArgs : EventArgs
     {
         public ParseTree Tree { get; set; }
 

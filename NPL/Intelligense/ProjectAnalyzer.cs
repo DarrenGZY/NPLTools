@@ -117,6 +117,14 @@ namespace NPLTools.Intelligense
             return null;
         }
 
+        internal IEnumerable<AnalysisEntry> GetAnalysisEntries()
+        {
+            foreach (var keyValue in _projectFiles)
+            {
+                yield return keyValue.Value;
+            }
+        }
+
         /// <summary>
         /// Get the location where declaration settles
         /// </summary>

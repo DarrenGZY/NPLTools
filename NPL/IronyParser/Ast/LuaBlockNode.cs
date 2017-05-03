@@ -41,10 +41,10 @@ namespace NPLTools.IronyParser.Ast
             {
                 AddChild(String.Empty, child);
 
-                if (child.AstNode is IDeclaration)
-                {
-                    ((IDeclaration)child.AstNode).GetDeclarations(this);
-                }
+                //if (child.AstNode is IDeclaration)
+                //{
+                //    ((IDeclaration)child.AstNode).GetDeclarations(this);
+                //}
             }
 
             AsString = "Block";

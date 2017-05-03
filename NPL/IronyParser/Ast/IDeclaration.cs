@@ -1,4 +1,5 @@
-﻿using NPLTools.IronyParser.Ast;
+﻿using NPLTools.Intelligense;
+using NPLTools.IronyParser.Ast;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,6 @@ namespace NPLTools.IronyParser.Ast
 {
     public interface IDeclaration
     {
-        void GetDeclarations(LuaBlockNode block);
+        void GetDeclarations(LuaBlockNode block, LuaModel model);
     }
 }

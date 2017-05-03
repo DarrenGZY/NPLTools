@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Irony.Ast;
 using Irony.Parsing;
+using NPLTools.Intelligense;
 
 namespace NPLTools.IronyParser.Ast
 {
@@ -33,11 +34,11 @@ namespace NPLTools.IronyParser.Ast
             }
         }
 
-        public void GetDeclarations(LuaBlockNode block)
+        public void GetDeclarations(LuaBlockNode block, LuaModel model)
         {
             foreach (var variable in VariableList)
             {
-                block.Locals.Add(new Declaration(variable.AsString, 
+                block.Locals.Add(new Declaration(variable.AsString, model.FilePath,
                     new ScopeSpan(variable.Span.EndPosition, variable.EndLine, block.Span.EndPosition, block.EndLine)));
             }
         }

@@ -15,15 +15,19 @@ namespace NPLTools.Intelligense
     {
         private LuaChunkNode _root;
         private ParseTree _parseTree;
+        private AnalysisEntry _entry;
         public List<KeyValuePair<string, ScopeSpan>> Declarations = new List<KeyValuePair<string, ScopeSpan>>();
 
-        public LuaModel(ParseTree parseTree)
+        public string FilePath => _entry.FilePath;
+
+        public LuaModel(ParseTree parseTree, AnalysisEntry entry)
         {
             _parseTree = parseTree;
-
+            _entry = entry;
             if (_parseTree.Root!= null)
             {
                 _root = _parseTree.Root.AstNode as LuaChunkNode;
+                WalkASTForDeclarations(_root);
                 GetDeclarations(_root, Declarations);
             }
         }
@@ -35,6 +39,7 @@ namespace NPLTools.Intelligense
             if (_parseTree.Root != null && _parseTree.Root.AstNode != null)
             {
                 _root = _parseTree.Root.AstNode as LuaChunkNode;
+                WalkASTForDeclarations(_root);
                 Declarations.Clear();
                 GetDeclarations(_root, Declarations);  
             }
@@ -49,7 +54,7 @@ namespace NPLTools.Intelligense
         }
 
         /// <summary>
-        /// 
+        /// Get global declaration in the current lua model
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
@@ -136,12 +141,12 @@ namespace NPLTools.Intelligense
         {
             int index = name.LastIndexOf('.');
             if (index == -1)
-                return new Declaration(name, span);
+                return new Declaration(name, "", span);
             else
             {
                 //string a = name.Substring(index+1);
                 //string b = name.Substring(0, index);
-                return new Declaration(name.Substring(index+1), span, BuildDeclaration(name.Substring(0, index), span));
+                return new Declaration(name.Substring(index+1), "", span, BuildDeclaration(name.Substring(0, index), span));
             }     
         }
 
@@ -178,6 +183,17 @@ namespace NPLTools.Intelligense
                 GetDeclarationsByName(child, declaration, spans);
         }
 
+        // Get global declarations in project other than the file
+        public IEnumerable<Declaration> GetGlobalDeclarationInProject()
+        {
+            foreach (var entry in _entry.Analyzer.GetAnalysisEntries())
+            {
+                if (entry.FilePath != _entry.FilePath)
+                    foreach (var declaration in entry.Model.GetGlobalDeclarations())
+                        yield return declaration;
+            }
+        }
+
         private void GetGlobalDeclarationsByName(LuaNode node, Declaration declaration, List<ScopeSpan> spans)
         {
             if (node is LuaBlockNode)
@@ -194,6 +210,44 @@ namespace NPLTools.Intelligense
                 GetGlobalDeclarationsByName(child, declaration, spans);
         }
 
+        public IEnumerable<Declaration> GetGlobalDeclarations()
+        {
+            return RetreiveGlobalDeclarationsFromAST(_root);
+        }
+
+        private IEnumerable<Declaration> RetreiveGlobalDeclarationsFromAST(LuaNode node)
+        {
+            if (node is LuaBlockNode)
+            {
+                foreach (var global in ((LuaBlockNode)node).Globals)
+                {
+                    yield return global;
+                }
+            }
+            foreach (LuaNode child in node.ChildNodes)
+            {
+                foreach (var declaration in RetreiveGlobalDeclarationsFromAST(child))
+                    yield return declaration;
+            }
+        }
+
+        private void WalkASTForDeclarations(LuaNode node)
+        {
+            if (node is LuaBlockNode)
+            {
+                foreach (LuaNode child in node.ChildNodes)
+                {
+                    if (child is IDeclaration)
+                    {
+                        ((IDeclaration)child).GetDeclarations((node as LuaBlockNode), this);
+                    }
+                }
+            }
+            foreach (LuaNode child in node.ChildNodes)
+                WalkASTForDeclarations(child);
+        }
+
+        #region Format Helpers
         /// <summary>
         /// 
         /// </summary>
@@ -260,7 +314,9 @@ namespace NPLTools.Intelligense
                 WalkSyntaxTreeForIndentations(childNode, indentations);
             }
         }
+        #endregion
 
+        #region Outlining Helpers
         public List<Region> GetOutliningRegions()
         {
             List<Region> regions = new List<Region>();
@@ -320,6 +376,7 @@ namespace NPLTools.Intelligense
                 WalkSyntaxTreeForOutliningRegions(child, regions);
             }
         }
+        #endregion
     }
 
 

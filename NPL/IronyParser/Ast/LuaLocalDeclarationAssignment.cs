@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Irony.Ast;
 using Irony.Parsing;
+using NPLTools.Intelligense;
 
 namespace NPLTools.IronyParser.Ast
 {
@@ -38,12 +39,12 @@ namespace NPLTools.IronyParser.Ast
             }
         }
 
-        public void GetDeclarations(LuaBlockNode block)
+        public void GetDeclarations(LuaBlockNode block, LuaModel model)
         {
             for (int i = 0; i < VariableList.Count && i < ExpressionList.Count; ++i)
             {
                 LuaNode variable = VariableList[i];
-                Declaration declaration = new Declaration(variable.AsString,
+                Declaration declaration = new Declaration(variable.AsString, model.FilePath, 
                                         new ScopeSpan(variable.Span.EndPosition,
                                         variable.EndLine,
                                         block.Span.EndPosition,
@@ -53,7 +54,7 @@ namespace NPLTools.IronyParser.Ast
                 if (i < ExpressionList.Count)
                 {
                     if (ExpressionList[i] is LuaTableNode)
-                        AddDeclarationsForTableField(block, declaration, ExpressionList[i]);
+                        AddDeclarationsForTableField(block, model, declaration, ExpressionList[i]);
                     else if (ExpressionList[i] is LuaIdentifierNode ||
                         ExpressionList[i] is LuaTableAccessNode)
                     {
@@ -65,20 +66,20 @@ namespace NPLTools.IronyParser.Ast
             }
         }
 
-        private void AddDeclarationsForTableField(LuaBlockNode block, Declaration namespaces, LuaNode expr)
+        private void AddDeclarationsForTableField(LuaBlockNode block, LuaModel model, Declaration namespaces, LuaNode expr)
         {
             if (expr is LuaTableNode)
             {
                 foreach (var field in ((LuaTableNode)expr).FieldList)
                 {
-                    AddDeclarationsForTableField(block, namespaces, field);
+                    AddDeclarationsForTableField(block, model, namespaces, field);
                 }
             }
 
             if (expr is LuaField && ((LuaField)expr).Name != null)
             {
                 LuaNode variable = ((LuaField)expr).Name;
-                Declaration declaration = new Declaration(variable.AsString,
+                Declaration declaration = new Declaration(variable.AsString, model.FilePath,
                         new ScopeSpan(variable.Span.EndPosition,
                         variable.EndLine,
                         block.Span.EndPosition,
@@ -86,7 +87,7 @@ namespace NPLTools.IronyParser.Ast
                         namespaces);
 
                 block.Locals.Add(declaration);
-                AddDeclarationsForTableField(block, declaration, ((LuaField)expr).Expression);
+                AddDeclarationsForTableField(block, model, declaration, ((LuaField)expr).Expression);
             }
         }
 
@@ -140,12 +141,12 @@ namespace NPLTools.IronyParser.Ast
         {
             int index = name.LastIndexOf('.');
             if (index == -1)
-                return new Declaration(name);
+                return new Declaration(name, "");
             else
             {
                 //string a = name.Substring(index+1);
                 //string b = name.Substring(0, index);
-                return new Declaration(name.Substring(index + 1), BuildDeclaration(name.Substring(0, index)));
+                return new Declaration(name.Substring(index + 1), "", BuildDeclaration(name.Substring(0, index)));
             }
         }
     }

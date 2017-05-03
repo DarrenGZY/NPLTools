@@ -2,6 +2,7 @@
 using Irony.Ast;
 using Irony.Parsing;
 using System.Collections.Generic;
+using NPLTools.Intelligense;
 
 namespace NPLTools.IronyParser.Ast
 {
@@ -30,7 +31,7 @@ namespace NPLTools.IronyParser.Ast
             AsString = "(assignment)";
         }
 
-        public void GetDeclarations(LuaBlockNode block)
+        public void GetDeclarations(LuaBlockNode block, LuaModel model)
         {
             for (int i = 0; i < VariableList.Count; ++i)
             {
@@ -38,20 +39,20 @@ namespace NPLTools.IronyParser.Ast
                 Declaration namespaces, sibling = null; 
                 bool isDeclarationAssign = false;
                 if (i < ExpressionList.Count)
-                    isDeclarationAssign = TryGetExpressionDeclaration(ExpressionList[i], block, out sibling);
+                    isDeclarationAssign = TryGetExpressionDeclaration(ExpressionList[i], block, model, out sibling);
 
                 DeclarationType type = GetDeclarationType(variable, block, out namespaces);
 
                 if (type == DeclarationType.Global && variable is LuaIdentifierNode)
                 {
-                    Declaration declaration = new Declaration(variable.AsString, new ScopeSpan(variable.Span.EndPosition, variable.EndLine, int.MaxValue, int.MaxValue));
+                    Declaration declaration = new Declaration(variable.AsString, model.FilePath, new ScopeSpan(variable.Span.EndPosition, variable.EndLine, int.MaxValue, int.MaxValue));
                     if (isDeclarationAssign) sibling.AddSibling(declaration);
                     block.Globals.Add(declaration);
                 }
                 else if (type == DeclarationType.Global && variable is LuaTableAccessNode)
                 {
                     string[] names = variable.AsString.Split('.');
-                    Declaration declaration = new Declaration(names[names.Length - 1], new ScopeSpan(variable.Span.EndPosition, variable.EndLine,
+                    Declaration declaration = new Declaration(names[names.Length - 1], model.FilePath, new ScopeSpan(variable.Span.EndPosition, variable.EndLine,
                         int.MaxValue, int.MaxValue), namespaces);
                     if (isDeclarationAssign) sibling.AddSibling(declaration);
                     block.Globals.Add(declaration);
@@ -59,7 +60,7 @@ namespace NPLTools.IronyParser.Ast
                 else if (type == DeclarationType.Local)
                 {
                     string[] names = variable.AsString.Split('.');
-                    Declaration declaration = new Declaration(names[names.Length - 1], new ScopeSpan(variable.Span.EndPosition, variable.EndLine,
+                    Declaration declaration = new Declaration(names[names.Length - 1], model.FilePath, new ScopeSpan(variable.Span.EndPosition, variable.EndLine,
                         block.Span.EndPosition, block.EndLine), namespaces);
                     if (isDeclarationAssign) sibling.AddSibling(declaration);
                     block.Locals.Add(declaration);
@@ -67,7 +68,7 @@ namespace NPLTools.IronyParser.Ast
             }
         }
 
-        private bool TryGetExpressionDeclaration(LuaNode expr, LuaBlockNode block, out Declaration declaration)
+        private bool TryGetExpressionDeclaration(LuaNode expr, LuaBlockNode block, LuaModel model, out Declaration declaration)
         {
             declaration = null;
             if (expr is LuaIdentifierNode)
@@ -81,6 +82,14 @@ namespace NPLTools.IronyParser.Ast
                     }
                 }
                 foreach (var globalDeclaration in block.Globals)
+                {
+                    if (expr.AsString == globalDeclaration.Name)
+                    {
+                        declaration = globalDeclaration;
+                        return true;
+                    }
+                }
+                foreach (var globalDeclaration in model.GetGlobalDeclarationInProject())
                 {
                     if (expr.AsString == globalDeclaration.Name)
                     {
@@ -170,12 +179,12 @@ namespace NPLTools.IronyParser.Ast
         {
             int index = name.LastIndexOf('.');
             if (index == -1)
-                return new Declaration(name);
+                return new Declaration(name, "");
             else
             {
                 //string a = name.Substring(index+1);
                 //string b = name.Substring(0, index);
-                return new Declaration(name.Substring(index + 1), BuildDeclaration(name.Substring(0, index)));
+                return new Declaration(name.Substring(index + 1), "", BuildDeclaration(name.Substring(0, index)));
             }
         }
 

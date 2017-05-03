@@ -4,6 +4,7 @@ using System.Diagnostics;
 using Irony.Ast;
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
+using NPLTools.Intelligense;
 
 namespace NPLTools.IronyParser.Ast
 {
@@ -49,7 +50,7 @@ namespace NPLTools.IronyParser.Ast
             AsString = "<Function " + name + ">";
         }
 
-        public void GetDeclarations(LuaBlockNode block)
+        public void GetDeclarations(LuaBlockNode block, LuaModel model)
         {
             // Anonymous Function
             if (Type == FunctionType.Anonymous)
@@ -59,7 +60,7 @@ namespace NPLTools.IronyParser.Ast
             {
                 if (NameNode.Namespaces == null)
                 {
-                    block.Globals.Add(new Declaration(NameNode.Name,
+                    block.Globals.Add(new Declaration(NameNode.Name, model.FilePath,
                         new ScopeSpan(NameNode.Span.EndPosition, NameNode.EndLine, int.MaxValue, int.MaxValue)));
                 }
                 else
@@ -69,7 +70,7 @@ namespace NPLTools.IronyParser.Ast
                     {
                         if (local.Equal(BuildDeclaration(NameNode.Namespaces)))
                         {
-                            block.Locals.Add(new Declaration(NameNode.Name,
+                            block.Locals.Add(new Declaration(NameNode.Name, model.FilePath,
                                 new ScopeSpan(NameNode.Span.EndPosition, NameNode.EndLine, block.Span.EndPosition, block.EndLine), local));
                             break;
                         }
@@ -79,7 +80,7 @@ namespace NPLTools.IronyParser.Ast
                     {
                         if (global.Equal(BuildDeclaration(NameNode.Namespaces)))
                         {
-                            block.Globals.Add(new Declaration(NameNode.Name,
+                            block.Globals.Add(new Declaration(NameNode.Name, model.FilePath,
                                 new ScopeSpan(NameNode.Span.EndPosition, NameNode.EndLine, block.Span.EndPosition, block.EndLine), global));
                             break;
                         }
@@ -89,7 +90,7 @@ namespace NPLTools.IronyParser.Ast
             // local function declaration
             else if (Type == FunctionType.LocalDeclaration)
             {
-                Declaration declaration = new Declaration(NameNode.Name,
+                Declaration declaration = new Declaration(NameNode.Name, model.FilePath, 
                         new ScopeSpan(NameNode.Span.EndPosition, NameNode.EndLine, block.Span.EndPosition, block.EndLine));
 
                 //foreach (var local in block.Locals)
@@ -108,12 +109,12 @@ namespace NPLTools.IronyParser.Ast
         {
             int index = name.LastIndexOf('.');
             if (index == -1)
-                return new Declaration(name);
+                return new Declaration(name, "");
             else
             {
                 //string a = name.Substring(index+1);
                 //string b = name.Substring(0, index);
-                return new Declaration(name.Substring(index + 1), BuildDeclaration(name.Substring(0, index)));
+                return new Declaration(name.Substring(index + 1), "", BuildDeclaration(name.Substring(0, index)));
             }
         }
 

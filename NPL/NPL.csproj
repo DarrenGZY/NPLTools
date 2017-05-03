@@ -61,6 +61,7 @@
     <Compile Include="Guids.cs" />
     <Compile Include="Intelligense\AnalysisEntry.cs" />
     <Compile Include="Intelligense\AnalysisEntryService.cs" />
+    <Compile Include="Intelligense\LuaNodeExtension.cs" />
     <Compile Include="Intelligense\ProjectAnalyzer.cs" />
     <Compile Include="Intelligense\ReverseParser.cs" />
     <Compile Include="Intelligense\SourceSpan.cs" />

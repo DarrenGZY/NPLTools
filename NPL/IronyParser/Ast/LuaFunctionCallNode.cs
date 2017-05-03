@@ -1,6 +1,7 @@
 ﻿using System;
 using Irony.Ast;
 using Irony.Parsing;
+using NPLTools.Intelligense;
 
 namespace NPLTools.IronyParser.Ast
 {
@@ -52,7 +53,7 @@ namespace NPLTools.IronyParser.Ast
             AsString = "Call " + _targetName;
         }
 
-        public void GetDeclarations(LuaBlockNode block)
+        public void GetDeclarations(LuaBlockNode block, LuaModel model)
         {
             if (Target.AsString == "require" && Arguments is LuaLiteralNode)
             {
