@@ -67,7 +67,7 @@ namespace NPLTools.IronyParser.Ast
                     // if its namespace is in local scope, add it to local declaration list
                     foreach (var local in block.Locals)
                     {
-                        if (local.Equal(new Declaration(NameNode.Namespaces)))
+                        if (local.Equal(BuildDeclaration(NameNode.Namespaces)))
                         {
                             block.Locals.Add(new Declaration(NameNode.Name,
                                 new ScopeSpan(NameNode.Span.EndPosition, NameNode.EndLine, block.Span.EndPosition, block.EndLine), local));
@@ -77,7 +77,7 @@ namespace NPLTools.IronyParser.Ast
                     // if its namespace is in global scope, add it to global declaration list
                     foreach (var global in block.Globals)
                     {
-                        if (global.Equal(new Declaration(NameNode.Namespaces)))
+                        if (global.Equal(BuildDeclaration(NameNode.Namespaces)))
                         {
                             block.Globals.Add(new Declaration(NameNode.Name,
                                 new ScopeSpan(NameNode.Span.EndPosition, NameNode.EndLine, block.Span.EndPosition, block.EndLine), global));
@@ -102,6 +102,19 @@ namespace NPLTools.IronyParser.Ast
                 //}
                 block.Locals.Add(declaration);
             } 
+        }
+
+        private Declaration BuildDeclaration(string name)
+        {
+            int index = name.LastIndexOf('.');
+            if (index == -1)
+                return new Declaration(name);
+            else
+            {
+                //string a = name.Substring(index+1);
+                //string b = name.Substring(0, index);
+                return new Declaration(name.Substring(index + 1), BuildDeclaration(name.Substring(0, index)));
+            }
         }
 
         //#endregion

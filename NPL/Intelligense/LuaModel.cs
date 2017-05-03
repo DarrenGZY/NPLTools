@@ -142,8 +142,7 @@ namespace NPLTools.Intelligense
                 //string a = name.Substring(index+1);
                 //string b = name.Substring(0, index);
                 return new Declaration(name.Substring(index+1), span, BuildDeclaration(name.Substring(0, index), span));
-            }
-                
+            }     
         }
 
         private void GetDeclarationsByName(LuaNode node, Declaration declaration, List<ScopeSpan> spans)

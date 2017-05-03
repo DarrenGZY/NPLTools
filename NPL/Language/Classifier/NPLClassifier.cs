@@ -137,8 +137,8 @@ namespace NPLTools.Language.Classifier
                     res = NPLTokenType.Comment;
                     break;
                 case TokenType.Identifier:
-                    if (nextToken.EditorInfo.Type == TokenType.Delimiter &&
-                        nextToken.Text == "(")
+                    if (nextToken.Text == "(" && 
+                        nextToken.EditorInfo.Type == TokenType.Delimiter)
                     {
                         res = NPLTokenType.FunctionName;
                     }

@@ -50,7 +50,6 @@ namespace NPLTools.IronyParser.Ast
                                         block.EndLine));
                 block.Locals.Add(declaration);
 
-                //List<Declaration> namespaces = new List<Declaration>() { declaration };
                 AddDeclarationsForTableField(block, declaration, ExpressionList[i]);
             }
         }

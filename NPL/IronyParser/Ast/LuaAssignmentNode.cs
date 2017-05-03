@@ -35,27 +35,82 @@ namespace NPLTools.IronyParser.Ast
             for (int i = 0; i < VariableList.Count; ++i)
             {
                 LuaNode variable = VariableList[i];
-                Declaration namespaces;
+                Declaration namespaces, sibling = null; 
+                bool isDeclarationAssign = false;
+                if (i < ExpressionList.Count)
+                    isDeclarationAssign = TryGetExpressionDeclaration(ExpressionList[i], block, out sibling);
+
                 DeclarationType type = GetDeclarationType(variable, block, out namespaces);
+
                 if (type == DeclarationType.Global && variable is LuaIdentifierNode)
                 {
                     Declaration declaration = new Declaration(variable.AsString, new ScopeSpan(variable.Span.EndPosition, variable.EndLine, int.MaxValue, int.MaxValue));
+                    if (isDeclarationAssign) sibling.AddSibling(declaration);
                     block.Globals.Add(declaration);
-
                 }
                 else if (type == DeclarationType.Global && variable is LuaTableAccessNode)
                 {
                     string[] names = variable.AsString.Split('.');
-                    block.Globals.Add(new Declaration(names[names.Length - 1], new ScopeSpan(variable.Span.EndPosition, variable.EndLine,
-                        int.MaxValue, int.MaxValue), namespaces));
+                    Declaration declaration = new Declaration(names[names.Length - 1], new ScopeSpan(variable.Span.EndPosition, variable.EndLine,
+                        int.MaxValue, int.MaxValue), namespaces);
+                    if (isDeclarationAssign) sibling.AddSibling(declaration);
+                    block.Globals.Add(declaration);
                 }
                 else if (type == DeclarationType.Local)
                 {
                     string[] names = variable.AsString.Split('.');
-                    block.Locals.Add(new Declaration(names[names.Length - 1], new ScopeSpan(variable.Span.EndPosition, variable.EndLine,
-                        block.Span.EndPosition, block.EndLine), namespaces ));
+                    Declaration declaration = new Declaration(names[names.Length - 1], new ScopeSpan(variable.Span.EndPosition, variable.EndLine,
+                        block.Span.EndPosition, block.EndLine), namespaces);
+                    if (isDeclarationAssign) sibling.AddSibling(declaration);
+                    block.Locals.Add(declaration);
                 }
             }
+        }
+
+        private bool TryGetExpressionDeclaration(LuaNode expr, LuaBlockNode block, out Declaration declaration)
+        {
+            declaration = null;
+            if (expr is LuaIdentifierNode)
+            {
+                foreach (var localDeclaration in block.Locals)
+                {
+                    if (expr.AsString == localDeclaration.Name)
+                    {
+                        declaration = localDeclaration;
+                        return true;
+                    }
+                }
+                foreach (var globalDeclaration in block.Globals)
+                {
+                    if (expr.AsString == globalDeclaration.Name)
+                    {
+                        declaration = globalDeclaration;
+                        return true;
+                    }
+                }
+            }
+            else if (expr is LuaTableAccessNode)
+            {
+                foreach (var localDeclaration in block.Locals)
+                {
+                    Declaration dummyDeclaration = BuildDeclaration(expr.AsString);
+                    if (dummyDeclaration.Equal(localDeclaration))
+                    {
+                        declaration = localDeclaration;
+                        return true;
+                    }
+                }
+                foreach (var globalDeclaration in block.Globals)
+                {
+                    Declaration dummyDeclaration = BuildDeclaration(expr.AsString);
+                    if (dummyDeclaration.Equal(globalDeclaration))
+                    {
+                        declaration = globalDeclaration;
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         private DeclarationType GetDeclarationType(LuaNode variable, LuaBlockNode block, out Declaration namespaces)
@@ -84,7 +139,7 @@ namespace NPLTools.IronyParser.Ast
                 foreach (var localDeclaration in block.Locals)
                 {
                     //List<string> names = new List<string>(variable.AsString.Split('.'));
-                    Declaration dummyDeclaration = new Declaration(variable.AsString);
+                    Declaration dummyDeclaration = BuildDeclaration(variable.AsString);
                     if (dummyDeclaration.Equal(localDeclaration))
                         return DeclarationType.None;
                     if (dummyDeclaration.NameSpace != null && dummyDeclaration.NameSpace.Equal(localDeclaration))
@@ -97,7 +152,7 @@ namespace NPLTools.IronyParser.Ast
                 foreach (var globalDeclaration in block.Globals)
                 {
                     //List<string> names = new List<string>(variable.AsString.Split('.'));
-                    Declaration dummyDeclaration = new Declaration(variable.AsString);
+                    Declaration dummyDeclaration = BuildDeclaration(variable.AsString);
                     if (dummyDeclaration.Equal(globalDeclaration))
                         return DeclarationType.None;
                     if (dummyDeclaration.NameSpace != null && dummyDeclaration.NameSpace.Equal(globalDeclaration))
@@ -109,6 +164,19 @@ namespace NPLTools.IronyParser.Ast
             }
 
             return DeclarationType.Global;
+        }
+
+        private Declaration BuildDeclaration(string name)
+        {
+            int index = name.LastIndexOf('.');
+            if (index == -1)
+                return new Declaration(name);
+            else
+            {
+                //string a = name.Substring(index+1);
+                //string b = name.Substring(0, index);
+                return new Declaration(name.Substring(index + 1), BuildDeclaration(name.Substring(0, index)));
+            }
         }
 
         enum DeclarationType
