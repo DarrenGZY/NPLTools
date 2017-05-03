@@ -183,15 +183,24 @@ namespace NPLTools.Intelligense
                 GetDeclarationsByName(child, declaration, spans);
         }
 
+        private readonly object myLock = new object();
+
         // Get global declarations in project other than the file
         public IEnumerable<Declaration> GetGlobalDeclarationInProject()
         {
-            foreach (var entry in _entry.Analyzer.GetAnalysisEntries())
+            var entries = _entry.Analyzer.GetAnalysisEntries();
+            var validEntries = entries.Where((entry) => entry.FilePath != _entry.FilePath && entry.Model != null);
+            List<Declaration> res = new List<Declaration>();
+            lock (myLock)
             {
-                if (entry.FilePath != _entry.FilePath && entry.Model != null)
-                    foreach (var declaration in entry.Model.GetGlobalDeclarations())
-                        yield return declaration;
+                
+                for (int i = 0; i < validEntries.Count(); ++i)
+                {
+                    res.Concat(validEntries.ElementAt(i).Model.GetGlobalDeclarations());
+                }
             }
+            
+            return res;
         }
 
         private void GetGlobalDeclarationsByName(LuaNode node, Declaration declaration, List<ScopeSpan> spans)

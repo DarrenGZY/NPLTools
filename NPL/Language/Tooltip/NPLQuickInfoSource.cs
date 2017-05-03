@@ -14,6 +14,7 @@ using Irony.Parsing;
 using NPLTools.IronyParser;
 using NPLTools.Language;
 using Microsoft.VisualStudio.Shell;
+using NPLTools.Intelligense;
 
 namespace NPLTools.Language.Tooltip
 {
@@ -21,18 +22,16 @@ namespace NPLTools.Language.Tooltip
     {
         private NPLQuickInfoSourceProvider _provider;
         private ITextBuffer _subjectBuffer;
-        private Dictionary<string, string> _dictionary;
+        private AnalysisEntry _analysisEntry;
         private bool _isDisposed;
 
         public NPLQuickInfoSource(NPLQuickInfoSourceProvider provider, ITextBuffer subjectBuffer)
         {
             _provider = provider;
             _subjectBuffer = subjectBuffer;
-            _dictionary = new Dictionary<string, string>();
-            _dictionary.Add("add", "int add(int firstInt, int secondInt)\nAdds one integer to another.");
-            _dictionary.Add("subtract", "int subtract(int firstInt, int secondInt)\nSubtracts one integer from another.");
-            _dictionary.Add("multiply", "int multiply(int firstInt, int secondInt)\nMultiplies one integer by another.");
-            _dictionary.Add("divide", "int divide(int firstInt, int secondInt)\nDivides one integer by another.");
+            _analysisEntry = _subjectBuffer.GetAnalysisAtCaret(_provider.ServiceProvider);
+            if (_analysisEntry == null)
+                _subjectBuffer.Properties.TryGetProperty(typeof(AnalysisEntry), out _analysisEntry);
         }
 
         public void AugmentQuickInfoSession(IQuickInfoSession session, IList<object> quickInfoContent, out ITrackingSpan applicableToSpan)
@@ -51,8 +50,7 @@ namespace NPLTools.Language.Tooltip
             TextExtent extent = navigator.GetExtentOfWord(subjectTriggerPoint.Value);
             //string searchText = extent.Span.GetText();
 
-            var analysis = _subjectBuffer.GetAnalysisAtCaret(_provider.ServiceProvider);
-            string description = analysis.Analyzer.GetDescription(analysis, _subjectBuffer, subjectTriggerPoint.Value);
+            string description = _analysisEntry.Analyzer.GetDescription(_analysisEntry, _subjectBuffer, subjectTriggerPoint.Value);
 
             if (description != String.Empty && description != null)
             {

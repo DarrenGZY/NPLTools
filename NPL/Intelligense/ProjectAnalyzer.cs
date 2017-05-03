@@ -119,10 +119,7 @@ namespace NPLTools.Intelligense
 
         internal IEnumerable<AnalysisEntry> GetAnalysisEntries()
         {
-            foreach (var keyValue in _projectFiles)
-            {
-                yield return keyValue.Value;
-            }
+            return _projectFiles.Values;
         }
 
         /// <summary>
@@ -158,7 +155,7 @@ namespace NPLTools.Intelligense
         }
 
         /// <summary>
-        /// 
+        /// Get the description of a defined function
         /// </summary>
         /// <param name="entry"></param>
         /// <param name="textBuffer"></param>

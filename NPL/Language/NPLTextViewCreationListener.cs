@@ -39,32 +39,32 @@ namespace NPLTools.Language
             ITextView textView = AdaptersFactory.GetWpfTextView(textViewAdapter);
             _textBuffer = textView.TextBuffer;
             //NPLProjectNode project = ServiceProvider.GetService(typeof(CommonProjectNode)) as NPLProjectNode;
-            IServiceProvider serviceProvider = ServiceProvider as IServiceProvider;
-            IVsSolution sln = serviceProvider.GetService(typeof(SVsSolution)) as IVsSolution;
-            NPLProjectNode project = sln.GetLoadedProject().GetNPLProject();
-            if (!project.GetAnalyzer().HasMonitoredTextBuffer(textView.TextBuffer))
-                _analysisEntry = project.GetAnalyzer().MonitorTextBuffer(textView.TextBuffer);
-            else
-                _analysisEntry = textView.TextBuffer.GetAnalysisAtCaret(ServiceProvider);
-            textView.Closed += TextView_Closed;
+            //IServiceProvider serviceProvider = ServiceProvider as IServiceProvider;
+            //IVsSolution sln = serviceProvider.GetService(typeof(SVsSolution)) as IVsSolution;
+            //NPLProjectNode project = sln.GetLoadedProject().GetNPLProject();
+            //if (!project.GetAnalyzer().HasMonitoredTextBuffer(textView.TextBuffer))
+            //    project.GetAnalyzer().MonitorTextBuffer(textView.TextBuffer);
+
+            //_analysisEntry = textView.TextBuffer.GetAnalysisAtCaret(ServiceProvider);
+            //textView.Closed += TextView_Closed;
             IOleCommandTarget next;
             NPLEditorCommandFilter commandFilter = new NPLEditorCommandFilter(textView, textViewAdapter, ServiceProvider);
             textViewAdapter.AddCommandFilter(commandFilter, out next);
             commandFilter.Next = next;
         }
 
-        private void TextView_Closed(object sender, EventArgs e)
-        {
-            close();
-        }
+        //private void TextView_Closed(object sender, EventArgs e)
+        //{
+        //    close();
+        //}
 
-        private void close()
-        {
-            IServiceProvider serviceProvider = ServiceProvider as IServiceProvider;
-            IVsSolution sln = serviceProvider.GetService(typeof(SVsSolution)) as IVsSolution;
-            NPLProjectNode project = sln.GetLoadedProject().GetNPLProject();
-            //if (!project.GetAnalyzer().HasMonitoredTextBuffer(_textBuffer))
-            project.GetAnalyzer().CanceledMonitorTextBuffer(_analysisEntry, _textBuffer);
-        }
+        //private void close()
+        //{
+        //    IServiceProvider serviceProvider = ServiceProvider as IServiceProvider;
+        //    IVsSolution sln = serviceProvider.GetService(typeof(SVsSolution)) as IVsSolution;
+        //    NPLProjectNode project = sln.GetLoadedProject().GetNPLProject();
+        //    //if (!project.GetAnalyzer().HasMonitoredTextBuffer(_textBuffer))
+        //    project.GetAnalyzer().CanceledMonitorTextBuffer(_analysisEntry, _textBuffer);
+        //}
     }
 }

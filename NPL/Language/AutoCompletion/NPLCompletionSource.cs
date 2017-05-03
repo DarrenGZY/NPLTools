@@ -22,6 +22,8 @@ namespace NPLTools.Language.AutoCompletion
             _provider = provider;
             _textBuffer = textBuffer;
             _analysisEntry = _textBuffer.GetAnalysisAtCaret(provider.ServiceProvider);
+            if (_analysisEntry == null)
+                _textBuffer.Properties.TryGetProperty(typeof(AnalysisEntry), out _analysisEntry);
         }
 
         public void AugmentCompletionSession(ICompletionSession session, IList<CompletionSet> completionSets)

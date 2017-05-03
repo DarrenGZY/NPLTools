@@ -44,12 +44,25 @@ namespace NPLTools.Language.Outlining
             _regions = new List<ITrackingSpan>();
             IServiceProvider serviceProvider = _provider.ServiceProvider as IServiceProvider;
             IVsSolution sln = serviceProvider.GetService(typeof(SVsSolution)) as IVsSolution;
-            var project = sln.GetLoadedProject().GetNPLProject();
-            if (!project.GetAnalyzer().HasMonitoredTextBuffer(textBuffer))
-                project.GetAnalyzer().MonitorTextBuffer(textBuffer);
-            _analysisEntry = _textBuffer.GetAnalysisAtCaret(provider.ServiceProvider);
-            _analysisEntry.NewParseTree += OnNewParseTree;
-            _analysisEntry.InitModel();
+            IVsProject proj = sln.GetLoadedProject();
+            if (proj == null)
+            {
+                if (!_textBuffer.Properties.TryGetProperty(typeof(AnalysisEntry), out _analysisEntry))
+                {
+                    _analysisEntry = new AnalysisEntry(_textBuffer.GetFilePath());
+                    _textBuffer.Properties[typeof(AnalysisEntry)] = _analysisEntry;  
+                }
+                _analysisEntry.NewParseTree += OnNewParseTree;
+            }
+            else
+            {
+                var project = sln.GetLoadedProject().GetNPLProject();
+                if (!project.GetAnalyzer().HasMonitoredTextBuffer(textBuffer))
+                    project.GetAnalyzer().MonitorTextBuffer(textBuffer);
+                _analysisEntry = _textBuffer.GetAnalysisAtCaret(provider.ServiceProvider);
+                _analysisEntry.NewParseTree += OnNewParseTree;
+                _analysisEntry.InitModel();
+            }
         }
 
         private void OnNewParseTree(object sender, ParseTreeChangedEventArgs e)

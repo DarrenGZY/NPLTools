@@ -10,6 +10,7 @@ using NPLTools.IronyParser;
 using Microsoft.VisualStudio.Shell;
 using NPLTools.Intelligense;
 using Microsoft.VisualStudio.Shell.Interop;
+using NPLTools.Project;
 
 namespace NPLTools.Language.Classifier
 {
@@ -65,12 +66,24 @@ namespace NPLTools.Language.Classifier
 
             IServiceProvider serviceProvider = provider.ServiceProvider as IServiceProvider;
             IVsSolution sln = serviceProvider.GetService(typeof(SVsSolution)) as IVsSolution;
-            var project = sln.GetLoadedProject().GetNPLProject();
-            if (!project.GetAnalyzer().HasMonitoredTextBuffer(textBuffer))
-                project.GetAnalyzer().MonitorTextBuffer(textBuffer);
+            IVsProject proj = sln.GetLoadedProject();
+            if (proj == null)
+            {
+                _analysisEntry = new AnalysisEntry(_textBuffer.GetFilePath());
+                _textBuffer.Properties[typeof(AnalysisEntry)] = _analysisEntry;
+                _textBuffer.Changed += TextBufferChanged;
+                _analysisEntry.NewParseTree += OnNewParseTree;
+            }
+            else
+            {
+                var project = sln.GetLoadedProject().GetNPLProject();
+                if (!project.GetAnalyzer().HasMonitoredTextBuffer(textBuffer))
+                    project.GetAnalyzer().MonitorTextBuffer(textBuffer);
 
-            _analysisEntry = textBuffer.GetAnalysisAtCaret(provider.ServiceProvider);
-            _analysisEntry.NewParseTree += OnNewParseTree;
+                _analysisEntry = textBuffer.GetAnalysisAtCaret(provider.ServiceProvider);
+                _analysisEntry.NewParseTree += OnNewParseTree;
+            }
+
             _nplTypes = new Dictionary<NPLTokenType, IClassificationType>();
             _nplTypes[NPLTokenType.Text] = typeService.GetClassificationType("NPLText");
             _nplTypes[NPLTokenType.Keyword] = typeService.GetClassificationType("NPLKeyword");
@@ -80,6 +93,11 @@ namespace NPLTools.Language.Classifier
             _nplTypes[NPLTokenType.Number] = typeService.GetClassificationType("NPLNumber");
             _nplTypes[NPLTokenType.Self] = typeService.GetClassificationType("NPLSelf");
             _nplTypes[NPLTokenType.FunctionName] = typeService.GetClassificationType("NPLFunctionName");
+        }
+
+        private async void TextBufferChanged(object sender, TextContentChangedEventArgs e)
+        {
+            await _analysisEntry.UpdateModel(e.After.GetText()); 
         }
 
         private void OnNewParseTree(object sender, ParseTreeChangedEventArgs e)
