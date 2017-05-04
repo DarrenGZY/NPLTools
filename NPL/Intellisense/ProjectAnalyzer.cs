@@ -127,7 +127,7 @@ namespace NPLTools.Intellisense
 
         internal void AddPredefinedDeclarationsFromXML(string xmlPath)
         {
-
+            _predefinedDeclarations.UnionWith(XmlDocumentationLoader.LoadXml(xmlPath));
         }
 
         /// <summary>
@@ -181,6 +181,12 @@ namespace NPLTools.Intellisense
             {
                 return inFileDeclaration.Description;
             }
+
+            // Try to get description in the predefined declarations in xml
+            Declaration predefinedDeclaration = GetDeclarationFromPredeined(word.Identifier);
+            if (predefinedDeclaration != null)
+                return predefinedDeclaration.Description;
+
             // Not find declaration in the file, try to get description from loaded file 
             Declaration loadedFileDeclaration = GetDeclarationinFiles(word.Identifier);
             if (loadedFileDeclaration != null)
@@ -189,6 +195,15 @@ namespace NPLTools.Intellisense
             }
 
             return description;
+        }
+
+        private Declaration GetDeclarationFromPredeined(string name)
+        {
+            Declaration declaration = DeclarationHelper.BuildDeclaration(name);
+            var founded = _predefinedDeclarations.Where((defined) => defined.Equal(declaration));
+            if (founded.Count() != 0)
+                return founded.First();
+            return null;
         }
 
         internal List<Region> GetOutliningRegions(AnalysisEntry entry)

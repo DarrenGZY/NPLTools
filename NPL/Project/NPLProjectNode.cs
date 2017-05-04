@@ -283,8 +283,8 @@ namespace NPLTools.Project
             var newNode = base.CreateFileNode(item);
             string include = item.GetMetadata(ProjectFileConstants.Include);
 
-            //if (Path.GetExtension(item.Url) == ".xml")
-
+            if (Path.GetExtension(item.Url) == ".xml")
+                GetAnalyzer().AddPredefinedDeclarationsFromXML(item.Url);
             //if (XamlDesignerSupport.DesignerContextType != null &&
             //    newNode is CommonFileNode &&
             //    !string.IsNullOrEmpty(include) &&

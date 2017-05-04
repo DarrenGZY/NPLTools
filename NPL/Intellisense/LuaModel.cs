@@ -64,7 +64,7 @@ namespace NPLTools.Intellisense
                 return null;
             List<Declaration> foundedDeclarations = new List<Declaration>();
             // build a declaration with dummy scope span
-            Declaration declaration = DeclarationHelper.BuildDeclaration(name, new ScopeSpan());
+            Declaration declaration = DeclarationHelper.BuildDeclaration(name);
             GetGlobalDeclarationsByName(_root, declaration, foundedDeclarations);
             foundedDeclarations.Sort(delegate (Declaration a, Declaration b)
             {
