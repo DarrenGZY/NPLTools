@@ -90,6 +90,18 @@ namespace NPLTools.Language
                     }
                 }
             }
+            else if (pguidCmdGroup == NPLTools.Project.Guids.guidNPLProjectCmdSet)
+            {
+                for (int i = 0; i < cCmds; i++)
+                {
+                    switch (prgCmds[i].cmdID)
+                    {
+                        case 0x0101:
+                            prgCmds[i].cmdf = (uint)(OLECMDF.OLECMDF_ENABLED | OLECMDF.OLECMDF_SUPPORTED);
+                            return VSConstants.S_OK;
+                    }
+                }
+            }
             return Next.QueryStatus(pguidCmdGroup, cCmds, prgCmds, pCmdText);
         }
 

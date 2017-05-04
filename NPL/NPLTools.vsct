@@ -55,6 +55,11 @@
       </Group>
     </Groups>
     -->
+    <Groups>
+      <Group guid="guidCommand1PackageCmdSet" id="NPLCodeWindowContextMenuGroup" priority="0x0600">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN"/>
+      </Group>
+    </Groups>
     <!--Buttons section. -->
     <!--This section defines the elements the user can interact with, like a menu command or a button
         or combo box in a toolbar. -->
@@ -86,6 +91,17 @@
           <LocCanonicalName>.Python.Open Command Prompt Here</LocCanonicalName>
         </Strings>
       </Button>
+
+      <Button guid="guidCommand1PackageCmdSet" id="NPLSetBreakPoint" priority="0x0100" type="Button">
+        <Parent guid="guidCommand1PackageCmdSet" id="NPLCodeWindowContextMenuGroup" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <CommandFlag>DefaultDisabled</CommandFlag>
+        <Strings>
+          <CommandName>cmdidNPLSetBreakPoint</CommandName>
+          <ButtonText>NPL Set Breakpoint Here</ButtonText>
+        </Strings>
+      </Button>
     </Buttons>
   </Commands>
 
@@ -108,7 +124,9 @@
       <IDSymbol name="Command1Id" value="0x0100" />
       <IDSymbol name="NPLMenu" value="0x0101"/>
       <IDSymbol name="NPLGroup" value="0x0102"/>-->
+      <IDSymbol name="NPLCodeWindowContextMenuGroup" value="0x0100"/>
       <IDSymbol name="OpenCommandPrompt" value="0x10002"/>
+      <IDSymbol name="NPLSetBreakPoint" value="0x0101"/>
     </GuidSymbol>
   </Symbols>
 </CommandTable>
