@@ -38,7 +38,7 @@ namespace NPLTools.IronyParser.Ast
         {
             foreach (var variable in VariableList)
             {
-                block.Locals.Add(new Declaration(variable.AsString, model.FilePath,
+                block.Locals.Add(new Declaration(variable.AsString, String.Empty, model.FilePath,
                     new ScopeSpan(variable.Span.EndPosition, variable.EndLine, block.Span.EndPosition, block.EndLine)));
             }
         }

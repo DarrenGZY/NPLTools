@@ -8,42 +8,93 @@ namespace NPLTools.IronyParser.Ast
 {
     public class Declaration
     {
+        /// <summary>
+        /// The name of declaration 
+        /// @example: local foo; 
+        /// "foo" is the name
+        /// </summary>
         public string Name;
+
+        /// <summary>
+        /// The scope span of declaration
+        /// </summary>
         public ScopeSpan Scope;
+
+        /// <summary>
+        /// The file path
+        /// </summary>
         public string FilePath;
+
+        /// <summary>
+        /// The namespace of declaration
+        /// </summary>
         public Declaration NameSpace;
+
+        /// <summary>
+        /// The equals of declaration
+        /// @example: local a = b
+        /// here "a" is a sibling of "b"
+        /// </summary>
         public HashSet<Declaration> Siblings = new HashSet<Declaration>();
 
-        public Declaration(string name, string filepath)
+        /// <summary>
+        /// The comment description of the declaration
+        /// </summary>
+        public string Description;
+
+        // For dummy declaration construct
+        public Declaration(string name)
         {
             Name = name;
+            Description = "";
+            FilePath = "";
+            Scope = new ScopeSpan();
+            NameSpace = null;
+        }
+
+        // For dummy declaration construct
+        public Declaration(string name, Declaration nameSpace)
+        {
+            Name = name;
+            Description = "";
+            FilePath = "";
+            Scope = new ScopeSpan();
+            NameSpace = nameSpace;
+        }
+
+        public Declaration(string name, string description, string filepath)
+        {
+            Name = name;
+            Description = description;
             FilePath = filepath;
             Scope = new ScopeSpan();
             NameSpace = null;
         }
 
-        public Declaration(string name, string filepath, Declaration Namespace)
-        {
-            Name = name;
-            FilePath = filepath;
-            Scope = new ScopeSpan();
-            NameSpace = Namespace;
-        }
+        //public Declaration(string name, string filepath, Declaration nameSpace)
+        //{
+        //    Name = name;
+        //    FilePath = filepath;
+        //    Scope = new ScopeSpan();
+        //    NameSpace = nameSpace;
+        //}
 
-        public Declaration(string name, string filepath, ScopeSpan scope)
+        public Declaration(string name, string description, string filepath, ScopeSpan scope)
         {
             Name = name;
+            Description = description;
             FilePath = filepath;
             Scope = scope;
             NameSpace = null;
         }
 
-        public Declaration(string name, string filepath, ScopeSpan scope, Declaration Namespace)
+        public Declaration(string name, string description, string filepath, ScopeSpan scope, Declaration nameSpace)
         {
             Name = name;
+            Description = description;
             FilePath = filepath;
             Scope = scope;
-            NameSpace = Namespace;
+            NameSpace = nameSpace;
         }
 
         public bool Equal(Declaration opponent)
@@ -82,12 +133,12 @@ namespace NPLTools.IronyParser.Ast
         {
             int index = name.LastIndexOf('.');
             if (index == -1)
-                return new Declaration(name, "");
+                return new Declaration(name);
             else
             {
                 //string a = name.Substring(index+1);
                 //string b = name.Substring(0, index);
-                return new Declaration(name.Substring(index + 1), "", BuildDummyDeclaration(name.Substring(0, index)));
+                return new Declaration(name.Substring(index + 1), BuildDummyDeclaration(name.Substring(0, index)));
             }
         }
 

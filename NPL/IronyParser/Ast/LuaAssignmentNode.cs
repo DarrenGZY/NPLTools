@@ -45,14 +45,14 @@ namespace NPLTools.IronyParser.Ast
 
                 if (type == DeclarationType.Global && variable is LuaIdentifierNode)
                 {
-                    Declaration declaration = new Declaration(variable.AsString, model.FilePath, new ScopeSpan(variable.Span.EndPosition, variable.EndLine, int.MaxValue, int.MaxValue));
+                    Declaration declaration = new Declaration(variable.AsString, String.Empty, model.FilePath, new ScopeSpan(variable.Span.EndPosition, variable.EndLine, int.MaxValue, int.MaxValue));
                     if (isDeclarationAssign) sibling.AddSibling(declaration);
                     block.Globals.Add(declaration);
                 }
                 else if (type == DeclarationType.Global && variable is LuaTableAccessNode)
                 {
                     string[] names = variable.AsString.Split('.');
-                    Declaration declaration = new Declaration(names[names.Length - 1], model.FilePath, new ScopeSpan(variable.Span.EndPosition, variable.EndLine,
+                    Declaration declaration = new Declaration(names[names.Length - 1], String.Empty, model.FilePath, new ScopeSpan(variable.Span.EndPosition, variable.EndLine,
                         int.MaxValue, int.MaxValue), namespaces);
                     if (isDeclarationAssign) sibling.AddSibling(declaration);
                     block.Globals.Add(declaration);
@@ -60,7 +60,7 @@ namespace NPLTools.IronyParser.Ast
                 else if (type == DeclarationType.Local)
                 {
                     string[] names = variable.AsString.Split('.');
-                    Declaration declaration = new Declaration(names[names.Length - 1], model.FilePath, new ScopeSpan(variable.Span.EndPosition, variable.EndLine,
+                    Declaration declaration = new Declaration(names[names.Length - 1], String.Empty, model.FilePath, new ScopeSpan(variable.Span.EndPosition, variable.EndLine,
                         block.Span.EndPosition, block.EndLine), namespaces);
                     if (isDeclarationAssign) sibling.AddSibling(declaration);
                     block.Locals.Add(declaration);

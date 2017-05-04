@@ -80,12 +80,22 @@ namespace NPLTools.IronyParser.Ast
         {
             int index = name.LastIndexOf('.');
             if (index == -1)
-                return new Declaration(name, "");
+                return new Declaration(name);
             else
             {
-                //string a = name.Substring(index+1);
-                //string b = name.Substring(0, index);
-                return new Declaration(name.Substring(index + 1), "", BuildDeclaration(name.Substring(0, index)));
+                return new Declaration(name.Substring(index + 1), BuildDeclaration(name.Substring(0, index)));
+            }
+        }
+
+
+        public static Declaration BuildDeclaration(string name, ScopeSpan span)
+        {
+            int index = name.LastIndexOf('.');
+            if (index == -1)
+                return new Declaration(name, String.Empty, String.Empty, span);
+            else
+            {
+                return new Declaration(name.Substring(index + 1), String.Empty, String.Empty, span, BuildDeclaration(name.Substring(0, index), span));
             }
         }
     }

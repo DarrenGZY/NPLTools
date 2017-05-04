@@ -44,7 +44,7 @@ namespace NPLTools.IronyParser.Ast
             for (int i = 0; i < VariableList.Count && i < ExpressionList.Count; ++i)
             {
                 LuaNode variable = VariableList[i];
-                Declaration declaration = new Declaration(variable.AsString, model.FilePath, 
+                Declaration declaration = new Declaration(variable.AsString, String.Empty, model.FilePath, 
                                         new ScopeSpan(variable.Span.EndPosition,
                                         variable.EndLine,
                                         block.Span.EndPosition,
@@ -79,7 +79,7 @@ namespace NPLTools.IronyParser.Ast
             if (expr is LuaField && ((LuaField)expr).Name != null)
             {
                 LuaNode variable = ((LuaField)expr).Name;
-                Declaration declaration = new Declaration(variable.AsString, model.FilePath,
+                Declaration declaration = new Declaration(variable.AsString, String.Empty, model.FilePath,
                         new ScopeSpan(variable.Span.EndPosition,
                         variable.EndLine,
                         block.Span.EndPosition,
