@@ -9,6 +9,9 @@ using Microsoft.VisualStudio.TextManager.Interop;
 using NPLTools.Intelligense;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Text;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.IO;
 
 namespace NPLTools.Language
 {
@@ -56,6 +59,16 @@ namespace NPLTools.Language
                         break;
                 }
             }
+            else if (pguidCmdGroup == NPLTools.Project.Guids.guidNPLProjectCmdSet)
+            {
+                // Set NPL Breakpoint command
+                switch (nCmdID)
+                {
+                    case 0x0101:
+                        SetNPLBreakPoint();
+                        break;
+                }
+            }
 
             return Next.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
         }
@@ -94,6 +107,7 @@ namespace NPLTools.Language
             {
                 for (int i = 0; i < cCmds; i++)
                 {
+                    // Set NPL Breakpoint command
                     switch (prgCmds[i].cmdID)
                     {
                         case 0x0101:
@@ -142,12 +156,6 @@ namespace NPLTools.Language
                 var endLine = end.GetContainingLine();
                 if (endLine.Start == end)
                 {
-                    // http://pytools.codeplex.com/workitem/814
-                    // User selected one extra line, but no text on that line.  So let's
-                    // back it up to the previous line.  It's impossible that we're on the
-                    // 1st line here because we have a selection, and we end at the start of
-                    // a line.  In normal selection this is only possible if we wrapped onto the
-                    // 2nd line, and it's impossible to have a box selection with a single line.
                     end = end.Snapshot.GetLineFromLineNumber(endLine.LineNumber - 1).End;
                 }
 
@@ -189,6 +197,54 @@ namespace NPLTools.Language
         {
             var analysis = _textView.GetAnalysisAtCaret(_serviceProvider);
             analysis.Analyzer.FormatBlock(analysis, _textView);
+        }
+
+        public void SetNPLBreakPoint()
+        {
+            try
+            {
+                string sFileName = _textView.TextBuffer.GetFilePath();
+                sFileName = sFileName.Replace(@"\\", @"\");
+                // 0 based line -> 1 based line
+                int lineNumber = _textView.Caret.Position.BufferPosition.GetContainingLine().LineNumber + 1;
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri("http://127.0.0.1:8099/");
+                    var content = new FormUrlEncodedContent(new[]
+                    {
+                            new KeyValuePair<string, string>("action", "addbreakpoint"),
+                            new KeyValuePair<string, string>("filename", sFileName),
+                            new KeyValuePair<string, string>("line", lineNumber.ToString()),
+                        });
+                    var result = client.PostAsync("/ajax/debugger", content).Result;
+                    var task = result.Content.ReadAsStringAsync();
+                    task.ContinueWith((t) =>
+                    {
+                        if (t.IsFaulted || t.IsCanceled)
+                        {
+                            if (System.Windows.MessageBox.Show("Please start your NPL process first \nand start NPL Code Wiki at: \n http://127.0.0.1:8099/ \nDo you want to see help page?", "NPL HTTP Debugger", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning) == System.Windows.MessageBoxResult.Yes)
+                            {
+                                System.Diagnostics.Process.Start("https://github.com/LiXizhi/NPLRuntime/wiki/NPLCodeWiki");
+                            }
+                        }
+                        else
+                        {
+                            // completed successfully
+                            string url = "http://127.0.0.1:8099/debugger";
+                            // url += string.Format("?filename={0}&line={1}", sFileName, lineNumber);
+                            System.Diagnostics.Process.Start(url);
+                        }
+                    });
+                }
+            }
+            catch (Exception e)
+            {
+                //WriteOutput(e.Message);
+                if (System.Windows.MessageBox.Show("Please start your NPL process first \nand start NPL Code Wiki at: \n http://127.0.0.1:8099/ \nDo you want to see help page?", "NPL HTTP Debugger", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning) == System.Windows.MessageBoxResult.Yes)
+                {
+                    System.Diagnostics.Process.Start("https://github.com/LiXizhi/NPLRuntime/wiki/NPLCodeWiki");
+                }
+            }
         }
 
         #region comment block helpers
