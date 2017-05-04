@@ -183,23 +183,16 @@ namespace NPLTools.Intelligense
                 GetDeclarationsByName(child, declaration, spans);
         }
 
-        private readonly object myLock = new object();
-
         // Get global declarations in project other than the file
         public IEnumerable<Declaration> GetGlobalDeclarationInProject()
         {
             var entries = _entry.Analyzer.GetAnalysisEntries();
             var validEntries = entries.Where((entry) => entry.FilePath != _entry.FilePath && entry.Model != null);
             List<Declaration> res = new List<Declaration>();
-            lock (myLock)
+            for (int i = 0; i < validEntries.Count(); ++i)
             {
-                
-                for (int i = 0; i < validEntries.Count(); ++i)
-                {
-                    res.Concat(validEntries.ElementAt(i).Model.GetGlobalDeclarations());
-                }
+                res.Concat(validEntries.ElementAt(i).Model.GetGlobalDeclarations());
             }
-            
             return res;
         }
 

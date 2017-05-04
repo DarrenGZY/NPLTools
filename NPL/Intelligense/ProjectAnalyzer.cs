@@ -117,9 +117,10 @@ namespace NPLTools.Intelligense
             return null;
         }
 
-        internal IEnumerable<AnalysisEntry> GetAnalysisEntries()
+        private readonly object myLock = new object();
+        internal SynchronizedCollection<AnalysisEntry> GetAnalysisEntries()
         {
-            return _projectFiles.Values;
+            return new SynchronizedCollection<AnalysisEntry>(myLock, _projectFiles.Values);
         }
 
         /// <summary>
