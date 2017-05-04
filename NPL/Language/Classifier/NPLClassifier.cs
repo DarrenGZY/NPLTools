@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.Utilities;
 using Irony.Parsing;
 using NPLTools.IronyParser;
 using Microsoft.VisualStudio.Shell;
-using NPLTools.Intelligense;
+using NPLTools.Intellisense;
 using Microsoft.VisualStudio.Shell.Interop;
 using NPLTools.Project;
 

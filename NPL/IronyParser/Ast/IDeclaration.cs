@@ -1,4 +1,4 @@
-﻿using NPLTools.Intelligense;
+﻿using NPLTools.Intellisense;
 using NPLTools.IronyParser.Ast;
 using System;
 using System.Collections.Generic;

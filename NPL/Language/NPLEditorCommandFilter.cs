@@ -6,7 +6,7 @@ using System;
 using IServiceProvider = System.IServiceProvider;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.TextManager.Interop;
-using NPLTools.Intelligense;
+using NPLTools.Intellisense;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Text;
 using System.Collections.Generic;

@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.Text;
 using NPLTools.IronyParser;
 using Irony.Parsing;
 using Microsoft.VisualStudio.Shell;
-using NPLTools.Intelligense;
+using NPLTools.Intellisense;
 using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
 

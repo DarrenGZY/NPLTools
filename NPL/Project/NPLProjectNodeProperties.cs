@@ -7,6 +7,8 @@ using Microsoft.VisualStudioTools.Project;
 using Microsoft.VisualStudio;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
+using Microsoft.VisualStudioTools;
+
 namespace NPLTools.Project
 {
     [ComVisible(true)]
@@ -42,6 +44,25 @@ namespace NPLTools.Project
                 return VSLangProj.prjOutputType.prjOutputTypeExe;
             }
             set { }
+        }
+
+        [Browsable(false)]
+        public uint TargetFramework
+        {
+            get
+            {
+                // Cloud Service projects inspect this value to determine which
+                // OS to deploy.
+                switch (HierarchyNode.ProjectMgr.Site.GetUIThread().Invoke(() => Node.GetProjectProperty("TargetFrameworkVersion")))
+                {
+                    case "v4.0":
+                        return 0x40000;
+                    case "v4.5":
+                        return 0x40005;
+                    default:
+                        return 0x40105;
+                }
+            }
         }
     }
 }

@@ -2,7 +2,7 @@
 using Irony.Ast;
 using Irony.Parsing;
 using System.Collections.Generic;
-using NPLTools.Intelligense;
+using NPLTools.Intellisense;
 
 namespace NPLTools.IronyParser.Ast
 {

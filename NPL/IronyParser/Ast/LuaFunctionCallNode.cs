@@ -1,7 +1,7 @@
 ﻿using System;
 using Irony.Ast;
 using Irony.Parsing;
-using NPLTools.Intelligense;
+using NPLTools.Intellisense;
 
 namespace NPLTools.IronyParser.Ast
 {

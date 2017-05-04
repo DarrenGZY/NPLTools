@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Irony.Ast;
 using Irony.Parsing;
-using NPLTools.Intelligense;
+using NPLTools.Intellisense;
 
 namespace NPLTools.IronyParser.Ast
 {

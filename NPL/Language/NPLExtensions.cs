@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudioTools;
-using NPLTools.Intelligense;
+using NPLTools.Intellisense;
 using NPLTools.Project;
 using System;
 using System.Collections.Generic;

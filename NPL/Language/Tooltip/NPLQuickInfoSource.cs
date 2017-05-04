@@ -14,7 +14,7 @@ using Irony.Parsing;
 using NPLTools.IronyParser;
 using NPLTools.Language;
 using Microsoft.VisualStudio.Shell;
-using NPLTools.Intelligense;
+using NPLTools.Intellisense;
 
 namespace NPLTools.Language.Tooltip
 {

@@ -4,7 +4,7 @@ using System.Diagnostics;
 using Irony.Ast;
 using Irony.Interpreter.Ast;
 using Irony.Parsing;
-using NPLTools.Intelligense;
+using NPLTools.Intellisense;
 
 namespace NPLTools.IronyParser.Ast
 {

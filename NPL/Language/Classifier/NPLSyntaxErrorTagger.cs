@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.Text.Tagging;
 using Irony;
 using Irony.Parsing;
 using NPLTools.IronyParser;
-using NPLTools.Intelligense;
+using NPLTools.Intellisense;
 using Microsoft.VisualStudio.Shell;
 
 namespace NPLTools.Language.Classifier

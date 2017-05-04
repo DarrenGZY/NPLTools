@@ -47,7 +47,7 @@ using VsCommands2K = Microsoft.VisualStudio.VSConstants.VSStd2KCmdID;
 using VsMenus = Microsoft.VisualStudioTools.Project.VsMenus;
 using IServiceProvider = System.IServiceProvider;
 using Microsoft.VisualStudio.OLE.Interop;
-using NPLTools.Intelligense;
+using NPLTools.Intellisense;
 using NPLTools.Language;
 using Microsoft.VisualStudio.Text;
 
@@ -282,6 +282,8 @@ namespace NPLTools.Project
         {
             var newNode = base.CreateFileNode(item);
             string include = item.GetMetadata(ProjectFileConstants.Include);
+
+            //if (Path.GetExtension(item.Url) == ".xml")
 
             //if (XamlDesignerSupport.DesignerContextType != null &&
             //    newNode is CommonFileNode &&

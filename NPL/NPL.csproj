@@ -59,13 +59,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Guids.cs" />
-    <Compile Include="Intelligense\AnalysisEntry.cs" />
-    <Compile Include="Intelligense\AnalysisEntryService.cs" />
-    <Compile Include="Intelligense\LuaNodeExtension.cs" />
-    <Compile Include="Intelligense\ProjectAnalyzer.cs" />
-    <Compile Include="Intelligense\ReverseParser.cs" />
-    <Compile Include="Intelligense\SourceSpan.cs" />
-    <Compile Include="Intelligense\LuaModel.cs" />
+    <Compile Include="Intellisense\AnalysisEntry.cs" />
+    <Compile Include="Intellisense\AnalysisEntryService.cs" />
+    <Compile Include="Intellisense\LuaNodeExtension.cs" />
+    <Compile Include="Intellisense\ProjectAnalyzer.cs" />
+    <Compile Include="Intellisense\ReverseParser.cs" />
+    <Compile Include="Intellisense\SourceSpan.cs" />
+    <Compile Include="Intellisense\LuaModel.cs" />
+    <Compile Include="Intellisense\XmlDocumentationLoader.cs" />
+    <Compile Include="Intellisense\XmlValidator.cs" />
     <Compile Include="IronyParser\Ast\Declaration.cs" />
     <Compile Include="IronyParser\Ast\DeclarationHelper.cs" />
     <Compile Include="IronyParser\Ast\IDeclaration.cs" />
@@ -170,15 +172,18 @@
     <ZipProject Include="Templates\Projects\3DApplication\test.npl">
       <OutputSubPath>NPL 3D Application</OutputSubPath>
     </ZipProject>
+    <EmbeddedResource Include="Resources\LuaDoc.xsd">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <None Include="Tests\test.lua" />
-    <ZipItem Include="Templates\ProjectItems\Text\Text.txt" />
-    <ZipItem Include="Templates\ProjectItems\XML\XML.vstemplate" />
     <Content Include="Resources\CommandRun.png" />
     <EmbeddedResource Include="Resources\Solution.png" />
     <EmbeddedResource Include="Resources\imagelis.bmp" />
+    <ZipItem Include="Templates\ProjectItems\Text\Text.txt" />
     <ZipItem Include="Templates\ProjectItems\Text\Text.ico" />
     <ZipItem Include="Templates\ProjectItems\Text\Text.vstemplate" />
-    <Content Include="Templates\ProjectItems\XML\XML.xml" />
+    <ZipItem Include="Templates\ProjectItems\XML\XML.vstemplate" />
+    <ZipItem Include="Templates\ProjectItems\XML\XML.xml" />
     <ZipItem Include="Templates\ProjectItems\XML\XML.ico" />
     <ZipItem Include="Templates\ProjectItems\Lua\Lua.vstemplate" />
     <ZipItem Include="Templates\ProjectItems\npl\npl.npl" />
@@ -403,6 +408,7 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="Validation, Version=2.2.0.0, Culture=neutral, PublicKeyToken=2fc06f0d701809a7, processorArchitecture=MSIL">
       <HintPath>..\packages\Validation.2.2.8\lib\dotnet\Validation.dll</HintPath>
       <Private>True</Private>
