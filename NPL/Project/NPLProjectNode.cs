@@ -180,8 +180,13 @@ namespace NPLTools.Project
         {
             NPLFileNode newNode = new NPLFileNode(this, item);
 
-            string path = newNode.Url;
-            this.Analyzer.CreateAnalysisEntry(path);
+            string name = GetProjectProperty("Name", false);
+
+            // if the file node is included in project, create a analysis entry for it
+            if (!item.IsExcluded)
+            {
+                this.Analyzer.CreateAnalysisEntry(newNode.Url);
+            }
 
             return newNode;
         }
@@ -293,10 +298,10 @@ namespace NPLTools.Project
             var newNode = base.CreateFileNode(item);
             string include = item.GetMetadata(ProjectFileConstants.Include);
 
-            if (Path.GetExtension(item.Url) == ".xml")
+            if (!item.IsExcluded && Path.GetExtension(item.Url) == ".xml")
                 this.Analyzer.AddPredefinedDeclarationsFromXML(item.Url);
 
-            if (Path.GetExtension(item.Url) == ".json")
+            if (!item.IsExcluded && Path.GetExtension(item.Url) == ".json")
                 this.Analyzer.AnalyzeJson(item.Url);
             //if (XamlDesignerSupport.DesignerContextType != null &&
             //    newNode is CommonFileNode &&

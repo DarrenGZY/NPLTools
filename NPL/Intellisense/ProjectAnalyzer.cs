@@ -154,14 +154,14 @@ namespace NPLTools.Intellisense
 
                 foreach (var dependency in json.Dependencies)
                 {
-                    //if (dependency.Key == "main")
-                    //{
-                    //    string dependencyPath = Path.Combine(Path.GetDirectoryName(jsonPath), "npl_packages", dependency.Key);
-                    //    if (!Directory.Exists(dependencyPath))
-                    //    {
-                    //        await Task.Run(() => { Repository.Clone(@"https://github.com/NPLPackages/main.git", dependencyPath); });
-                    //    }
-                    //}
+                    if (dependency.Key == "main")
+                    {
+                        string dependencyPath = Path.Combine(Path.GetDirectoryName(jsonPath), "npl_packages", dependency.Key);
+                        if (!Directory.Exists(dependencyPath))
+                        {
+                            await Task.Run(() => { Repository.Clone(@"https://github.com/NPLPackages/main.git", dependencyPath); });
+                        }
+                    }
                 }
             }
         }
