@@ -145,22 +145,23 @@ namespace NPLTools.Intellisense
             _predefinedDeclarations.UnionWith(XmlDocumentationLoader.LoadXml(xmlPath));
         }
 
-        internal void AnalyzeJson(string jsonPath)
+        internal async void AnalyzeJson(string jsonPath)
         {
             using (StreamReader sr = File.OpenText(jsonPath))
             {
                 string jsonContent = sr.ReadToEnd();
                 PackageJson json = JsonConvert.DeserializeObject<PackageJson>(jsonContent);
-                string name = json.Name;
 
                 foreach (var dependency in json.Dependencies)
                 {
-                    if (dependency.Key == "main")
-                    {
-                        string s = Path.GetDirectoryName(jsonPath);
-                        s.Replace(@"//", @"/");
-                        Repository.Clone(@"https://github.com/NPLPackages/main.git", Path.GetDirectoryName(jsonPath) + "/" + dependency.Key);
-                    }
+                    //if (dependency.Key == "main")
+                    //{
+                    //    string dependencyPath = Path.Combine(Path.GetDirectoryName(jsonPath), "npl_packages", dependency.Key);
+                    //    if (!Directory.Exists(dependencyPath))
+                    //    {
+                    //        await Task.Run(() => { Repository.Clone(@"https://github.com/NPLPackages/main.git", dependencyPath); });
+                    //    }
+                    //}
                 }
             }
         }

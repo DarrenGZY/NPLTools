@@ -13,13 +13,9 @@ namespace NPLTools.IronyParser.Ast
     public class LuaLocalDeclaration : LuaNode, IDeclaration
     {
         public LuaNodeList VariableList { get; set; }
-        public List<string> DeclarationVaribles;
-        public Dictionary<string, AstNode> Variables { get; private set; }
         public LuaLocalDeclaration ()
         {
             VariableList = new LuaNodeList();
-            DeclarationVaribles = new List<string>();
-            Variables = new Dictionary<string, AstNode>();
         }
 
         public override void Init(AstContext context, ParseTreeNode treeNode)
@@ -29,8 +25,6 @@ namespace NPLTools.IronyParser.Ast
             foreach (ParseTreeNode variable in treeNode.ChildNodes[1].ChildNodes)
             {
                 VariableList.Add(AddChild(String.Empty, variable) as LuaNode);
-                DeclarationVaribles.Add(variable.Token.Text);
-                Variables.Add(variable.Token.Text, (AstNode)variable.AstNode);
             }
         }
 
