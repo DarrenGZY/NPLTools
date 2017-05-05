@@ -11,6 +11,8 @@ using SourceSpan = NPLTools.Intellisense.SourceSpan;
 using Microsoft.VisualStudio.Text.Editor;
 using NPLTools.IronyParser.Ast;
 using System.IO;
+using Newtonsoft.Json;
+using LibGit2Sharp;
 
 namespace NPLTools.Intellisense
 {
@@ -34,6 +36,11 @@ namespace NPLTools.Intellisense
             return _projectFiles.ContainsKey(fileName);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="textBuffer"></param>
+        /// <returns></returns>
         internal AnalysisEntry MonitorTextBuffer(ITextBuffer textBuffer)
         {
             AnalysisEntry entry;
@@ -119,15 +126,43 @@ namespace NPLTools.Intellisense
         }
 
         private readonly object myLock = new object();
-        // Use SynchronizedCollection to be thread-safe
+
+        /// <summary>
+        /// Use SynchronizedCollection to be thread-safe
+        /// </summary>
+        /// <returns></returns>
         internal SynchronizedCollection<AnalysisEntry> GetAnalysisEntries()
         {
             return new SynchronizedCollection<AnalysisEntry>(myLock, _projectFiles.Values);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="xmlPath"></param>
         internal void AddPredefinedDeclarationsFromXML(string xmlPath)
         {
             _predefinedDeclarations.UnionWith(XmlDocumentationLoader.LoadXml(xmlPath));
+        }
+
+        internal void AnalyzeJson(string jsonPath)
+        {
+            using (StreamReader sr = File.OpenText(jsonPath))
+            {
+                string jsonContent = sr.ReadToEnd();
+                PackageJson json = JsonConvert.DeserializeObject<PackageJson>(jsonContent);
+                string name = json.Name;
+
+                foreach (var dependency in json.Dependencies)
+                {
+                    if (dependency.Key == "main")
+                    {
+                        string s = Path.GetDirectoryName(jsonPath);
+                        s.Replace(@"//", @"/");
+                        Repository.Clone(@"https://github.com/NPLPackages/main.git", Path.GetDirectoryName(jsonPath) + "/" + dependency.Key);
+                    }
+                }
+            }
         }
 
         /// <summary>

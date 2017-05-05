@@ -77,8 +77,8 @@ namespace NPLTools.Language.Classifier
             else
             {
                 var project = sln.GetLoadedProject().GetNPLProject();
-                if (!project.GetAnalyzer().HasMonitoredTextBuffer(textBuffer))
-                    project.GetAnalyzer().MonitorTextBuffer(textBuffer);
+                if (!project.Analyzer.HasMonitoredTextBuffer(textBuffer))
+                    project.Analyzer.MonitorTextBuffer(textBuffer);
 
                 _analysisEntry = textBuffer.GetAnalysisAtCaret(provider.ServiceProvider);
                 _analysisEntry.NewParseTree += OnNewParseTree;

@@ -66,6 +66,16 @@ namespace NPLTools.Project
         private readonly HashSet<string> _warningFiles = new HashSet<string>();
         private readonly HashSet<string> _errorFiles = new HashSet<string>();
 
+        public ProjectAnalyzer Analyzer
+        {
+            get
+            {
+                if (_analyzer == null)
+                    _analyzer = CreateAnalyzer();
+                return _analyzer;
+            }
+        }
+
         public NPLProjectNode(IServiceProvider package)
             //            : base(package, Utilities.GetImageList(typeof(LuaProjectNode).Assembly.GetManifestResourceStream(LuaConstants.ProjectImageList))) {
             : base(package, Utilities.GetImageList(typeof(NPLProjectNode).Assembly.GetManifestResourceStream("NPLProject.Resources.Solution.png")))//Images.png
@@ -75,12 +85,12 @@ namespace NPLTools.Project
             AddCATIDMapping(projectNodePropsType, projectNodePropsType.GUID);
         }
 
-        public ProjectAnalyzer GetAnalyzer()
-        {
-            if (_analyzer == null)
-                _analyzer = CreateAnalyzer();
-            return _analyzer;
-        }
+        //public ProjectAnalyzer GetAnalyzer()
+        //{
+        //    if (_analyzer == null)
+        //        _analyzer = CreateAnalyzer();
+        //    return _analyzer;
+        //}
 
         public ProjectAnalyzer CreateAnalyzer()
         {
@@ -171,7 +181,7 @@ namespace NPLTools.Project
             NPLFileNode newNode = new NPLFileNode(this, item);
 
             string path = newNode.Url;
-            GetAnalyzer().CreateAnalysisEntry(path);
+            this.Analyzer.CreateAnalysisEntry(path);
 
             return newNode;
         }
@@ -284,7 +294,10 @@ namespace NPLTools.Project
             string include = item.GetMetadata(ProjectFileConstants.Include);
 
             if (Path.GetExtension(item.Url) == ".xml")
-                GetAnalyzer().AddPredefinedDeclarationsFromXML(item.Url);
+                this.Analyzer.AddPredefinedDeclarationsFromXML(item.Url);
+
+            if (Path.GetExtension(item.Url) == ".json")
+                this.Analyzer.AnalyzeJson(item.Url);
             //if (XamlDesignerSupport.DesignerContextType != null &&
             //    newNode is CommonFileNode &&
             //    !string.IsNullOrEmpty(include) &&

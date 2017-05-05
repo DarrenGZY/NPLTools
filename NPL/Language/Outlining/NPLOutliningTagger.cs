@@ -57,8 +57,8 @@ namespace NPLTools.Language.Outlining
             else
             {
                 var project = sln.GetLoadedProject().GetNPLProject();
-                if (!project.GetAnalyzer().HasMonitoredTextBuffer(textBuffer))
-                    project.GetAnalyzer().MonitorTextBuffer(textBuffer);
+                if (!project.Analyzer.HasMonitoredTextBuffer(textBuffer))
+                    project.Analyzer.MonitorTextBuffer(textBuffer);
                 _analysisEntry = _textBuffer.GetAnalysisAtCaret(provider.ServiceProvider);
                 _analysisEntry.NewParseTree += OnNewParseTree;
                 _analysisEntry.InitModel();
