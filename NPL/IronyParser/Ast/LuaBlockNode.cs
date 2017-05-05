@@ -18,14 +18,14 @@ namespace NPLTools.IronyParser.Ast
 
         public List<Declaration> Locals;
         public List<Declaration> Globals;
-        public List<RequiredDeclaration> Requires;
+        public List<Declaration> Requires;
 
         public Scope Scope;
         public LuaBlockNode()
         {
             Locals = new List<Declaration>();
             Globals = new List<Declaration>();
-            Requires = new List<RequiredDeclaration>();
+            Requires = new List<Declaration>();
         }
 
         public override void Init(AstContext context, ParseTreeNode treeNode)

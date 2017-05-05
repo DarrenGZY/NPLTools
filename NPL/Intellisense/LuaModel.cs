@@ -20,6 +20,10 @@ namespace NPLTools.Intellisense
 
         public string FilePath => _entry.FilePath;
 
+        public AnalysisEntry Entry => _entry;
+
+        public HashSet<string> IncludedFiles = new HashSet<string>();
+
         public LuaModel(ParseTree parseTree, AnalysisEntry entry)
         {
             _parseTree = parseTree;
@@ -27,7 +31,7 @@ namespace NPLTools.Intellisense
             if (_parseTree.Root!= null)
             {
                 _root = _parseTree.Root.AstNode as LuaChunkNode;
-                WalkASTForDeclarations(_root);
+                WalkASTForDeclarations();
                 GetDeclarations(_root, Declarations);
             }
         }
@@ -39,7 +43,7 @@ namespace NPLTools.Intellisense
             if (_parseTree.Root != null && _parseTree.Root.AstNode != null)
             {
                 _root = _parseTree.Root.AstNode as LuaChunkNode;
-                WalkASTForDeclarations(_root);
+                WalkASTForDeclarations();
                 Declarations.Clear();
                 GetDeclarations(_root, Declarations);  
             }
@@ -172,18 +176,18 @@ namespace NPLTools.Intellisense
                 GetDeclarationsByName(child, declaration, foundDeclarations);
         }
 
-        // Get global declarations in project other than the file
-        public IEnumerable<Declaration> GetGlobalDeclarationInProject()
-        {
-            var entries = _entry.Analyzer.GetAnalysisEntries();
-            var validEntries = entries.Where((entry) => entry.FilePath != _entry.FilePath && entry.Model != null);
-            List<Declaration> res = new List<Declaration>();
-            for (int i = 0; i < validEntries.Count(); ++i)
-            {
-                res.Concat(validEntries.ElementAt(i).Model.GetGlobalDeclarations());
-            }
-            return res;
-        }
+        // Get global declarations from files in project other than the current file
+        //public IEnumerable<Declaration> GetGlobalDeclarationInProject()
+        //{
+        //    var entries = _entry.Analyzer.GetAnalysisEntries();
+        //    var validEntries = entries.Where((entry) => entry.FilePath != _entry.FilePath && entry.Model != null);
+        //    List<Declaration> res = new List<Declaration>();
+        //    for (int i = 0; i < validEntries.Count(); ++i)
+        //    {
+        //        res.Concat(validEntries.ElementAt(i).Model.GetGlobalDeclarations());
+        //    }
+        //    return res;
+        //}
 
         private void GetGlobalDeclarationsByName(LuaNode node, Declaration declaration, List<Declaration> foundedDeclarations)
         {
@@ -222,6 +226,12 @@ namespace NPLTools.Intellisense
             }
         }
 
+        private void WalkASTForDeclarations()
+        {
+            IncludedFiles.Clear();
+            WalkASTForDeclarations(_root);
+        }
+
         private void WalkASTForDeclarations(LuaNode node)
         {
             if (node is LuaBlockNode)
@@ -232,6 +242,15 @@ namespace NPLTools.Intellisense
                     {
                         ((IDeclaration)child).GetDeclarations((node as LuaBlockNode), this);
                     }
+                }
+            }
+            if (node is LuaFunctionCallNode)
+            {
+                var funcCall = node as LuaFunctionCallNode;
+                if (funcCall.Target.AsString == "NPL.load" ||
+                    funcCall.AsString == "require")
+                {
+
                 }
             }
             foreach (LuaNode child in node.ChildNodes)

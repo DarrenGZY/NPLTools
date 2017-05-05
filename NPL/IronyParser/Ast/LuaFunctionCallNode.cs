@@ -2,15 +2,17 @@
 using Irony.Ast;
 using Irony.Parsing;
 using NPLTools.Intellisense;
+using NPLTools.IronyParser;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace NPLTools.IronyParser.Ast
 {
     public class LuaFunctionCallNode : LuaNode, IDeclaration
     {
-        LuaNode Target;
-        LuaNode Arguments;
-        LuaNode Name;
-        string _targetName;
+        public LuaNode Target;
+        public LuaNode Arguments;
+        public LuaNode Name;
 
         public LuaFunctionCallNode()
         {
@@ -20,7 +22,6 @@ namespace NPLTools.IronyParser.Ast
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
-            string name = "";
             // prefixexp args
             if (treeNode.ChildNodes.Count == 2)
             {
@@ -47,18 +48,41 @@ namespace NPLTools.IronyParser.Ast
             //    if (node.Term.Name == "expr list")
             //        Arguments = AddChild("Args", node);
             //}
-
-            _targetName = name;
             
-            AsString = "Call " + _targetName;
+            AsString = "Call " + Target.AsString;
         }
 
         public void GetDeclarations(LuaBlockNode block, LuaModel model)
         {
-            if (Target.AsString == "require" && Arguments is LuaLiteralNode)
+            if (Target.AsString == "require" && 
+                Arguments.ChildNodes.Count == 1 &&
+                Arguments.ChildNodes[0] is LuaLiteralNode &&
+                ((LuaLiteralNode)Arguments.ChildNodes[0]).Type == LuaType.String)
             {
-                LuaLiteralNode filePathNode = Arguments as LuaLiteralNode;
-                block.Requires.Add(new RequiredDeclaration(filePathNode.Value, new ScopeSpan(this.Span.EndPosition, this.EndLine, int.MaxValue, int.MaxValue)));
+                string fileName = ((LuaLiteralNode)Arguments.ChildNodes[0]).Value;
+                fileName = fileName.Substring(1, fileName.Length - 2);
+                try
+                {
+                    string filePath = Path.Combine(Path.GetDirectoryName(model.FilePath), fileName);
+                    if (model.Entry != null && model.Entry.Analyzer.ContainsFile(filePath))
+                    {
+                        AnalysisEntry requiredEntry = model.Entry.Analyzer.GetAnalysisEntry(filePath);
+                        if (requiredEntry.Model != null)
+                            block.Requires.AddRange(requiredEntry.Model.GetGlobalDeclarations());
+                    }
+                    else
+                    {
+                        string source = File.ReadAllText(filePath);
+                        Irony.Parsing.Parser parser = new Irony.Parsing.Parser(LuaGrammar.Instance);
+                        ParseTree tree = parser.Parse(source);
+                        LuaModel requiredModel = new LuaModel(tree, null);
+                        block.Requires.AddRange(requiredModel.GetGlobalDeclarations());
+                    }
+                }
+                catch (Exception e)
+                {
+
+                }
             }
         }
     }//class

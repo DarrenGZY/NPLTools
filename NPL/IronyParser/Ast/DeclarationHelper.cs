@@ -30,7 +30,7 @@ namespace NPLTools.IronyParser.Ast
                         return true;
                     }
                 }
-                foreach (var globalDeclaration in model.GetGlobalDeclarationInProject())
+                foreach (var globalDeclaration in block.Requires)
                 {
                     if (expr.AsString == globalDeclaration.Name)
                     {
@@ -61,7 +61,7 @@ namespace NPLTools.IronyParser.Ast
                         return true;
                     }
                 }
-                foreach (var globalDeclaration in model.GetGlobalDeclarationInProject())
+                foreach (var globalDeclaration in block.Requires)
                 {
                     Declaration dummyDeclaration = BuildDeclaration(expr.AsString);
                     if (dummyDeclaration.Equal(globalDeclaration))

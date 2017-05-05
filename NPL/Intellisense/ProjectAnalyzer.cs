@@ -31,9 +31,14 @@ namespace NPLTools.Intellisense
             _entryService = _serviceProvider.GetEntryService();
         }
 
-        public bool ContainsFile(string fileName)
+        public bool ContainsFile(string filePath)
         {
-            return _projectFiles.ContainsKey(fileName);
+            return _projectFiles.ContainsKey(filePath);
+        }
+
+        public AnalysisEntry GetAnalysisEntry(string filePath)
+        {
+            return _projectFiles[filePath];
         }
 
         /// <summary>
