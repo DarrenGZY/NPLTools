@@ -111,8 +111,12 @@ namespace NPLTools.Intellisense
                     }
                 } 
             }
-            foreach (LuaNode child in node.ChildNodes)
-                GetDeclarations(child, declarations);
+            foreach (AstNode child in node.ChildNodes)
+            {
+                if (!(child is NullNode))
+                    GetDeclarations(child as LuaNode, declarations);
+            }
+                
         }
 
         /// <summary>
@@ -172,8 +176,11 @@ namespace NPLTools.Intellisense
                     }
                 }
             }
-            foreach (LuaNode child in node.ChildNodes)
-                GetDeclarationsByName(child, declaration, foundDeclarations);
+            foreach (AstNode child in node.ChildNodes)
+            {
+                if (!(child is NullNode))
+                    GetDeclarationsByName(child as LuaNode, declaration, foundDeclarations);
+            }
         }
 
         // Get global declarations from files in project other than the current file
@@ -201,8 +208,11 @@ namespace NPLTools.Intellisense
                     }
                 }
             }
-            foreach (LuaNode child in node.ChildNodes)
-                GetGlobalDeclarationsByName(child, declaration, foundedDeclarations);
+            foreach (AstNode child in node.ChildNodes)
+            {
+                if (!(child is NullNode))
+                    GetGlobalDeclarationsByName(child as LuaNode, declaration, foundedDeclarations);
+            }  
         }
 
         public IEnumerable<Declaration> GetGlobalDeclarations()
@@ -219,10 +229,11 @@ namespace NPLTools.Intellisense
                     yield return global;
                 }
             }
-            foreach (LuaNode child in node.ChildNodes)
+            foreach (AstNode child in node.ChildNodes)
             {
-                foreach (var declaration in RetreiveGlobalDeclarationsFromAST(child))
-                    yield return declaration;
+                if (!(child is NullNode))
+                    foreach (var declaration in RetreiveGlobalDeclarationsFromAST(child as LuaNode))
+                        yield return declaration;
             }
         }
 
@@ -236,7 +247,7 @@ namespace NPLTools.Intellisense
         {
             if (node is LuaBlockNode)
             {
-                foreach (LuaNode child in node.ChildNodes)
+                foreach (AstNode child in node.ChildNodes)
                 {
                     if (child is IDeclaration)
                     {
@@ -244,17 +255,11 @@ namespace NPLTools.Intellisense
                     }
                 }
             }
-            if (node is LuaFunctionCallNode)
+            foreach (AstNode child in node.ChildNodes)
             {
-                var funcCall = node as LuaFunctionCallNode;
-                if (funcCall.Target.AsString == "NPL.load" ||
-                    funcCall.AsString == "require")
-                {
-
-                }
+                if (!(child is NullNode))
+                    WalkASTForDeclarations(child as LuaNode);
             }
-            foreach (LuaNode child in node.ChildNodes)
-                WalkASTForDeclarations(child);
         }
 
         #region Format Helpers
@@ -319,9 +324,10 @@ namespace NPLTools.Intellisense
                     }
                 } 
             }
-            foreach (LuaNode childNode in node.GetChildNodes())
+            foreach (AstNode childNode in node.ChildNodes)
             {
-                WalkSyntaxTreeForIndentations(childNode, indentations);
+                if (!(childNode is NullNode))
+                    WalkSyntaxTreeForIndentations(childNode as LuaNode, indentations);
             }
         }
         #endregion

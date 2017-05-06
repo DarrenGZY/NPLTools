@@ -49,12 +49,14 @@ namespace NPLTools.IronyParser.Ast
             //        Arguments = AddChild("Args", node);
             //}
             
-            AsString = "Call " + Target.AsString;
+            AsString = "Function Call";
         }
 
         public void GetDeclarations(LuaBlockNode block, LuaModel model)
         {
-            if (Target.AsString == "require" && 
+            // require("sample.lua")
+            if (Target != null &&
+                Target.AsString == "require" && 
                 Arguments.ChildNodes.Count == 1 &&
                 Arguments.ChildNodes[0] is LuaLiteralNode &&
                 ((LuaLiteralNode)Arguments.ChildNodes[0]).Type == LuaType.String)
