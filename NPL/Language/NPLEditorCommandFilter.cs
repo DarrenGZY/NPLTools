@@ -122,9 +122,11 @@ namespace NPLTools.Language
         private void GotoDefinition()
         {
             var caret = _textView.Caret.Position.BufferPosition;
-            var analysis = _textView.GetAnalysisAtCaret(_serviceProvider);
+            var analysis = _textView.GetAnalysisAtCaretProjectMode(_serviceProvider);
+            if (analysis == null && !_textView.TextBuffer.Properties.TryGetProperty(typeof(AnalysisEntry), out analysis))
+                return;
 
-            var span = analysis.Analyzer.GetDeclarationLocation(analysis, _textView, caret);
+            var span = analysis.GetDeclarationLocation(_textView, caret);
 
             if (span.HasValue)
             {
@@ -195,8 +197,10 @@ namespace NPLTools.Language
 
         private void FormatBlock()
         {
-            var analysis = _textView.GetAnalysisAtCaret(_serviceProvider);
-            analysis.Analyzer.FormatBlock(analysis, _textView);
+            var analysis = _textView.GetAnalysisAtCaretProjectMode(_serviceProvider);
+            if (analysis == null && !_textView.TextBuffer.Properties.TryGetProperty(typeof(AnalysisEntry), out analysis))
+                return;
+            analysis.FormatBlock(_textView);
         }
 
         public void SetNPLBreakPoint()

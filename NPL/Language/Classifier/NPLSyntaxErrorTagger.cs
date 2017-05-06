@@ -40,9 +40,7 @@ namespace NPLTools.Language.Classifier
         {
             _buffer = buffer;
             _syntaxErrorTags = new List<ITagSpan<ErrorTag>>();
-            _analysisEntry = buffer.GetAnalysisAtCaret(provider.ServiceProvider);
-            if (_analysisEntry == null)
-                buffer.Properties.TryGetProperty(typeof(AnalysisEntry), out _analysisEntry);
+            _analysisEntry = AnalysisEntryInitializer.Initialize(provider.ServiceProvider, buffer);
             _analysisEntry.NewParseTree += OnNewParseTree;
         }
 

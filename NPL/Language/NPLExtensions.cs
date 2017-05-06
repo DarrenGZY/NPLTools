@@ -31,7 +31,7 @@ namespace NPLTools.Language
             return serviceProvider.GetComponentModel()?.GetService<AnalysisEntryService>();
         }
 
-        internal static AnalysisEntry GetAnalysisAtCaret(this ITextView textView, IServiceProvider serviceProvider)
+        internal static AnalysisEntry GetAnalysisAtCaretProjectMode(this ITextView textView, IServiceProvider serviceProvider)
         {
             var service = serviceProvider.GetEntryService();
             AnalysisEntry entry = null;
@@ -39,11 +39,25 @@ namespace NPLTools.Language
             return entry;
         }
 
-        internal static AnalysisEntry GetAnalysisAtCaret(this ITextBuffer textBuffer, IServiceProvider serviceProvider)
+        internal static AnalysisEntry GetAnalysisAtCaretProjectMode(this ITextBuffer textBuffer, IServiceProvider serviceProvider)
         {
             var service = serviceProvider.GetEntryService();
             AnalysisEntry entry = null;
             service?.TryGetAnalysisEntry(textBuffer, out entry);
+            return entry;
+        }
+
+        internal static AnalysisEntry GetAnalysisAtCaretSingletonMode(this ITextView textView)
+        {
+            AnalysisEntry entry = null;
+            textView.TextBuffer.Properties.TryGetProperty(typeof(AnalysisEntry), out entry);
+            return entry;
+        }
+
+        internal static AnalysisEntry GetAnalysisAtCaretSingletonMode(this ITextBuffer textBuffer)
+        {
+            AnalysisEntry entry = null;
+            textBuffer.Properties.TryGetProperty(typeof(AnalysisEntry), out entry);
             return entry;
         }
 

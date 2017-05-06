@@ -29,9 +29,7 @@ namespace NPLTools.Language.Tooltip
         {
             _provider = provider;
             _subjectBuffer = subjectBuffer;
-            _analysisEntry = _subjectBuffer.GetAnalysisAtCaret(_provider.ServiceProvider);
-            if (_analysisEntry == null)
-                _subjectBuffer.Properties.TryGetProperty(typeof(AnalysisEntry), out _analysisEntry);
+            _analysisEntry = AnalysisEntryInitializer.Initialize(provider.ServiceProvider, subjectBuffer);
         }
 
         public void AugmentQuickInfoSession(IQuickInfoSession session, IList<object> quickInfoContent, out ITrackingSpan applicableToSpan)
@@ -50,7 +48,7 @@ namespace NPLTools.Language.Tooltip
             TextExtent extent = navigator.GetExtentOfWord(subjectTriggerPoint.Value);
             //string searchText = extent.Span.GetText();
 
-            string description = _analysisEntry.Analyzer.GetDescription(_analysisEntry, _subjectBuffer, subjectTriggerPoint.Value);
+            string description = _analysisEntry.GetDescription(_subjectBuffer, subjectTriggerPoint.Value);
 
             if (description != String.Empty && description != null)
             {

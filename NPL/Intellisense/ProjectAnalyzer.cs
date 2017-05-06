@@ -60,7 +60,7 @@ namespace NPLTools.Intellisense
 
         internal bool HasMonitoredTextBuffer(ITextBuffer textBuffer)
         {
-            return textBuffer.GetAnalysisAtCaret(_serviceProvider) != null;
+            return textBuffer.GetAnalysisAtCaretProjectMode(_serviceProvider) != null;
         }
 
         internal void CanceledMonitorTextBuffer(AnalysisEntry entry, ITextBuffer textBuffer)
@@ -247,6 +247,11 @@ namespace NPLTools.Intellisense
             return null;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="entry"></param>
+        /// <returns></returns>
         internal List<Region> GetOutliningRegions(AnalysisEntry entry)
         {
             return entry.Model.GetOutliningRegions();

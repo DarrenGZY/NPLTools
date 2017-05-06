@@ -66,7 +66,7 @@ namespace NPLTools.IronyParser.Ast
                 try
                 {
                     string filePath = Path.Combine(Path.GetDirectoryName(model.FilePath), fileName);
-                    if (model.Entry != null && model.Entry.Analyzer.ContainsFile(filePath))
+                    if (model.Entry != null && model.Entry.Analyzer != null && model.Entry.Analyzer.ContainsFile(filePath))
                     {
                         AnalysisEntry requiredEntry = model.Entry.Analyzer.GetAnalysisEntry(filePath);
                         if (requiredEntry.Model != null)

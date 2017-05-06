@@ -51,7 +51,6 @@ namespace NPLTools.Language.Classifier
     {
         ITextBuffer _textBuffer;
         IDictionary<NPLTokenType, IClassificationType> _nplTypes;
-        Irony.Parsing.Parser _parser;
         TokenList _tokens;
         AnalysisEntry _analysisEntry;
         /// <summary>
@@ -61,43 +60,12 @@ namespace NPLTools.Language.Classifier
                                IClassificationTypeRegistryService typeService, NPLClassifierProvider provider)
         {
             _textBuffer = textBuffer;
-            _parser = new Irony.Parsing.Parser(LuaGrammar.Instance);
             _tokens = new TokenList();
 
             IServiceProvider serviceProvider = provider.ServiceProvider as IServiceProvider;
-            IVsSolution sln = serviceProvider.GetService(typeof(SVsSolution)) as IVsSolution;
-            IVsProject proj = sln.GetLoadedProject();
-            if (proj == null)
-            {
-                _analysisEntry = new AnalysisEntry(_textBuffer.GetFilePath());
-                _textBuffer.Properties[typeof(AnalysisEntry)] = _analysisEntry;
-                _textBuffer.Changed += TextBufferChanged;
-                _analysisEntry.NewParseTree += OnNewParseTree;
-            }
-            else
-            {
-                var project = sln.GetLoadedProject().GetNPLProject();
-                if (!project.Analyzer.HasMonitoredTextBuffer(textBuffer))
-                    project.Analyzer.MonitorTextBuffer(textBuffer);
-
-                _analysisEntry = textBuffer.GetAnalysisAtCaret(provider.ServiceProvider);
-                _analysisEntry.NewParseTree += OnNewParseTree;
-            }
-
-            _nplTypes = new Dictionary<NPLTokenType, IClassificationType>();
-            _nplTypes[NPLTokenType.Text] = typeService.GetClassificationType("NPLText");
-            _nplTypes[NPLTokenType.Keyword] = typeService.GetClassificationType("NPLKeyword");
-            _nplTypes[NPLTokenType.String] = typeService.GetClassificationType("NPLString");
-            _nplTypes[NPLTokenType.Comment] = typeService.GetClassificationType("NPLComment");
-            _nplTypes[NPLTokenType.Identifier] = typeService.GetClassificationType("NPLIdentifier");
-            _nplTypes[NPLTokenType.Number] = typeService.GetClassificationType("NPLNumber");
-            _nplTypes[NPLTokenType.Self] = typeService.GetClassificationType("NPLSelf");
-            _nplTypes[NPLTokenType.FunctionName] = typeService.GetClassificationType("NPLFunctionName");
-        }
-
-        private async void TextBufferChanged(object sender, TextContentChangedEventArgs e)
-        {
-            await _analysisEntry.UpdateModel(e.After.GetText()); 
+            _analysisEntry = AnalysisEntryInitializer.Initialize(serviceProvider, textBuffer);
+            _analysisEntry.NewParseTree += OnNewParseTree;
+            InitializeTypeMapping(typeService);
         }
 
         private void OnNewParseTree(object sender, ParseTreeChangedEventArgs e)
@@ -178,6 +146,20 @@ namespace NPLTools.Language.Classifier
             }
 
             return res;
+        }
+
+        private void InitializeTypeMapping(IClassificationTypeRegistryService typeService)
+        {
+
+            _nplTypes = new Dictionary<NPLTokenType, IClassificationType>();
+            _nplTypes[NPLTokenType.Text] = typeService.GetClassificationType("NPLText");
+            _nplTypes[NPLTokenType.Keyword] = typeService.GetClassificationType("NPLKeyword");
+            _nplTypes[NPLTokenType.String] = typeService.GetClassificationType("NPLString");
+            _nplTypes[NPLTokenType.Comment] = typeService.GetClassificationType("NPLComment");
+            _nplTypes[NPLTokenType.Identifier] = typeService.GetClassificationType("NPLIdentifier");
+            _nplTypes[NPLTokenType.Number] = typeService.GetClassificationType("NPLNumber");
+            _nplTypes[NPLTokenType.Self] = typeService.GetClassificationType("NPLSelf");
+            _nplTypes[NPLTokenType.FunctionName] = typeService.GetClassificationType("NPLFunctionName");
         }
     }
 

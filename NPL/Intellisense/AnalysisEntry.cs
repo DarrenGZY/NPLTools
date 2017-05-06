@@ -22,6 +22,7 @@ namespace NPLTools.Intellisense
         private readonly ProjectAnalyzer _analyzer;
         private LuaModel _model;
         private readonly Parser _parser;
+        private Dictionary<string, LuaModel> _includedFiles = new Dictionary<string, LuaModel>();
 
         public AnalysisEntry(ProjectAnalyzer analyzer, string path, int fileId)
         {
@@ -34,7 +35,9 @@ namespace NPLTools.Intellisense
 
         public AnalysisEntry(string path)
         {
+            _analyzer = null;
             _path = path;
+            _fileId = 0;
             _parser = new Parser(LuaGrammar.Instance);
             InitModel();
         }
@@ -70,6 +73,82 @@ namespace NPLTools.Intellisense
         public ProjectAnalyzer Analyzer => _analyzer;
 
         public LuaModel Model => _model;
+
+        public void RegisterSingletonMode(ITextBuffer textBuffer)
+        {
+            textBuffer.Properties[typeof(AnalysisEntry)] = this;
+            textBuffer.Changed += TextBufferChangedInSingletonMode;
+        }
+
+        private async void TextBufferChangedInSingletonMode(object sender, TextContentChangedEventArgs e)
+        {
+            await this.UpdateModel(e.After.GetText());
+        }
+
+        public void AddIncludedFile(string path, LuaModel model)
+        {
+            if (_includedFiles.ContainsKey(path))
+                _includedFiles[path] = model;
+            else
+                _includedFiles.Add(path, model);
+        }
+
+        internal KeyValuePair<string, ScopeSpan>? GetDeclarationLocation(ITextView textView, SnapshotPoint point)
+        {
+            IdentifierSource word = ReverseParser.ParseIdentifier(point);
+
+            // Find declaration in its own file
+            Declaration res = _model.GetDeclaration(word.Identifier, word.Span);
+            if (res != null)
+                return new KeyValuePair<string, ScopeSpan>(_path, res.Scope);
+            // Find declaration in files in project
+            res = GetDeclarationinIncludedFiles(word.Identifier);
+            if (res != null)
+                return new KeyValuePair<string, ScopeSpan>(res.FilePath, res.Scope);
+            return null;
+        }
+
+        internal string GetDescription(ITextBuffer textBuffer, SnapshotPoint point)
+        {
+            string description = String.Empty;
+            IdentifierSource word = ReverseParser.ParseIdentifier(point);
+            // Try to get description in the file
+            Declaration inFileDeclaration = _model.GetDeclaration(word.Identifier, word.Span);
+            if (inFileDeclaration != null)
+            {
+                return inFileDeclaration.Description;
+            }
+
+            // Try to get description in the predefined declarations in xml
+            //Declaration predefinedDeclaration = GetDeclarationFromPredeined(word.Identifier);
+            //if (predefinedDeclaration != null)
+            //    return predefinedDeclaration.Description;
+
+            // Not find declaration in the file, try to get description from loaded file 
+            Declaration loadedFileDeclaration = GetDeclarationinIncludedFiles(word.Identifier);
+            if (loadedFileDeclaration != null)
+            {
+                return loadedFileDeclaration.Description;
+            }
+
+            return description;
+        }
+
+        private Declaration GetDeclarationinIncludedFiles(string name)
+        {
+            foreach (var model in _includedFiles.Values)
+            {
+                Declaration res = model.GetGlobalDeclaration(name);
+                if (res != null)
+                    return res;
+            }
+            return null;
+        }
+
+        internal List<Region> GetOutliningRegions()
+        {
+            return _model.GetOutliningRegions();
+        }
 
         /// <summary>
         /// Format selection block
