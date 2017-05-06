@@ -49,7 +49,7 @@ namespace NPLTools.IronyParser.Ast
                                         variable.EndLine,
                                         block.Span.EndPosition,
                                         block.EndLine));
-                block.Locals.Add(declaration);
+                //block.Locals.Add(declaration);
                 
                 if (i < ExpressionList.Count)
                 {
@@ -63,6 +63,9 @@ namespace NPLTools.IronyParser.Ast
                             sibling.AddSibling(declaration);
                     }
                 }
+
+                // add declaration as the end in case of circling sibling which lead to stackoverflow
+                block.Locals.Add(declaration);
             }
         }
 

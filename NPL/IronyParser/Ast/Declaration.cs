@@ -111,9 +111,9 @@ namespace NPLTools.IronyParser.Ast
                 {
                     if (NameSpace.Equal(opponent.NameSpace))
                         return true;
-                    foreach (var sibling in NameSpace.Siblings)
-                        if (sibling.Equal(opponent.NameSpace))
-                            return true;
+                    //foreach (var sibling in NameSpace.Siblings)
+                    //    if (sibling.Equal(opponent.NameSpace))
+                    //        return true;
                 }
             }
 
