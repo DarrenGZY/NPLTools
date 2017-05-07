@@ -16,10 +16,10 @@ namespace NPLTools.Intellisense
         private LuaChunkNode _root;
         private ParseTree _parseTree;
         private AnalysisEntry _entry;
-        public List<KeyValuePair<string, ScopeSpan>> Declarations = new List<KeyValuePair<string, ScopeSpan>>();
+        private string _filePath;
         public Dictionary<string, LuaModel> IncludedFiles = new Dictionary<string, LuaModel>();
 
-        public string FilePath => _entry.FilePath;
+        public string FilePath => _filePath;
 
         public AnalysisEntry Entry => _entry;
 
@@ -27,11 +27,23 @@ namespace NPLTools.Intellisense
         {
             _parseTree = parseTree;
             _entry = entry;
+            _filePath = entry.FilePath;
             if (_parseTree.Root!= null)
             {
                 _root = _parseTree.Root.AstNode as LuaChunkNode;
                 WalkASTForDeclarations();
-                GetDeclarations(_root, Declarations);
+            }
+        }
+
+        public LuaModel(ParseTree parseTree, string filePath)
+        {
+            _parseTree = parseTree;
+            _entry = null;
+            _filePath = filePath;
+            if (_parseTree.Root != null)
+            {
+                _root = _parseTree.Root.AstNode as LuaChunkNode;
+                WalkASTForDeclarations();
             }
         }
 
@@ -43,8 +55,6 @@ namespace NPLTools.Intellisense
             {
                 _root = _parseTree.Root.AstNode as LuaChunkNode;
                 WalkASTForDeclarations();
-                Declarations.Clear();
-                GetDeclarations(_root, Declarations);  
             }
         }
 
@@ -84,7 +94,12 @@ namespace NPLTools.Intellisense
             return null;
         }
 
-        private void GetDeclarations(LuaNode node, List<KeyValuePair<string, ScopeSpan>> declarations)
+        public void WalkASTForCompletionSource(int triggerPosition, HashSet<string> res)
+        {
+            WalkASTForCompletionSource(_root, triggerPosition, res);
+        }
+
+        private void WalkASTForCompletionSource(LuaNode node, int triggerPosition, HashSet<string> res)
         {
             if (node == null)
                 return;
@@ -95,27 +110,36 @@ namespace NPLTools.Intellisense
                 {
                     foreach (var declaration in ((LuaBlockNode)node).Locals)
                     {
-                        declarations.Add(
-                            new KeyValuePair<string, ScopeSpan>(
-                                declaration.Name, declaration.Scope));
+                        if (triggerPosition > declaration.Scope.StartPosition)
+                            res.Add(declaration.Name);
                     }
                 }
                 else
                 {
                     foreach (var declaration in ((LuaBlockNode)node).Locals)
                     {
-                        declarations.Add(
-                            new KeyValuePair<string, ScopeSpan>(
-                                declaration.Name, declaration.Scope));
+                        if (triggerPosition > declaration.Scope.StartPosition &&
+                            triggerPosition < declaration.Scope.EndPosition)
+                            res.Add(declaration.Name);
                     }
-                } 
+                }
+
+                foreach (var declaration in ((LuaBlockNode)node).Globals)
+                {
+                    if (triggerPosition > declaration.Scope.StartPosition)
+                        res.Add(declaration.Name);
+                }
+
+                foreach (var declaration in ((LuaBlockNode)node).Requires)
+                {
+                        res.Add(declaration.Name);
+                }
             }
             foreach (AstNode child in node.ChildNodes)
             {
                 if (!(child is NullNode))
-                    GetDeclarations(child as LuaNode, declarations);
+                    WalkASTForCompletionSource(child as LuaNode, triggerPosition, res);
             }
-                
         }
 
         /// <summary>

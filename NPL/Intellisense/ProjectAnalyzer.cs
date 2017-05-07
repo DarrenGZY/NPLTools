@@ -238,13 +238,19 @@ namespace NPLTools.Intellisense
             return description;
         }
 
-        private Declaration GetDeclarationFromPredeined(string name)
+        internal Declaration GetDeclarationFromPredeined(string name)
         {
             Declaration declaration = DeclarationHelper.BuildDeclaration(name);
             var founded = _predefinedDeclarations.Where((defined) => defined.Equal(declaration));
             if (founded.Count() != 0)
                 return founded.First();
             return null;
+        }
+
+        internal void GetCompletionSourceFromPredefined(HashSet<string> res)
+        {
+            var founded = _predefinedDeclarations.Select((defined) => defined.Name);
+            res.UnionWith(founded);
         }
 
         /// <summary>

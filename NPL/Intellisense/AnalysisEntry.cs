@@ -113,9 +113,12 @@ namespace NPLTools.Intellisense
             }
 
             // Try to get description in the predefined declarations in xml
-            //Declaration predefinedDeclaration = GetDeclarationFromPredeined(word.Identifier);
-            //if (predefinedDeclaration != null)
-            //    return predefinedDeclaration.Description;
+            if (_analyzer != null)
+            {
+                Declaration predefinedDeclaration = _analyzer.GetDeclarationFromPredeined(word.Identifier);
+                if (predefinedDeclaration != null)
+                    return predefinedDeclaration.Description;
+            }
 
             // Not find declaration in the file, try to get description from loaded file 
             Declaration loadedFileDeclaration = GetDeclarationinIncludedFiles(word.Identifier);
@@ -125,6 +128,22 @@ namespace NPLTools.Intellisense
             }
 
             return description;
+        }
+
+        /// <summary>
+        /// Get the string collection for completion source
+        /// </summary>
+        /// <param name="triggerPosition"></param>
+        /// <returns></returns>
+        internal HashSet<string> GetCompletionSource(int triggerPosition)
+        {
+            HashSet<string> res = new HashSet<string>();
+            if (_analyzer != null)
+            {
+                _analyzer.GetCompletionSourceFromPredefined(res);
+            }
+            _model.WalkASTForCompletionSource(triggerPosition, res);
+            return res;
         }
 
         private Declaration GetDeclarationinIncludedFiles(string name)

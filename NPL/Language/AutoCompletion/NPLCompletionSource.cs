@@ -27,18 +27,10 @@ namespace NPLTools.Language.AutoCompletion
         public void AugmentCompletionSession(ICompletionSession session, IList<CompletionSet> completionSets)
         {
             //ITrackingPoint point = session.GetTriggerPoint(_textBuffer);
-            SnapshotPoint? triggerPoint = session.GetTriggerPoint(_textBuffer.CurrentSnapshot);           
+            SnapshotPoint? triggerPoint = session.GetTriggerPoint(_textBuffer.CurrentSnapshot);
 
-            List<string> strList = new List<string>();
-            if (_analysisEntry.Model.Declarations != null && triggerPoint.HasValue)
-            {
-                foreach (var declaration in _analysisEntry.Model.Declarations)
-                {
-                    if (_analysisEntry.Model.IsInScope(triggerPoint.Value.Position, declaration.Value) &&
-                        !strList.Contains(declaration.Key))
-                        strList.Add(declaration.Key);
-                }
-            }
+            if (!triggerPoint.HasValue) return;
+            HashSet<string> strList = _analysisEntry.GetCompletionSource(triggerPoint.Value.Position);
 
             _compList = new List<Completion>();
             foreach (string str in strList)

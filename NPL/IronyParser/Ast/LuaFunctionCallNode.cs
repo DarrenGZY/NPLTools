@@ -80,7 +80,7 @@ namespace NPLTools.IronyParser.Ast
                         string source = File.ReadAllText(filePath);
                         Irony.Parsing.Parser parser = new Irony.Parsing.Parser(LuaGrammar.Instance);
                         ParseTree tree = parser.Parse(source);
-                        LuaModel requiredModel = new LuaModel(tree, null);
+                        LuaModel requiredModel = new LuaModel(tree, filePath);
                         block.Requires.AddRange(requiredModel.GetGlobalDeclarations());
                         model.AddIncludedFile(filePath, requiredModel);
                     }
