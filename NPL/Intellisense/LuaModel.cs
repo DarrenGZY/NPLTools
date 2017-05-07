@@ -17,12 +17,11 @@ namespace NPLTools.Intellisense
         private ParseTree _parseTree;
         private AnalysisEntry _entry;
         public List<KeyValuePair<string, ScopeSpan>> Declarations = new List<KeyValuePair<string, ScopeSpan>>();
+        public Dictionary<string, LuaModel> IncludedFiles = new Dictionary<string, LuaModel>();
 
         public string FilePath => _entry.FilePath;
 
         public AnalysisEntry Entry => _entry;
-
-        public HashSet<string> IncludedFiles = new HashSet<string>();
 
         public LuaModel(ParseTree parseTree, AnalysisEntry entry)
         {
@@ -239,7 +238,7 @@ namespace NPLTools.Intellisense
 
         private void WalkASTForDeclarations()
         {
-            IncludedFiles.Clear();
+            ClearIncludedFiles();
             WalkASTForDeclarations(_root);
         }
 
@@ -260,6 +259,19 @@ namespace NPLTools.Intellisense
                 if (!(child is NullNode))
                     WalkASTForDeclarations(child as LuaNode);
             }
+        }
+
+        public void AddIncludedFile(string path, LuaModel model)
+        {
+            if (IncludedFiles.ContainsKey(path))
+                IncludedFiles[path] = model;
+            else
+                IncludedFiles.Add(path, model);
+        }
+
+        public void ClearIncludedFiles()
+        {
+            IncludedFiles.Clear();
         }
 
         #region Format Helpers

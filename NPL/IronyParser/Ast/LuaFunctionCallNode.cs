@@ -66,12 +66,15 @@ namespace NPLTools.IronyParser.Ast
                 try
                 {
                     string filePath = Path.Combine(Path.GetDirectoryName(model.FilePath), fileName);
+                    // project mode
                     if (model.Entry != null && model.Entry.Analyzer != null && model.Entry.Analyzer.ContainsFile(filePath))
                     {
                         AnalysisEntry requiredEntry = model.Entry.Analyzer.GetAnalysisEntry(filePath);
                         if (requiredEntry.Model != null)
                             block.Requires.AddRange(requiredEntry.Model.GetGlobalDeclarations());
+                        model.AddIncludedFile(filePath, requiredEntry.Model);
                     }
+                    // singleton mode
                     else
                     {
                         string source = File.ReadAllText(filePath);
@@ -79,6 +82,7 @@ namespace NPLTools.IronyParser.Ast
                         ParseTree tree = parser.Parse(source);
                         LuaModel requiredModel = new LuaModel(tree, null);
                         block.Requires.AddRange(requiredModel.GetGlobalDeclarations());
+                        model.AddIncludedFile(filePath, requiredModel);
                     }
                 }
                 catch (Exception e)

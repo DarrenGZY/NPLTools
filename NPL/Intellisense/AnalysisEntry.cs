@@ -21,8 +21,9 @@ namespace NPLTools.Intellisense
         private readonly string _path;
         private readonly ProjectAnalyzer _analyzer;
         private LuaModel _model;
+        private AnalysysMode _mode;
         private readonly Parser _parser;
-        private Dictionary<string, LuaModel> _includedFiles = new Dictionary<string, LuaModel>();
+        
 
         public AnalysisEntry(ProjectAnalyzer analyzer, string path, int fileId)
         {
@@ -30,7 +31,7 @@ namespace NPLTools.Intellisense
             _path = path;
             _fileId = fileId;
             _parser = new Parser(LuaGrammar.Instance);
-            InitModel();
+            //InitModel();
         }
 
         public AnalysisEntry(string path)
@@ -39,7 +40,7 @@ namespace NPLTools.Intellisense
             _path = path;
             _fileId = 0;
             _parser = new Parser(LuaGrammar.Instance);
-            InitModel();
+            //InitModel();
         }
 
         public async void InitModel()
@@ -85,14 +86,6 @@ namespace NPLTools.Intellisense
             await this.UpdateModel(e.After.GetText());
         }
 
-        public void AddIncludedFile(string path, LuaModel model)
-        {
-            if (_includedFiles.ContainsKey(path))
-                _includedFiles[path] = model;
-            else
-                _includedFiles.Add(path, model);
-        }
-
         internal KeyValuePair<string, ScopeSpan>? GetDeclarationLocation(ITextView textView, SnapshotPoint point)
         {
             IdentifierSource word = ReverseParser.ParseIdentifier(point);
@@ -136,7 +129,7 @@ namespace NPLTools.Intellisense
 
         private Declaration GetDeclarationinIncludedFiles(string name)
         {
-            foreach (var model in _includedFiles.Values)
+            foreach (var model in _model.IncludedFiles.Values)
             {
                 Declaration res = model.GetGlobalDeclaration(name);
                 if (res != null)
@@ -267,4 +260,11 @@ namespace NPLTools.Intellisense
             Tree = tree;
         }
     }
+
+    public enum AnalysysMode
+    {
+        Project = 1,
+        Singleton = 2
+    }
+
 }

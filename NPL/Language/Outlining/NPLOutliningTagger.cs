@@ -45,6 +45,9 @@ namespace NPLTools.Language.Outlining
             IServiceProvider serviceProvider = _provider.ServiceProvider as IServiceProvider;
             _analysisEntry = AnalysisEntryInitializer.Initialize(serviceProvider, textBuffer);
             _analysisEntry.NewParseTree += OnNewParseTree;
+            // should init model to let outlining work when opening file
+            // TODO: move to a more proper place
+            _analysisEntry.InitModel();
         }
 
         private void OnNewParseTree(object sender, ParseTreeChangedEventArgs e)
