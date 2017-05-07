@@ -35,6 +35,8 @@ namespace NPLTools.Intellisense
         /// <param name="tableDeclarationProvider"></param>
         private static void AddDeclarations(XElement doc, HashSet<Declaration> res)
         {
+            if (doc == null) return;
+            
             // Query the documentation for tables and add them
             doc.XPathSelectElements("./tables/table").ForEach(table => AddTableDeclaration(doc, table, res));
 
@@ -161,7 +163,7 @@ namespace NPLTools.Intellisense
                     if (validator.Validate(xmlContent, schemaStream))
                         return XElement.Load(path);
 
-                    throw new ApplicationException(validator.ErrorMessage);
+                    return null;
                 }
             }
         }

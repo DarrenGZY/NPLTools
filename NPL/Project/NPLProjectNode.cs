@@ -298,7 +298,7 @@ namespace NPLTools.Project
             var newNode = base.CreateFileNode(item);
             string include = item.GetMetadata(ProjectFileConstants.Include);
 
-            if (!item.IsExcluded && Path.GetFileName(item.Url) == "defined.xml") // set a more proper name
+            if (!item.IsExcluded && Path.GetExtension(item.Url) == ".xml") // set a more proper name
                 this.Analyzer.AddPredefinedDeclarationsFromXML(item.Url);
 
             if (!item.IsExcluded && Path.GetExtension(item.Url) == ".json")

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Xml;
 using System.Xml.Schema;
 
@@ -61,12 +62,18 @@ namespace NPLTools.Intellisense
             validationSettings.ValidationType = ValidationType.Schema;
             validationSettings.Schemas.Add(null, XmlReader.Create(schema));
 
-            XmlReader validatingReader = XmlReader.Create(new StringReader(xmlDocument), validationSettings);
-
-            while (validatingReader.Read())
+            try
             {
-            }
+                XmlReader validatingReader = XmlReader.Create(new StringReader(xmlDocument), validationSettings);
 
+                while (validatingReader.Read())
+                {
+                }
+            }
+            catch (Exception e)
+            {
+                result = false;
+            }
             if (ErrorsCount > 0)
             {
                 result = false;
