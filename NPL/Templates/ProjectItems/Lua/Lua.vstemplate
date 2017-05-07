@@ -5,7 +5,7 @@
     <Description>Lua</Description>
     <Icon>Lua.ico</Icon>
     <ProjectType>NPL</ProjectType>
-    <DefaultName>LuaFile.json</DefaultName>
+    <DefaultName>LuaFile.lua</DefaultName>
   </TemplateData>
   <TemplateContent>
     <ProjectItem>Lua.lua</ProjectItem>

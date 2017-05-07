@@ -158,7 +158,7 @@ namespace NPLTools.Intellisense
             {
                 string xmlContent = sr.ReadToEnd();
                 using (Stream schemaStream = typeof(XmlDocumentationLoader).Assembly.GetManifestResourceStream(
-                    "NPLProject.Resources.LuaDoc.xsd"))
+                    "NPLTools.Resources.LuaDoc.xsd"))
                 {
                     if (validator.Validate(xmlContent, schemaStream))
                         return XElement.Load(path);
