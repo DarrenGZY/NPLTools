@@ -31,7 +31,7 @@ namespace NPLTools.Intellisense
             _path = path;
             _fileId = fileId;
             _parser = new Parser(LuaGrammar.Instance);
-            //InitModel();
+            InitModel();
         }
 
         public AnalysisEntry(string path)
@@ -40,7 +40,7 @@ namespace NPLTools.Intellisense
             _path = path;
             _fileId = 0;
             _parser = new Parser(LuaGrammar.Instance);
-            //InitModel();
+            InitModel();
         }
 
         public async void InitModel()

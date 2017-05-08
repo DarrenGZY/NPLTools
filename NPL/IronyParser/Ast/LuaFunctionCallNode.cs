@@ -56,7 +56,8 @@ namespace NPLTools.IronyParser.Ast
         {
             // require("sample.lua")
             if (Target != null &&
-                Target.AsString == "require" && 
+                (Target.AsString == "require" ||
+                Target.AsString == "NPL.load") && 
                 Arguments.ChildNodes.Count == 1 &&
                 Arguments.ChildNodes[0] is LuaLiteralNode &&
                 ((LuaLiteralNode)Arguments.ChildNodes[0]).Type == LuaType.String)
@@ -71,8 +72,10 @@ namespace NPLTools.IronyParser.Ast
                     {
                         AnalysisEntry requiredEntry = model.Entry.Analyzer.GetAnalysisEntry(filePath);
                         if (requiredEntry.Model != null)
+                        {
                             block.Requires.AddRange(requiredEntry.Model.GetGlobalDeclarations());
-                        model.AddIncludedFile(filePath, requiredEntry.Model);
+                            model.AddIncludedFile(filePath, requiredEntry.Model);
+                        }
                     }
                     // singleton mode
                     else
