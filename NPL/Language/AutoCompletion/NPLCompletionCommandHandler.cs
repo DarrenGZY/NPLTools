@@ -65,7 +65,8 @@ namespace NPLTools.Language.AutoCompletion
                 if (_session == null || _session.IsDismissed)
                 {
                     this.TriggerCompletion();
-                    // _session.Filter();
+                    if (_session != null)
+                        _session.Filter();
                 }
                 else
                 {
