@@ -150,7 +150,7 @@ namespace NPLTools.Intellisense
             _predefinedDeclarations.UnionWith(XmlDocumentationLoader.LoadXml(xmlPath));
         }
 
-        internal async void AnalyzeJson(string jsonPath)
+        internal async void AnalyzeJson(string jsonPath, string workingDir)
         {
             using (StreamReader sr = File.OpenText(jsonPath))
             {
@@ -159,12 +159,34 @@ namespace NPLTools.Intellisense
 
                 foreach (var dependency in json.Dependencies)
                 {
-                    if (dependency.Key == "main")
+                    string downloadLink = String.Empty;
+                    switch (dependency.Key)
                     {
-                        string dependencyPath = Path.Combine(Path.GetDirectoryName(jsonPath), "npl_packages", dependency.Key);
+                        case "main":
+                            downloadLink = @"https://github.com/NPLPackages/main.git";
+                            break;
+                        case "mime":
+                            downloadLink = @"https://github.com/caoyongfeng0214/nplmime.git";
+                            break;
+                        case "express":
+                            downloadLink = @"https://github.com/caoyongfeng0214/nplexpress.git";
+                            break;
+                        case "lustache":
+                            downloadLink = @"https://github.com/caoyongfeng0214/npllustache.git";
+                            break;
+                        case "common":
+                            downloadLink = @"https://github.com/caoyongfeng0214/nplcommon.git";
+                            break;
+                        default:
+                            break;
+                    }
+
+                    if (downloadLink != String.Empty)
+                    {
+                        string dependencyPath = Path.Combine(workingDir, "npl_packages", dependency.Key);
                         if (!Directory.Exists(dependencyPath))
                         {
-                            await Task.Run(() => { Repository.Clone(@"https://github.com/NPLPackages/main.git", dependencyPath); });
+                            await Task.Run(() => { Repository.Clone(downloadLink, dependencyPath); });
                         }
                     }
                 }

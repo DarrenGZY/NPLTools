@@ -301,8 +301,10 @@ namespace NPLTools.Project
             if (!item.IsExcluded && Path.GetExtension(item.Url) == ".xml") // set a more proper name
                 this.Analyzer.AddPredefinedDeclarationsFromXML(item.Url);
 
-            if (!item.IsExcluded && Path.GetExtension(item.Url) == ".json")
-                this.Analyzer.AnalyzeJson(item.Url);
+            // TODO: analyze only .json file inclued in the project
+            if (Path.GetExtension(item.Url) == ".json")
+                this.Analyzer.AnalyzeJson(item.Url, GetWorkingDirectory());
+            
             //if (XamlDesignerSupport.DesignerContextType != null &&
             //    newNode is CommonFileNode &&
             //    !string.IsNullOrEmpty(include) &&
