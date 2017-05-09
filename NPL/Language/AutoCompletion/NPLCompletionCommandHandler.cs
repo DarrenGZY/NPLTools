@@ -39,10 +39,9 @@ namespace NPLTools.Language.AutoCompletion
             {
                 typedChar = (char)(ushort)Marshal.GetObjectForNativeVariant(pvaIn);
             }
-
+            // return and tab command commit the session and return
             if (nCmdID == (uint)VSConstants.VSStd2KCmdID.RETURN
-                || nCmdID == (uint)VSConstants.VSStd2KCmdID.TAB
-                || char.IsWhiteSpace(typedChar) || char.IsPunctuation(typedChar))
+                || nCmdID == (uint)VSConstants.VSStd2KCmdID.TAB)
             {
                 if (_session != null && !_session.IsDismissed)
                 {
@@ -57,7 +56,22 @@ namespace NPLTools.Language.AutoCompletion
                     }
                 }
             }
-
+            // whitespace and punctuation commit the session
+            if (char.IsWhiteSpace(typedChar) || char.IsPunctuation(typedChar))
+            {
+                if (_session != null && !_session.IsDismissed)
+                {
+                    if (_session.SelectedCompletionSet.SelectionStatus.IsSelected)
+                    {
+                        _session.Commit();
+                    }
+                    else
+                    {
+                        _session.Dismiss();
+                    }
+                }
+            }
+            
             int retVal = _nextCommandHandler.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
             bool handled = false;
             if (!typedChar.Equals(char.MinValue) && char.IsLetterOrDigit(typedChar))

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Language.Intellisense;
@@ -30,7 +31,9 @@ namespace NPLTools.Language.AutoCompletion
             SnapshotPoint? triggerPoint = session.GetTriggerPoint(_textBuffer.CurrentSnapshot);
 
             if (!triggerPoint.HasValue) return;
-            HashSet<string> strList = _analysisEntry.GetCompletionSource(triggerPoint.Value.Position);
+            List<string> strList = _analysisEntry.GetCompletionSource(triggerPoint.Value.Position).ToList();
+
+            strList.Sort();
 
             _compList = new List<Completion>();
             foreach (string str in strList)
