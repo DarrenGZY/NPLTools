@@ -59,6 +59,25 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Debugger\DebugEngine\AD7BoundBreakpoint.cs" />
+    <Compile Include="Debugger\DebugEngine\AD7BreakpointResolution.cs" />
+    <Compile Include="Debugger\DebugEngine\AD7DocumentContext.cs" />
+    <Compile Include="Debugger\DebugEngine\AD7Engine.cs" />
+    <Compile Include="Debugger\DebugEngine\AD7Enums.cs" />
+    <Compile Include="Debugger\DebugEngine\AD7Events.cs" />
+    <Compile Include="Debugger\DebugEngine\AD7Guids.cs" />
+    <Compile Include="Debugger\DebugEngine\AD7Hresult.cs" />
+    <Compile Include="Debugger\DebugEngine\AD7MemoryAddress.cs" />
+    <Compile Include="Debugger\DebugEngine\AD7Module.cs" />
+    <Compile Include="Debugger\DebugEngine\AD7PendingBreakpoint.cs" />
+    <Compile Include="Debugger\DebugEngine\AD7ProgramNode.cs" />
+    <Compile Include="Debugger\DebugEngine\AD7ProgramProvider.cs" />
+    <Compile Include="Debugger\DebugEngine\AD7Property.cs" />
+    <Compile Include="Debugger\DebugEngine\AD7StackFrame.cs" />
+    <Compile Include="Debugger\DebugEngine\AD7Thread.cs" />
+    <Compile Include="Debugger\DebugEngine\BreakpointManager.cs" />
+    <Compile Include="Debugger\DebugEngine\EngineConstants.cs" />
+    <Compile Include="Debugger\LuaModule.cs" />
     <Compile Include="Guids.cs" />
     <Compile Include="Intellisense\AnalysisEntry.cs" />
     <Compile Include="Intellisense\AnalysisEntryInitializer.cs" />

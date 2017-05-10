@@ -6,14 +6,20 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudioTools.Project;
 using Microsoft.VisualStudio;
 using System.Diagnostics;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Shell;
+using NPLTools.Debugger.DebugEngine;
+using System.Runtime.InteropServices;
 
 namespace NPLTools.Project
 {
     internal class NPLProjectLauncher : IProjectLauncher
     {
         private NPLProjectNode _project;
-        public NPLProjectLauncher(NPLProjectNode project)
+        private IServiceProvider _site;
+        public NPLProjectLauncher(IServiceProvider site, NPLProjectNode project)
         {
+            _site = site;
             _project = project;
         }
 
@@ -24,8 +30,35 @@ namespace NPLTools.Project
 
         public int LaunchProject(bool debug)
         {
+            Launch();
+            return VSConstants.S_OK;
+        }
 
-            return Start(debug);
+        private void LaunchDebugTarget()
+        {
+            var debugger = (IVsDebugger4)_site.GetService(typeof(IVsDebugger));
+            VsDebugTargetInfo4[] debugTargets = new VsDebugTargetInfo4[1];
+            debugTargets[0].dlo = (uint)DEBUG_LAUNCH_OPERATION.DLO_CreateProcess;
+            debugTargets[0].bstrExe = GetExePath();
+            debugTargets[0].guidLaunchDebugEngine = new Guid(NPLTools.Debugger.DebugEngine.EngineConstants.EngineId);
+            VsDebugTargetProcessInfo[] processInfo = new VsDebugTargetProcessInfo[debugTargets.Length];
+
+            debugger.LaunchDebugTargets4(1, debugTargets, processInfo);
+        }
+
+        private void Launch()
+        {
+            VsDebugTargetInfo info = new VsDebugTargetInfo();
+            info.cbSize = (uint)Marshal.SizeOf(info);
+            info.bstrExe = GetExePath();
+            info.bstrCurDir = GetWorkingDir();
+            info.bstrRemoteMachine = null;
+            info.fSendStdoutToOutputWindow = 0;
+            info.bstrEnv = "";
+            info.bstrArg = "";
+            info.clsidCustom = new Guid(AD7Engine.DebugEngineId);
+            info.grfLaunch = (uint)__VSDBGLAUNCHFLAGS.DBGLAUNCH_StopDebuggingOnEnd;
+            VsShellUtilities.LaunchDebugger(NPLToolsPackage.Instance, info);
         }
 
         private int Start(bool debug)

@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio;
 using EnvDTE;
 using Microsoft.VisualStudioTools.Project;
+using NPLTools.Debugger.DebugEngine;
 
 namespace NPLTools
 {
@@ -42,10 +43,12 @@ namespace NPLTools
     //[ProvideEditorExtension2(typeof(NPLEditorFactory), NPLConstants.LuaFileExtension, 50, __VSPHYSICALVIEWATTRIBUTES.PVA_SupportsPreview, "*:1", ProjectGuid = LuaConstants.ProjectFactoryGuid, NameResourceID = 3004, DefaultName = "module")]
     //[ProvideLanguageExtension(typeof(NPLEditorFactory), NPLConstants.NPLFileExtension)]
     //[ProvideLanguageExtension(typeof(NPLEditorFactory), NPLConstants.LuaFileExtension)]
-    //[ProvideAutoLoad(UIContextGuids80.NoSolution)]
+    [ProvideDebugEngine(AD7Engine.DebugEngineName, typeof(AD7ProgramProvider), typeof(AD7Engine), AD7Engine.DebugEngineId, hitCountBp: true)]
+    [ProvideDebugLanguage("Python", "{DA3C7D59-F9E4-4697-BEE7-3A0703AF6BFF}", "D470C7FA-94E1-41CA-A0E3-E0AB15C0B369", AD7Engine.DebugEngineId)]
+    [ProvideAutoLoad(UIContextGuids80.NoSolution)]
     public sealed class NPLToolsPackage : CommonPackage
     {
-        public static NPLToolsPackage Instance;
+        public static NPLToolsPackage Instance { get; private set; }
         
         /// <summary>
         /// Initializes a new instance of the <see cref="NPLPackage"/> class.
@@ -56,6 +59,7 @@ namespace NPLTools
             // any Visual Studio service because at this point the package object is created but
             // not sited yet inside Visual Studio environment. The place to do all the other
             // initialization is the Initialize method.
+            Instance = this;
         }
         
         #region Package Members
@@ -99,6 +103,7 @@ namespace NPLTools
         {
             VsUtilities.NavigateTo(serviceProvider, filename, docViewGuidType, pos);
         }
+
 
         #endregion
     }

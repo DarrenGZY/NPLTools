@@ -641,7 +641,7 @@ namespace NPLTools.Project
 
         public override IProjectLauncher GetLauncher()
         {
-            return new NPLProjectLauncher(this);
+            return new NPLProjectLauncher(Site, this);
         }
         /*
                 internal void AddAssociatedReplWindow(IReplWindow window) {
