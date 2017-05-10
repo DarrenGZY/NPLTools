@@ -196,6 +196,10 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <Content Include="ProjectTemplates\EmptyApp.zip">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <None Include="Tests\test.lua" />
     <Content Include="Resources\CommandRun.png" />
     <EmbeddedResource Include="Resources\Solution.png" />
