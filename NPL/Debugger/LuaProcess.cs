@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NPLTools.Debugger
@@ -38,9 +40,51 @@ namespace NPLTools.Debugger
             _process.EnableRaisingEvents = true;
         }
 
-        private static void AcceptConnection(IAsyncResult iar)
+        private static async void AcceptConnection(IAsyncResult iar)
         {
+            Socket socket;
+            var socketSource = ((Socket)iar.AsyncState);
+            try
+            {
+                socket = socketSource.EndAccept(iar);
+            }
+            catch (SocketException ex)
+            {
+                Debug.WriteLine("DebugConnectionListener socket failed");
+                Debug.WriteLine(ex);
+                return;
+            }
+            catch (ObjectDisposedException)
+            {
+                Debug.WriteLine("DebugConnectionListener socket closed");
+                return;
+            }
 
+            var stream = new NetworkStream(socket, ownsSocket: true);
+            var connectedEvent = new AutoResetEvent(false);
+            try
+            {
+                socket.Blocking = true;
+                StreamReader reader = new StreamReader(stream);
+                string line = await reader.ReadLineAsync().ConfigureAwait(false);
+                connectedEvent.WaitOne(10000);
+                //StreamWriter writer = new StreamWriter(stream);
+                string str = "handshake from C#";
+                var bytes = Encoding.UTF8.GetBytes(str);
+                await stream.WriteAsync(bytes, 0, bytes.Length).ConfigureAwait(false);
+            }
+            catch (IOException)
+            {
+            }
+            catch (Exception)
+            {
+            }
+            finally
+            {
+                stream?.Dispose();
+                socket?.Dispose();
+            }
+            socketSource.BeginAccept(AcceptConnection, socketSource);
         }
 
         public void Start()

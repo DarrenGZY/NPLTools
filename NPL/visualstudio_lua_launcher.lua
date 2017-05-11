@@ -9,4 +9,4 @@ end
 local filename = arg[1];
 local portnum = arg[2];
 
-vsld.start(filename, portnum);
+vsld.debug(filename, portnum);
