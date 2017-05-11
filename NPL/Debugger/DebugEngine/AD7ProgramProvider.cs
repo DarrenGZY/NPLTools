@@ -17,6 +17,7 @@ namespace NPLTools.Debugger.DebugEngine
     {
         public AD7ProgramProvider()
         {
+
         }
 
         #region IDebugProgramProvider2 Members

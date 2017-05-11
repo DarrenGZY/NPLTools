@@ -49,12 +49,13 @@ namespace NPLTools.Project
         private void Launch()
         {
             VsDebugTargetInfo info = new VsDebugTargetInfo();
+            info.dlo = DEBUG_LAUNCH_OPERATION.DLO_CreateProcess;
             info.cbSize = (uint)Marshal.SizeOf(info);
             info.bstrExe = GetExePath();
             info.bstrCurDir = GetWorkingDir();
             info.bstrRemoteMachine = null;
             info.fSendStdoutToOutputWindow = 0;
-            info.bstrEnv = "";
+            info.bstrEnv = null;
             info.bstrArg = "";
             info.clsidCustom = new Guid(AD7Engine.DebugEngineId);
             info.grfLaunch = (uint)__VSDBGLAUNCHFLAGS.DBGLAUNCH_StopDebuggingOnEnd;

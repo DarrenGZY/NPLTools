@@ -42,6 +42,8 @@ namespace NPLTools.Debugger.DebugEngine
         // This object manages breakpoints in the sample engine.
         BreakpointManager m_breakpointManager;
 
+        private LuaProcess _process;
+
         // A unique identifier for the program being debugged.
         Guid m_ad7ProgramId;
 
@@ -175,6 +177,10 @@ namespace NPLTools.Debugger.DebugEngine
         int IDebugEngineLaunch2.LaunchSuspended(string pszServer, IDebugPort2 port, string exe, string args, string dir, string env, string options, enum_LAUNCH_FLAGS launchFlags, uint hStdInput, uint hStdOutput, uint hStdError, IDebugEventCallback2 ad7Callback, out IDebugProcess2 process)
         {
             process = null;
+
+            _process = new LuaProcess(exe, args, dir, env);
+            _process.Start();
+
             return VSConstants.S_OK;
         }
 

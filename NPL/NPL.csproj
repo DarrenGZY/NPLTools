@@ -78,6 +78,7 @@
     <Compile Include="Debugger\DebugEngine\BreakpointManager.cs" />
     <Compile Include="Debugger\DebugEngine\EngineConstants.cs" />
     <Compile Include="Debugger\LuaModule.cs" />
+    <Compile Include="Debugger\LuaProcess.cs" />
     <Compile Include="Guids.cs" />
     <Compile Include="Intellisense\AnalysisEntry.cs" />
     <Compile Include="Intellisense\AnalysisEntryInitializer.cs" />

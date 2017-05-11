@@ -44,7 +44,7 @@ namespace NPLTools
     //[ProvideLanguageExtension(typeof(NPLEditorFactory), NPLConstants.NPLFileExtension)]
     //[ProvideLanguageExtension(typeof(NPLEditorFactory), NPLConstants.LuaFileExtension)]
     [ProvideDebugEngine(AD7Engine.DebugEngineName, typeof(AD7ProgramProvider), typeof(AD7Engine), AD7Engine.DebugEngineId, hitCountBp: true)]
-    [ProvideDebugLanguage("Python", "{DA3C7D59-F9E4-4697-BEE7-3A0703AF6BFF}", "D470C7FA-94E1-41CA-A0E3-E0AB15C0B369", AD7Engine.DebugEngineId)]
+    [ProvideDebugLanguage("Python", "{DA3C7D59-F9E4-4697-BEE7-3A0703AF6BFF}", "{D470C7FA-94E1-41CA-A0E3-E0AB15C0B369}", AD7Engine.DebugEngineId)]
     [ProvideAutoLoad(UIContextGuids80.NoSolution)]
     public sealed class NPLToolsPackage : CommonPackage
     {
