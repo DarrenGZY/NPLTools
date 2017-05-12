@@ -24,7 +24,7 @@ namespace NPLTools.Debugger.DebugEngine
         // Gets the name and identifier of the DE running this program.
         int IDebugProgramNode2.GetEngineInfo(out string engineName, out Guid engineGuid)
         {
-            engineName = "debug engine";
+            engineName = "Lua";
             engineGuid = new Guid(EngineConstants.EngineId);
 
             return VSConstants.S_OK;

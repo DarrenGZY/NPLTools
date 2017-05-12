@@ -76,7 +76,7 @@ namespace NPLTools.Debugger.DebugEngine
         public static void Send(AD7Engine engine)
         {
             AD7EngineCreateEvent eventObject = new AD7EngineCreateEvent(engine);
-            //engine.Callback.Send(eventObject, IID, null, null);
+            engine.Send(eventObject, IID, null, null);
         }
         
         int IDebugEngineCreateEvent2.GetEngine(out IDebugEngine2 engine)
@@ -95,7 +95,7 @@ namespace NPLTools.Debugger.DebugEngine
         internal static void Send(AD7Engine engine)
         {
             AD7ProgramCreateEvent eventObject = new AD7ProgramCreateEvent();
-            //engine.Callback.Send(eventObject, IID, null);
+            engine.Send(eventObject, IID, null);
         }
     }
 

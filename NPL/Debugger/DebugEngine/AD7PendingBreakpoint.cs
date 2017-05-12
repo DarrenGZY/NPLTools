@@ -11,35 +11,35 @@ namespace NPLTools.Debugger.DebugEngine
     class AD7PendingBreakpoint : IDebugPendingBreakpoint2
     {       
         // The breakpoint request that resulted in this pending breakpoint being created.
-        private IDebugBreakpointRequest2 m_pBPRequest;
-        private BP_REQUEST_INFO m_bpRequestInfo; 
-        private AD7Engine m_engine;
-        private BreakpointManager m_bpManager;
+        private IDebugBreakpointRequest2 _bpRequest;
+        private BP_REQUEST_INFO _bpRequestInfo; 
+        private AD7Engine _engine;
+        private BreakpointManager _bpManager;
 
-        private System.Collections.Generic.List<AD7BoundBreakpoint> m_boundBreakpoints;
+        private System.Collections.Generic.List<AD7BoundBreakpoint> _boundBreakpoints;
 
-        private bool m_enabled;
-        private bool m_deleted;       
+        private bool _enabled;
+        private bool _deleted;       
 
         public AD7PendingBreakpoint(IDebugBreakpointRequest2 pBPRequest, AD7Engine engine, BreakpointManager bpManager)
         {
-            m_pBPRequest = pBPRequest;
+            _bpRequest = pBPRequest;
             BP_REQUEST_INFO[] requestInfo = new BP_REQUEST_INFO[1];
-
-            m_bpRequestInfo = requestInfo[0]; 
-
-            m_engine = engine;
-            m_bpManager = bpManager;
-            m_boundBreakpoints = new System.Collections.Generic.List<AD7BoundBreakpoint>();
+            EngineUtils.CheckOk(_bpRequest.GetRequestInfo(enum_BPREQI_FIELDS.BPREQI_BPLOCATION | enum_BPREQI_FIELDS.BPREQI_CONDITION | enum_BPREQI_FIELDS.BPREQI_ALLFIELDS, requestInfo));
+            _bpRequestInfo = requestInfo[0];            
             
-            m_enabled = true;
-            m_deleted = false;
+            _engine = engine;
+            _bpManager = bpManager;
+            _boundBreakpoints = new System.Collections.Generic.List<AD7BoundBreakpoint>();
+
+            _enabled = true;
+            _deleted = false;
         }
 
         private bool CanBind()
         {
             // The sample engine only supports breakpoints on a file and line number. No other types of breakpoints are supported.
-            if (this.m_deleted || m_bpRequestInfo.bpLocation.bpLocationType != (uint)enum_BP_LOCATION_TYPE.BPLT_CODE_FILE_LINE)
+            if (this._deleted || _bpRequestInfo.bpLocation.bpLocationType != (uint)enum_BP_LOCATION_TYPE.BPLT_CODE_FILE_LINE)
             {
                 return false;
             }
@@ -51,7 +51,7 @@ namespace NPLTools.Debugger.DebugEngine
         // location.
         public AD7DocumentContext GetDocumentContext(uint address)
         {
-            IDebugDocumentPosition2 docPosition = (IDebugDocumentPosition2)(Marshal.GetObjectForIUnknown(m_bpRequestInfo.bpLocation.unionmember2));
+            IDebugDocumentPosition2 docPosition = (IDebugDocumentPosition2)(Marshal.GetObjectForIUnknown(_bpRequestInfo.bpLocation.unionmember2));
             string documentName = "";
 
 
@@ -60,7 +60,7 @@ namespace NPLTools.Debugger.DebugEngine
             TEXT_POSITION[] endPosition = new TEXT_POSITION[1];
          
 
-            AD7MemoryAddress codeContext = new AD7MemoryAddress(m_engine, address);
+            AD7MemoryAddress codeContext = new AD7MemoryAddress(_engine, address);
             
             return new AD7DocumentContext(documentName, startPosition[0], startPosition[0], codeContext);
         }
@@ -68,11 +68,11 @@ namespace NPLTools.Debugger.DebugEngine
         // Remove all of the bound breakpoints for this pending breakpoint
         public void ClearBoundBreakpoints()
         {
-            lock (m_boundBreakpoints)
+            lock (_boundBreakpoints)
             {
-                for (int i = m_boundBreakpoints.Count - 1; i >= 0; i--)
+                for (int i = _boundBreakpoints.Count - 1; i >= 0; i--)
                 {
-                    ((IDebugBoundBreakpoint2)m_boundBreakpoints[i]).Delete();
+                    ((IDebugBoundBreakpoint2)_boundBreakpoints[i]).Delete();
                 }
             }
         }
@@ -80,9 +80,9 @@ namespace NPLTools.Debugger.DebugEngine
         // Called by bound breakpoints when they are being deleted.
         public void OnBoundBreakpointDeleted(AD7BoundBreakpoint boundBreakpoint)
         {
-            lock (m_boundBreakpoints)
+            lock (_boundBreakpoints)
             {
-                m_boundBreakpoints.Remove(boundBreakpoint);
+                _boundBreakpoints.Remove(boundBreakpoint);
             }
         }
 
@@ -91,6 +91,20 @@ namespace NPLTools.Debugger.DebugEngine
         // Binds this pending breakpoint to one or more code locations.
         int IDebugPendingBreakpoint2.Bind()
         {
+            if (CanBind())
+            {
+                IDebugDocumentPosition2 docPosition = (IDebugDocumentPosition2)(Marshal.GetObjectForIUnknown(_bpRequestInfo.bpLocation.unionmember2));
+
+                // Get the name of the document that the breakpoint was put in
+                string documentName;
+                EngineUtils.CheckOk(docPosition.GetFileName(out documentName));
+
+
+                // Get the location in the document that the breakpoint is in.
+                TEXT_POSITION[] startPosition = new TEXT_POSITION[1];
+                TEXT_POSITION[] endPosition = new TEXT_POSITION[1];
+                EngineUtils.CheckOk(docPosition.GetRange(startPosition, endPosition));
+            }
             return VSConstants.S_OK;
         }
 
@@ -115,11 +129,11 @@ namespace NPLTools.Debugger.DebugEngine
         // Deletes this pending breakpoint and all breakpoints bound from it.
         int IDebugPendingBreakpoint2.Delete()
         {
-            lock (m_boundBreakpoints)
+            lock (_boundBreakpoints)
             {
-                for (int i = m_boundBreakpoints.Count - 1; i >= 0; i--)
+                for (int i = _boundBreakpoints.Count - 1; i >= 0; i--)
                 {
-                    ((IDebugBoundBreakpoint2)m_boundBreakpoints[i]).Delete();
+                    ((IDebugBoundBreakpoint2)_boundBreakpoints[i]).Delete();
                 }
             }
 
@@ -129,13 +143,13 @@ namespace NPLTools.Debugger.DebugEngine
         // Toggles the enabled state of this pending breakpoint.
         int IDebugPendingBreakpoint2.Enable(int fEnable)
         {
-            lock (m_boundBreakpoints)
+            lock (_boundBreakpoints)
             {
-                m_enabled = fEnable == 0 ? false : true;
+                _enabled = fEnable == 0 ? false : true;
 
-                foreach (AD7BoundBreakpoint bp in m_boundBreakpoints)
+                foreach (AD7BoundBreakpoint bp in _boundBreakpoints)
                 {
-                    ((IDebugBoundBreakpoint2)m_boundBreakpoints).Enable(fEnable);
+                    ((IDebugBoundBreakpoint2)_boundBreakpoints).Enable(fEnable);
                 }
             }
 
@@ -145,9 +159,9 @@ namespace NPLTools.Debugger.DebugEngine
         // Enumerates all breakpoints bound from this pending breakpoint
         int IDebugPendingBreakpoint2.EnumBoundBreakpoints(out IEnumDebugBoundBreakpoints2 ppEnum)
         {
-            lock (m_boundBreakpoints)
+            lock (_boundBreakpoints)
             {
-                IDebugBoundBreakpoint2[] boundBreakpoints = m_boundBreakpoints.ToArray();
+                IDebugBoundBreakpoint2[] boundBreakpoints = _boundBreakpoints.ToArray();
                 ppEnum = new AD7BoundBreakpointsEnum(boundBreakpoints);
             }
             return VSConstants.S_OK;
@@ -167,22 +181,22 @@ namespace NPLTools.Debugger.DebugEngine
         // Gets the breakpoint request that was used to create this pending breakpoint
         int IDebugPendingBreakpoint2.GetBreakpointRequest(out IDebugBreakpointRequest2 ppBPRequest)
         {
-            ppBPRequest = this.m_pBPRequest;
+            ppBPRequest = this._bpRequest;
             return VSConstants.S_OK;
         }
 
         // Gets the state of this pending breakpoint.
         int IDebugPendingBreakpoint2.GetState(PENDING_BP_STATE_INFO[] pState)
         {
-            if (m_deleted)
+            if (_deleted)
             {
                 pState[0].state = (enum_PENDING_BP_STATE)enum_BP_STATE.BPS_DELETED;
             }
-            else if (m_enabled)
+            else if (_enabled)
             {
                 pState[0].state = (enum_PENDING_BP_STATE)enum_BP_STATE.BPS_ENABLED;
             }
-            else if (!m_enabled)
+            else if (!_enabled)
             {
                 pState[0].state = (enum_PENDING_BP_STATE)enum_BP_STATE.BPS_DISABLED;
             }

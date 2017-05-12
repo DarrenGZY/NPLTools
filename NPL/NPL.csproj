@@ -77,6 +77,7 @@
     <Compile Include="Debugger\DebugEngine\AD7Thread.cs" />
     <Compile Include="Debugger\DebugEngine\BreakpointManager.cs" />
     <Compile Include="Debugger\DebugEngine\EngineConstants.cs" />
+    <Compile Include="Debugger\DebugEngine\EngineUtils.cs" />
     <Compile Include="Debugger\LuaModule.cs" />
     <Compile Include="Debugger\LuaProcess.cs" />
     <Compile Include="Guids.cs" />

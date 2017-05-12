@@ -40,16 +40,18 @@ namespace NPLTools.Debugger.DebugEngine
         public const string DebugEngineId = EngineConstants.EngineId;
         public const string DebugEngineName = "Lua";
         // This object manages breakpoints in the sample engine.
-        BreakpointManager m_breakpointManager;
+        private BreakpointManager _breakpointManager;
 
         private LuaProcess _process;
 
+        private IDebugEventCallback2 _ad7Callback;
+
         // A unique identifier for the program being debugged.
-        Guid m_ad7ProgramId;
+        private Guid _ad7ProgramId;
 
         public AD7Engine()
         {
-            m_breakpointManager = new BreakpointManager(this);
+            _breakpointManager = new BreakpointManager(this);
             //Worker.Initialize();
         }
 
@@ -63,6 +65,24 @@ namespace NPLTools.Debugger.DebugEngine
         // Attach the debug engine to a program. 
         int IDebugEngine2.Attach(IDebugProgram2[] rgpPrograms, IDebugProgramNode2[] rgpProgramNodes, uint celtPrograms, IDebugEventCallback2 ad7Callback, enum_ATTACH_REASON dwReason)
         {
+            var program = rgpPrograms[0];
+            int processId = EngineUtils.GetProcessId(program);
+            if (processId == 0)
+            {
+                // engine only supports system processes
+                Debug.WriteLine("PythonEngine failed to get process id during attach");
+                return VSConstants.E_NOTIMPL;
+            }
+
+            EngineUtils.RequireOk(program.GetProgramId(out _ad7ProgramId));
+
+            // Attach can either be called to attach to a new process, or to complete an attach
+            // to a launched process
+
+            AD7EngineCreateEvent.Send(this);
+            AD7ProgramCreateEvent.Send(this);
+
+            Debug.WriteLine("PythonEngine Attach returning S_OK");
             return VSConstants.S_OK;
         }
 
@@ -89,7 +109,7 @@ namespace NPLTools.Debugger.DebugEngine
         int IDebugEngine2.CreatePendingBreakpoint(IDebugBreakpointRequest2 pBPRequest, out IDebugPendingBreakpoint2 ppPendingBP)
         {
             ppPendingBP = null;
-
+            _breakpointManager.CreatePendingBreakpoint(pBPRequest, out ppPendingBP);
             return VSConstants.S_OK;
         }
 
@@ -178,8 +198,16 @@ namespace NPLTools.Debugger.DebugEngine
         {
             process = null;
 
+            _ad7Callback = ad7Callback;
+
             _process = new LuaProcess(exe, args, dir, env);
             _process.Start();
+
+            AD_PROCESS_ID adProcessId = new AD_PROCESS_ID();
+            adProcessId.ProcessIdType = (uint)enum_AD_PROCESS_ID.AD_PROCESS_ID_SYSTEM;
+            adProcessId.dwProcessId = (uint)_process.Id;
+
+            port.GetProcess(adProcessId, out process);
 
             return VSConstants.S_OK;
         }
@@ -187,6 +215,34 @@ namespace NPLTools.Debugger.DebugEngine
         // Resume a process launched by IDebugEngineLaunch2.LaunchSuspended
         int IDebugEngineLaunch2.ResumeProcess(IDebugProcess2 process)
         {
+            int processId = EngineUtils.GetProcessId(process);
+
+            if (processId != _process.Id)
+            {
+                Debug.WriteLine("ResumeProcess fails, wrong process");
+                return VSConstants.S_FALSE;
+            }
+
+            // Send a program node to the SDM. This will cause the SDM to turn around and call IDebugEngine2.Attach
+            // which will complete the hookup with AD7
+            IDebugPort2 port;
+            EngineUtils.RequireOk(process.GetPort(out port));
+
+            IDebugDefaultPort2 defaultPort = (IDebugDefaultPort2)port;
+
+            IDebugPortNotify2 portNotify;
+            EngineUtils.RequireOk(defaultPort.GetPortNotify(out portNotify));
+
+            EngineUtils.RequireOk(portNotify.AddProgramNode(new AD7ProgramNode(_process.Id)));
+
+            if (_ad7ProgramId == Guid.Empty)
+            {
+                Debug.WriteLine("ResumeProcess fails, empty program guid");
+                Debug.Fail("Unexpected problem -- IDebugEngine2.Attach wasn't called");
+                return VSConstants.E_FAIL;
+            }
+
+            Debug.WriteLine("ResumeProcess return S_OK");
             return VSConstants.S_OK;
         }
 
@@ -315,9 +371,9 @@ namespace NPLTools.Debugger.DebugEngine
         // or IDebugEngine2::Attach methods. This allows identification of the program across debugger components.
         public int GetProgramId(out Guid guidProgramId)
         {
-            Debug.Assert(m_ad7ProgramId != Guid.Empty);
+            Debug.Assert(_ad7ProgramId != Guid.Empty);
 
-            guidProgramId = m_ad7ProgramId;
+            guidProgramId = _ad7ProgramId;
             return VSConstants.S_OK;
         }
 
@@ -402,6 +458,40 @@ namespace NPLTools.Debugger.DebugEngine
             return VSConstants.S_OK;
         }
         #endregion
+
+        #region Events
+        internal void Send(IDebugEvent2 eventObject, string iidEvent, IDebugProgram2 program, IDebugThread2 thread)
+        {
+            uint attributes;
+            Guid riidEvent = new Guid(iidEvent);
+
+            EngineUtils.RequireOk(eventObject.GetAttributes(out attributes));
+
+            var ad7Callback = _ad7Callback;
+            if (ad7Callback == null)
+            {
+                // Probably racing with the end of the process.
+                Debug.Fail("_events is null");
+                return;
+            }
+
+            Debug.WriteLine(String.Format("Sending Event: {0} {1}", eventObject.GetType(), iidEvent));
+            try
+            {
+                EngineUtils.RequireOk(ad7Callback.Event(this, null, program, thread, eventObject, ref riidEvent, attributes));
+            }
+            catch (InvalidCastException)
+            {
+                // COM object has gone away
+            }
+        }
+
+        internal void Send(IDebugEvent2 eventObject, string iidEvent, IDebugThread2 thread)
+        {
+            Send(eventObject, iidEvent, this, thread);
+        }
+        #endregion
+
 
         #region Deprecated interface methods
         // These methods are not called by the Visual Studio debugger, so they don't need to be implemented
