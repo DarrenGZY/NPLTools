@@ -49,6 +49,14 @@ namespace NPLTools.Debugger.DebugEngine
         // A unique identifier for the program being debugged.
         private Guid _ad7ProgramId;
 
+        public LuaProcess Process
+        {
+            get
+            {
+                return _process;
+            }
+        }
+
         public AD7Engine()
         {
             _breakpointManager = new BreakpointManager(this);

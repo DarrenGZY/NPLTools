@@ -99,11 +99,11 @@ namespace NPLTools.Debugger.DebugEngine
                 string documentName;
                 EngineUtils.CheckOk(docPosition.GetFileName(out documentName));
 
-
                 // Get the location in the document that the breakpoint is in.
                 TEXT_POSITION[] startPosition = new TEXT_POSITION[1];
                 TEXT_POSITION[] endPosition = new TEXT_POSITION[1];
                 EngineUtils.CheckOk(docPosition.GetRange(startPosition, endPosition));
+                _engine.Process.SendRequest("SETB " + documentName + " " + startPosition[0].dwLine + "\n");
             }
             return VSConstants.S_OK;
         }

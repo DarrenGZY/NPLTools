@@ -14,8 +14,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NPL.Test", "NPL.Test\NPL.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Irony.Interpreter", "Irony.Interpreter\Irony.Interpreter.csproj", "{321A7F5D-00C2-4095-9970-075CDEE8C139}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Debugger", "Debugger\Debugger.csproj", "{5E5F009B-6DD4-4145-990D-5AF103782349}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,10 +36,6 @@ Global
 		{321A7F5D-00C2-4095-9970-075CDEE8C139}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{321A7F5D-00C2-4095-9970-075CDEE8C139}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{321A7F5D-00C2-4095-9970-075CDEE8C139}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5E5F009B-6DD4-4145-990D-5AF103782349}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5E5F009B-6DD4-4145-990D-5AF103782349}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5E5F009B-6DD4-4145-990D-5AF103782349}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5E5F009B-6DD4-4145-990D-5AF103782349}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
