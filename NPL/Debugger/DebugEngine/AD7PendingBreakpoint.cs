@@ -105,6 +105,23 @@ namespace NPLTools.Debugger.DebugEngine
                 EngineUtils.CheckOk(docPosition.GetRange(startPosition, endPosition));
 
                 // bind the breakpoint
+                var bp = _engine.Process.AddBreakpoint(
+                            documentName,
+                            (int)(startPosition[0].dwLine + 1),
+                            _bpRequestInfo.bpCondition.styleCondition.ToLua(),
+                            _bpRequestInfo.bpCondition.bstrCondition,
+                            _bpRequestInfo.bpPassCount.stylePassCount.ToLua(),
+                        (int)_bpRequestInfo.bpPassCount.dwPassCount);
+
+                AD7BreakpointResolution breakpointResolution = new AD7BreakpointResolution(_engine, bp, GetDocumentContext(bp));
+                AD7BoundBreakpoint boundBreakpoint = new AD7BoundBreakpoint(_engine, bp, this, breakpointResolution, _enabled);
+                _boundBreakpoints.Add(boundBreakpoint);
+                _bpManager.AddBoundBreakpoint(bp, boundBreakpoint);
+
+                if (_enabled)
+                {
+                    TaskHelpers.RunSynchronouslyOnUIThread(ct => bp.AddAsync(ct));
+                }
 
                 _engine.Process.SendRequest("STEP\n");
                 _engine.Process.SendRequest("SETB " + @"C:\Users\Zhiyuan\Documents\NPL_Projects\NPLTools\NPL\test.lua" + " " + "10" + "\n");
@@ -230,5 +247,59 @@ namespace NPLTools.Debugger.DebugEngine
         }
 
         #endregion
+
+
+        // Get the document context for this pending breakpoint. A document context is a abstract representation of a source file 
+        // location.
+        public AD7DocumentContext GetDocumentContext(LuaBreakpoint address)
+        {
+            IDebugDocumentPosition2 docPosition = (IDebugDocumentPosition2)(Marshal.GetObjectForIUnknown(_bpRequestInfo.bpLocation.unionmember2));
+            string documentName;
+            EngineUtils.CheckOk(docPosition.GetFileName(out documentName));
+
+            // Get the location in the document that the breakpoint is in.
+            TEXT_POSITION[] startPosition = new TEXT_POSITION[1];
+            TEXT_POSITION[] endPosition = new TEXT_POSITION[1];
+            EngineUtils.CheckOk(docPosition.GetRange(startPosition, endPosition));
+
+            AD7MemoryAddress codeContext = new AD7MemoryAddress(_engine, documentName, startPosition[0].dwLine);
+
+            return new AD7DocumentContext(documentName, startPosition[0], startPosition[0], codeContext, FrameKind.Python);
+        }
+    }
+
+    static class BreakpointEnumExtensions
+    {
+        public static LuaBreakpointConditionKind ToLua(this enum_BP_COND_STYLE style)
+        {
+            switch (style)
+            {
+                case enum_BP_COND_STYLE.BP_COND_NONE:
+                    return LuaBreakpointConditionKind.Always;
+                case enum_BP_COND_STYLE.BP_COND_WHEN_CHANGED:
+                    return LuaBreakpointConditionKind.WhenChanged;
+                case enum_BP_COND_STYLE.BP_COND_WHEN_TRUE:
+                    return LuaBreakpointConditionKind.WhenTrue;
+                default:
+                    throw new ArgumentException();
+            }
+        }
+
+        public static LuaBreakpointPassCountKind ToLua(this enum_BP_PASSCOUNT_STYLE style)
+        {
+            switch (style)
+            {
+                case enum_BP_PASSCOUNT_STYLE.BP_PASSCOUNT_NONE:
+                    return LuaBreakpointPassCountKind.Always;
+                case enum_BP_PASSCOUNT_STYLE.BP_PASSCOUNT_MOD:
+                    return LuaBreakpointPassCountKind.Every;
+                case enum_BP_PASSCOUNT_STYLE.BP_PASSCOUNT_EQUAL:
+                    return LuaBreakpointPassCountKind.WhenEqual;
+                case enum_BP_PASSCOUNT_STYLE.BP_PASSCOUNT_EQUAL_OR_GREATER:
+                    return LuaBreakpointPassCountKind.WhenEqualOrGreater;
+                default:
+                    throw new ArgumentException();
+            }
+        }
     }
 }
