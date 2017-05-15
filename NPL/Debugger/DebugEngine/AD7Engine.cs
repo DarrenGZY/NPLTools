@@ -60,14 +60,13 @@ namespace NPLTools.Debugger.DebugEngine
         public AD7Engine()
         {
             _breakpointManager = new BreakpointManager(this);
-            //Worker.Initialize();
         }
 
         ~AD7Engine()
         { 
 
         }
-
+        
         #region IDebugEngine2 Members
 
         // Attach the debug engine to a program. 
@@ -78,19 +77,16 @@ namespace NPLTools.Debugger.DebugEngine
             if (processId == 0)
             {
                 // engine only supports system processes
-                Debug.WriteLine("PythonEngine failed to get process id during attach");
+                Debug.WriteLine("LuaEngine failed to get process id during attach");
                 return VSConstants.E_NOTIMPL;
             }
 
             EngineUtils.RequireOk(program.GetProgramId(out _ad7ProgramId));
 
-            // Attach can either be called to attach to a new process, or to complete an attach
-            // to a launched process
-
             AD7EngineCreateEvent.Send(this);
             AD7ProgramCreateEvent.Send(this);
 
-            Debug.WriteLine("PythonEngine Attach returning S_OK");
+            Debug.WriteLine("LuaEngine Attach returning S_OK");
             return VSConstants.S_OK;
         }
 

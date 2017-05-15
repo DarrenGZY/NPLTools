@@ -31,6 +31,8 @@ namespace NPLTools.Debugger
         private Socket _socketHandler;
         private NetworkStream _networkStream;
         private Thread _eventThread;
+        private int _breakpointCounter;
+        private readonly Dictionary<int, LuaBreakpoint> _breakpoints = new Dictionary<int, LuaBreakpoint>();
         public int Id => _pid;
 
         public event EventHandler<EventArgs> ModuleLoad;
@@ -39,7 +41,7 @@ namespace NPLTools.Debugger
         {
             int listenerPort = -1;
             var socketSource = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.IP);
-            socketSource.Bind(new IPEndPoint(IPAddress.Loopback, 8171));
+            socketSource.Bind(new IPEndPoint(IPAddress.Loopback, 0));
             socketSource.Listen(0);
             
             listenerPort = ((IPEndPoint)socketSource.LocalEndPoint).Port;
@@ -53,8 +55,8 @@ namespace NPLTools.Debugger
             processInfo.RedirectStandardInput = false;
             processInfo.WorkingDirectory = @"C:\Users\Zhiyuan\Documents\NPL_Projects\NPLTools\NPL";
             //processInfo.WorkingDirectory = @"C:\Users\Zhiyuan\Documents\Visual Studio 2015\Projects\NPL Express Framework24\NPL Express Framework24";
-            //processInfo.Arguments = @"C:\Users\Zhiyuan\Documents\NPL_Projects\NPLTools\NPL\visualstudio_lua_launcher.lua test.lua " + listenerPort;
-            processInfo.Arguments = @"C:\Users\Zhiyuan\Documents\NPL_Projects\NPLTools\NPL\test.lua";
+            processInfo.Arguments = @"C:\Users\Zhiyuan\Documents\NPL_Projects\NPLTools\NPL\visualstudio_lua_debugger.lua test.lua " + listenerPort;
+            //processInfo.Arguments = @"C:\Users\Zhiyuan\Documents\NPL_Projects\NPLTools\NPL\test.lua";
             _process = new Process();
             _process.StartInfo = processInfo;
             _process.EnableRaisingEvents = true;
@@ -126,6 +128,21 @@ namespace NPLTools.Debugger
             {
 
             }
+        }
+
+        public LuaBreakpoint AddBreakpoint(
+    string filename,
+    int lineNo,
+    LuaBreakpointConditionKind conditionKind = LuaBreakpointConditionKind.Always,
+    string condition = "",
+    LuaBreakpointPassCountKind passCountKind = LuaBreakpointPassCountKind.Always,
+    int passCount = 0
+)
+        {
+            int id = _breakpointCounter++;
+            var res = new LuaBreakpoint(this, filename, lineNo, conditionKind, condition, passCountKind, passCount, id);
+            _breakpoints[id] = res;
+            return res;
         }
 
 
