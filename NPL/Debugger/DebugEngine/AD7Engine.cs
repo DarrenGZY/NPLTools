@@ -99,8 +99,6 @@ namespace NPLTools.Debugger.DebugEngine
         // When the break is complete, an AsyncBreakComplete event will be sent back to the debugger.
         int IDebugEngine2.CauseBreak()
         {
-            
-
             return ((IDebugProgram2)this).CauseBreak();
         }
 
@@ -209,6 +207,7 @@ namespace NPLTools.Debugger.DebugEngine
             _ad7Callback = ad7Callback;
 
             _process = new LuaProcess(exe, args, dir, env);
+            _process.ModuleLoad += OnModuleLoad;
             _process.Start();
 
             AD_PROCESS_ID adProcessId = new AD_PROCESS_ID();
@@ -218,6 +217,19 @@ namespace NPLTools.Debugger.DebugEngine
             port.GetProcess(adProcessId, out process);
 
             return VSConstants.S_OK;
+        }
+
+        private void OnModuleLoad(object sender, EventArgs e)
+        {
+            var adModule = new AD7Module(new LuaModule(0, "test.lua"));
+            SendModuleLoaded(adModule);
+        }
+
+        private void SendModuleLoaded(AD7Module ad7Module)
+        {
+            AD7ModuleLoadEvent eventObject = new AD7ModuleLoadEvent(ad7Module, true);
+
+            Send(eventObject, AD7ModuleLoadEvent.IID, null);
         }
 
         // Resume a process launched by IDebugEngineLaunch2.LaunchSuspended

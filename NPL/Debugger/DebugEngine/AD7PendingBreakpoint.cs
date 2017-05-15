@@ -103,7 +103,9 @@ namespace NPLTools.Debugger.DebugEngine
                 TEXT_POSITION[] startPosition = new TEXT_POSITION[1];
                 TEXT_POSITION[] endPosition = new TEXT_POSITION[1];
                 EngineUtils.CheckOk(docPosition.GetRange(startPosition, endPosition));
-                _engine.Process.SendRequest("SETB " + documentName + " " + startPosition[0].dwLine + "\n");
+                _engine.Process.SendRequest("STEP\n");
+                _engine.Process.SendRequest("SETB " + @"C:\Users\Zhiyuan\Documents\NPL_Projects\NPLTools\NPL\test.lua" + " " + "10" + "\n");
+                _engine.Process.SendRequest("RUN\n");
             }
             return VSConstants.S_OK;
         }

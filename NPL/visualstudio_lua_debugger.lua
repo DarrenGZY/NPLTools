@@ -8,7 +8,8 @@ function debugger.debug(filename, portnum)
 	
 	local client = assert(socket.connect("localhost", portnum));
 	--socket.sleep(5);
-	client:send("hand shake from lua <EOF>");
+	socket.sleep(20);
+	client:send("moduleload\n");
 	while true do
 		--local msg = client:receive();
 		-- print(msg);

@@ -25,19 +25,29 @@ namespace NPLTools.Debugger.DebugEngine
         // This is how the debugger obtains most of the information about the module.
         int IDebugModule2.GetInfo(enum_MODULE_INFO_FIELDS dwFields, MODULE_INFO[] infoArray)
         {
-            try
-            {
-                MODULE_INFO info = new MODULE_INFO();
+            MODULE_INFO info = new MODULE_INFO();
 
-                
-                infoArray[0] = info;
-
-                return VSConstants.S_OK;
-            }
-            catch (Exception e)
+            if ((dwFields & enum_MODULE_INFO_FIELDS.MIF_NAME) != 0)
             {
-                return VSConstants.S_OK;
+                info.m_bstrName = DebuggedModule.Name;
+                Debug.Assert(info.m_bstrName != null);
+                info.dwValidFields |= enum_MODULE_INFO_FIELDS.MIF_NAME;
             }
+            if ((dwFields & enum_MODULE_INFO_FIELDS.MIF_URL) != 0)
+            {
+                info.m_bstrUrl = DebuggedModule.Filename;
+                Debug.Assert(info.m_bstrUrl != null);
+                info.dwValidFields |= enum_MODULE_INFO_FIELDS.MIF_URL;
+            }
+            if ((dwFields & enum_MODULE_INFO_FIELDS.MIF_LOADORDER) != 0)
+            {
+                info.m_dwLoadOrder = (uint)this.DebuggedModule.ModuleId;
+                info.dwValidFields |= enum_MODULE_INFO_FIELDS.MIF_LOADORDER;
+            }
+
+            infoArray[0] = info;
+
+            return VSConstants.S_OK;
         }
 
         #endregion
@@ -80,8 +90,7 @@ namespace NPLTools.Debugger.DebugEngine
             pinfo[0] = new MODULE_SYMBOL_SEARCH_INFO();
             pinfo[0].dwValidFields = 1; // SSIF_VERBOSE_SEARCH_INFO;
 
-                string symbolsNotLoaded = "Symbols not loaded";
-                pinfo[0].bstrVerboseSearchInfo = symbolsNotLoaded;
+            //pinfo[0].bstrVerboseSearchInfo = Strings.DebugModuleNoSymbolsRequired;
 
             return VSConstants.S_OK;
         }
