@@ -57,6 +57,8 @@ namespace NPLTools.Debugger.DebugEngine
             }
         }
 
+        public BreakpointManager BreakpointManager => _breakpointManager;
+
         public AD7Engine()
         {
             _breakpointManager = new BreakpointManager(this);

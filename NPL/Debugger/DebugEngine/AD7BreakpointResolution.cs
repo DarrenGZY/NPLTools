@@ -1,20 +1,34 @@
+// Python Tools for Visual Studio
+// Copyright(c) Microsoft Corporation
+// All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the License); you may not use
+// this file except in compliance with the License. You may obtain a copy of the
+// License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// THIS CODE IS PROVIDED ON AN  *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS
+// OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY
+// IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+// MERCHANTABLITY OR NON-INFRINGEMENT.
+//
+// See the Apache Version 2.0 License for specific language governing
+// permissions and limitations under the License.
+
 using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.VisualStudio.Debugger.Interop;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Debugger.Interop;
 
 namespace NPLTools.Debugger.DebugEngine
 {
     // This class represents the information that describes a bound breakpoint.
-    class AD7BreakpointResolution : IDebugBreakpointResolution2
+    public class AD7BreakpointResolution : IDebugBreakpointResolution2
     {
-        private AD7Engine m_engine;
-        private uint m_address;
-        private AD7DocumentContext m_documentContext;
+        private readonly AD7Engine m_engine;
+        private readonly LuaBreakpoint m_address;
+        private readonly AD7DocumentContext m_documentContext;
 
-        public AD7BreakpointResolution(AD7Engine engine, uint address, AD7DocumentContext documentContext)
+        public AD7BreakpointResolution(AD7Engine engine, LuaBreakpoint address, AD7DocumentContext documentContext)
         {
             m_engine = engine;
             m_address = address;
@@ -34,7 +48,7 @@ namespace NPLTools.Debugger.DebugEngine
         // Gets the breakpoint resolution information that describes this breakpoint.
         int IDebugBreakpointResolution2.GetResolutionInfo(enum_BPRESI_FIELDS dwFields, BP_RESOLUTION_INFO[] pBPResolutionInfo)
         {
-	        if ((dwFields & enum_BPRESI_FIELDS.BPRESI_BPRESLOCATION) != 0) 
+            if ((dwFields & enum_BPRESI_FIELDS.BPRESI_BPRESLOCATION) != 0)
             {
                 // The sample engine only supports code breakpoints.
                 BP_RESOLUTION_LOCATION location = new BP_RESOLUTION_LOCATION();
@@ -42,20 +56,20 @@ namespace NPLTools.Debugger.DebugEngine
 
                 // The debugger will not QI the IDebugCodeContex2 interface returned here. We must pass the pointer
                 // to IDebugCodeContex2 and not IUnknown.
-                AD7MemoryAddress codeContext = new AD7MemoryAddress(m_engine, m_address);
+                AD7MemoryAddress codeContext = new AD7MemoryAddress(m_engine, m_address.Filename, (uint)m_address.LineNo);
                 codeContext.SetDocumentContext(m_documentContext);
                 location.unionmember1 = Marshal.GetComInterfaceForObject(codeContext, typeof(IDebugCodeContext2));
                 pBPResolutionInfo[0].bpResLocation = location;
                 pBPResolutionInfo[0].dwFields |= enum_BPRESI_FIELDS.BPRESI_BPRESLOCATION;
 
             }
-	        
-            if ((dwFields & enum_BPRESI_FIELDS.BPRESI_PROGRAM) != 0) 
+
+            if ((dwFields & enum_BPRESI_FIELDS.BPRESI_PROGRAM) != 0)
             {
                 pBPResolutionInfo[0].pProgram = (IDebugProgram2)m_engine;
                 pBPResolutionInfo[0].dwFields |= enum_BPRESI_FIELDS.BPRESI_PROGRAM;
             }
-	       
+
             return VSConstants.S_OK;
         }
 
@@ -64,47 +78,22 @@ namespace NPLTools.Debugger.DebugEngine
 
     class AD7ErrorBreakpointResolution : IDebugErrorBreakpointResolution2
     {
-        private string m_Message;
-        private enum_BP_ERROR_TYPE m_errorType;
-
-        public AD7ErrorBreakpointResolution(string msg, enum_BP_ERROR_TYPE errorType = enum_BP_ERROR_TYPE.BPET_GENERAL_WARNING)
-        {
-            m_Message = msg;
-            m_errorType = errorType;
-        }
-
         #region IDebugErrorBreakpointResolution2 Members
 
         int IDebugErrorBreakpointResolution2.GetBreakpointType(enum_BP_TYPE[] pBPType)
         {
-            pBPType[0] = enum_BP_TYPE.BPT_CODE;
-
-            return VSConstants.S_OK;
+            throw new Exception("The method or operation is not implemented.");
         }
 
-        int IDebugErrorBreakpointResolution2.GetResolutionInfo(enum_BPERESI_FIELDS dwFields, BP_ERROR_RESOLUTION_INFO[] info)
+        int IDebugErrorBreakpointResolution2.GetResolutionInfo(enum_BPERESI_FIELDS dwFields, BP_ERROR_RESOLUTION_INFO[] pErrorResolutionInfo)
         {
-            if ((dwFields & enum_BPERESI_FIELDS.BPERESI_BPRESLOCATION) != 0)
-            {
-            }
-            if ((dwFields & enum_BPERESI_FIELDS.BPERESI_PROGRAM) != 0)
-            {
-            }
-            if ((dwFields & enum_BPERESI_FIELDS.BPERESI_THREAD) != 0)
-            {
-            }
-            if ((dwFields & enum_BPERESI_FIELDS.BPERESI_MESSAGE) != 0)
-            {
-                info[0].dwFields |= enum_BPERESI_FIELDS.BPERESI_MESSAGE;
-                info[0].bstrMessage = m_Message;
-            }
-            if ((dwFields & enum_BPERESI_FIELDS.BPERESI_TYPE) != 0)
-            {
-                info[0].dwFields |= enum_BPERESI_FIELDS.BPERESI_TYPE;
-                info[0].dwType = m_errorType;
-            }
+            if (((uint)dwFields & (uint)enum_BPERESI_FIELDS.BPERESI_BPRESLOCATION) != 0) { }
+            if (((uint)dwFields & (uint)enum_BPERESI_FIELDS.BPERESI_PROGRAM) != 0) { }
+            if (((uint)dwFields & (uint)enum_BPERESI_FIELDS.BPERESI_THREAD) != 0) { }
+            if (((uint)dwFields & (uint)enum_BPERESI_FIELDS.BPERESI_MESSAGE) != 0) { }
+            if (((uint)dwFields & (uint)enum_BPERESI_FIELDS.BPERESI_TYPE) != 0) { }
 
-            return VSConstants.S_OK;
+            throw new Exception("The method or operation is not implemented.");
         }
 
         #endregion

@@ -130,14 +130,15 @@ namespace NPLTools.Debugger
             }
         }
 
+        #region breakpoints related functions
         public LuaBreakpoint AddBreakpoint(
-    string filename,
-    int lineNo,
-    LuaBreakpointConditionKind conditionKind = LuaBreakpointConditionKind.Always,
-    string condition = "",
-    LuaBreakpointPassCountKind passCountKind = LuaBreakpointPassCountKind.Always,
-    int passCount = 0
-)
+                                string filename,
+                                int lineNo,
+                                LuaBreakpointConditionKind conditionKind = LuaBreakpointConditionKind.Always,
+                                string condition = "",
+                                LuaBreakpointPassCountKind passCountKind = LuaBreakpointPassCountKind.Always,
+                                int passCount = 0
+                             )
         {
             int id = _breakpointCounter++;
             var res = new LuaBreakpoint(this, filename, lineNo, conditionKind, condition, passCountKind, passCount, id);
@@ -145,6 +146,47 @@ namespace NPLTools.Debugger
             return res;
         }
 
+        internal async Task BindBreakpointAsync(LuaBreakpoint breakpoint, CancellationToken ct)
+        {
+            SendRequest("BIND breakpoint\n");
+        }
 
+        internal async Task SetBreakpointConditionAsync(LuaBreakpoint breakpoint, CancellationToken ct)
+        {
+            SendRequest("SET breakpoint condition\n");
+        }
+
+        internal async Task SetBreakpointPassCountAsync(LuaBreakpoint breakpoint, CancellationToken ct)
+        {
+            SendRequest("SET breakpoint passcount\n");
+        }
+
+        internal async Task SetBreakpointHitCountAsync(LuaBreakpoint breakpoint, int count, CancellationToken ct)
+        {
+            SendRequest("SET breakpoint hit count\n");
+        }
+
+        internal async Task<int> GetBreakpointHitCountAsync(LuaBreakpoint breakpoint, CancellationToken ct)
+        {
+            SendRequest("SET breakpoint hit count\n");
+            return 1;
+        }
+
+        internal async Task RemoveBreakpointAsync(LuaBreakpoint unboundBreakpoint, CancellationToken ct)
+        {
+            _breakpoints.Remove(unboundBreakpoint.Id);
+            await DisableBreakpointAsync(unboundBreakpoint, ct);
+        }
+
+        internal async Task DisableBreakpointAsync(LuaBreakpoint unboundBreakpoint, CancellationToken ct)
+        {
+            //if (HasExited)
+            //{
+            //    return;
+            //}
+            SendRequest("DISABLE breakpoint\n");
+        }
+
+        #endregion
     }
 }

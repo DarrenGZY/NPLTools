@@ -8,7 +8,7 @@ namespace NPLTools.Debugger.DebugEngine
     // This class represents a pending breakpoint which is an abstract representation of a breakpoint before it is bound.
     // When a user creates a new breakpoint, the pending breakpoint is created and is later bound. The bound breakpoints
     // become children of the pending breakpoint.
-    class AD7PendingBreakpoint : IDebugPendingBreakpoint2
+    public class AD7PendingBreakpoint : IDebugPendingBreakpoint2
     {       
         // The breakpoint request that resulted in this pending breakpoint being created.
         private IDebugBreakpointRequest2 _bpRequest;
@@ -52,16 +52,16 @@ namespace NPLTools.Debugger.DebugEngine
         public AD7DocumentContext GetDocumentContext(uint address)
         {
             IDebugDocumentPosition2 docPosition = (IDebugDocumentPosition2)(Marshal.GetObjectForIUnknown(_bpRequestInfo.bpLocation.unionmember2));
-            string documentName = "";
-
+            string documentName;
+            EngineUtils.CheckOk(docPosition.GetFileName(out documentName));
 
             // Get the location in the document that the breakpoint is in.
             TEXT_POSITION[] startPosition = new TEXT_POSITION[1];
             TEXT_POSITION[] endPosition = new TEXT_POSITION[1];
-         
+            EngineUtils.CheckOk(docPosition.GetRange(startPosition, endPosition));
 
-            AD7MemoryAddress codeContext = new AD7MemoryAddress(_engine, address);
-            
+            AD7MemoryAddress codeContext = new AD7MemoryAddress(_engine, documentName, startPosition[0].dwLine);
+
             return new AD7DocumentContext(documentName, startPosition[0], startPosition[0], codeContext);
         }
 
@@ -123,9 +123,9 @@ namespace NPLTools.Debugger.DebugEngine
                     TaskHelpers.RunSynchronouslyOnUIThread(ct => bp.AddAsync(ct));
                 }
 
-                _engine.Process.SendRequest("STEP\n");
+                //_engine.Process.SendRequest("STEP\n");
                 _engine.Process.SendRequest("SETB " + @"C:\Users\Zhiyuan\Documents\NPL_Projects\NPLTools\NPL\test.lua" + " " + "10" + "\n");
-                _engine.Process.SendRequest("RUN\n");
+                //_engine.Process.SendRequest("RUN\n");
             }
             return VSConstants.S_OK;
         }
@@ -264,7 +264,7 @@ namespace NPLTools.Debugger.DebugEngine
 
             AD7MemoryAddress codeContext = new AD7MemoryAddress(_engine, documentName, startPosition[0].dwLine);
 
-            return new AD7DocumentContext(documentName, startPosition[0], startPosition[0], codeContext, FrameKind.Python);
+            return new AD7DocumentContext(documentName, startPosition[0], startPosition[0], codeContext);
         }
     }
 

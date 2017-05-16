@@ -1,13 +1,15 @@
 ﻿using System;
 using Microsoft.VisualStudio.Debugger.Interop;
+using System.Collections.Generic;
 
 namespace NPLTools.Debugger.DebugEngine
 {
     // This class manages breakpoints for the engine. 
-    class BreakpointManager
+    public class BreakpointManager
     {
         private AD7Engine m_engine;
         private System.Collections.Generic.List<AD7PendingBreakpoint> m_pendingBreakpoints;
+        private readonly Dictionary<LuaBreakpoint, AD7BoundBreakpoint> _breakpointMap = new Dictionary<LuaBreakpoint, AD7BoundBreakpoint>();
 
         public BreakpointManager(AD7Engine engine)
         {
@@ -30,6 +32,21 @@ namespace NPLTools.Debugger.DebugEngine
             {
                 pendingBreakpoint.ClearBoundBreakpoints();
             }
+        }
+
+        public void AddBoundBreakpoint(LuaBreakpoint breakpoint, AD7BoundBreakpoint boundBreakpoint)
+        {
+            _breakpointMap[breakpoint] = boundBreakpoint;
+        }
+
+        public void RemoveBoundBreakpoint(LuaBreakpoint breakpoint)
+        {
+            _breakpointMap.Remove(breakpoint);
+        }
+
+        public AD7BoundBreakpoint GetBreakpoint(LuaBreakpoint breakpoint)
+        {
+            return _breakpointMap[breakpoint];
         }
     }
 }

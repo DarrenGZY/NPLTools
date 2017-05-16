@@ -1,33 +1,47 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.VisualStudio.Debugger.Interop;
+﻿// Python Tools for Visual Studio
+// Copyright(c) Microsoft Corporation
+// All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the License); you may not use
+// this file except in compliance with the License. You may obtain a copy of the
+// License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// THIS CODE IS PROVIDED ON AN  *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS
+// OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY
+// IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+// MERCHANTABLITY OR NON-INFRINGEMENT.
+//
+// See the Apache Version 2.0 License for specific language governing
+// permissions and limitations under the License.
+
 using System.Diagnostics;
+using System.Threading;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Debugger.Interop;
 
 namespace NPLTools.Debugger.DebugEngine
 {
     // This class represents a breakpoint that has been bound to a location in the debuggee. It is a child of the pending breakpoint
     // that creates it. Unless the pending breakpoint only has one bound breakpoint, each bound breakpoint is displayed as a child of the
     // pending breakpoint in the breakpoints window. Otherwise, only one is displayed.
-    class AD7BoundBreakpoint : IDebugBoundBreakpoint2
+    public class AD7BoundBreakpoint : IDebugBoundBreakpoint2
     {
-        private AD7PendingBreakpoint m_pendingBreakpoint;
-        private AD7BreakpointResolution m_breakpointResolution;
-        private AD7Engine m_engine;
-        private uint m_address;
+        private readonly AD7PendingBreakpoint _pendingBreakpoint;
+        private readonly AD7BreakpointResolution _breakpointResolution;
+        private readonly AD7Engine _engine;
+        private readonly LuaBreakpoint _breakpoint;
 
-        private bool m_enabled;
-        private bool m_deleted;
+        private bool _enabled;
+        private bool _deleted;
 
-        public AD7BoundBreakpoint(AD7Engine engine, uint address, AD7PendingBreakpoint pendingBreakpoint, AD7BreakpointResolution breakpointResolution)
+        public AD7BoundBreakpoint(AD7Engine engine, LuaBreakpoint address, AD7PendingBreakpoint pendingBreakpoint, AD7BreakpointResolution breakpointResolution, bool enabled)
         {
-            m_engine = engine;
-            m_address = address;
-            m_pendingBreakpoint = pendingBreakpoint;
-            m_breakpointResolution = breakpointResolution;
-            m_enabled = true;
-            m_deleted = false;
+            _engine = engine;
+            _breakpoint = address;
+            _pendingBreakpoint = pendingBreakpoint;
+            _breakpointResolution = breakpointResolution;
+            _enabled = enabled;
+            _deleted = false;
         }
 
         #region IDebugBoundBreakpoint2 Members
@@ -35,54 +49,73 @@ namespace NPLTools.Debugger.DebugEngine
         // Called when the breakpoint is being deleted by the user.
         int IDebugBoundBreakpoint2.Delete()
         {
-            //Debug.Assert(Worker.MainThreadId == Worker.CurrentThreadId);
+            AssertMainThread();
+
+            if (!_deleted)
+            {
+                _deleted = true;
+                TaskHelpers.RunSynchronouslyOnUIThread(ct => _breakpoint.RemoveAsync(ct));
+                _pendingBreakpoint.OnBoundBreakpointDeleted(this);
+                _engine.BreakpointManager.RemoveBoundBreakpoint(_breakpoint);
+            }
 
             return VSConstants.S_OK;
+        }
+
+        [Conditional("DEBUG")]
+        private static void AssertMainThread()
+        {
+            //Debug.Assert(Worker.MainThreadId == Worker.CurrentThreadId);
         }
 
         // Called by the debugger UI when the user is enabling or disabling a breakpoint.
         int IDebugBoundBreakpoint2.Enable(int fEnable)
         {
-            //Debug.Assert(Worker.MainThreadId == Worker.CurrentThreadId);
+            AssertMainThread();
 
             bool enabled = fEnable == 0 ? false : true;
-            if (m_enabled != enabled)
+            if (_enabled != enabled)
             {
-                // A production debug engine would remove or add the underlying int3 here. The sample engine does not support true disabling
-                // of breakpionts.
+                if (!enabled)
+                {
+                    TaskHelpers.RunSynchronouslyOnUIThread(ct => _breakpoint.DisableAsync(ct));
+                }
+                else
+                {
+                    TaskHelpers.RunSynchronouslyOnUIThread(ct => _breakpoint.AddAsync(ct));
+                }
             }
-            m_enabled = fEnable == 0 ? false : true;
+            _enabled = enabled;
             return VSConstants.S_OK;
         }
 
         // Return the breakpoint resolution which describes how the breakpoint bound in the debuggee.
         int IDebugBoundBreakpoint2.GetBreakpointResolution(out IDebugBreakpointResolution2 ppBPResolution)
         {
-            ppBPResolution = m_breakpointResolution;
+            ppBPResolution = _breakpointResolution;
             return VSConstants.S_OK;
         }
 
         // Return the pending breakpoint for this bound breakpoint.
         int IDebugBoundBreakpoint2.GetPendingBreakpoint(out IDebugPendingBreakpoint2 ppPendingBreakpoint)
         {
-            ppPendingBreakpoint = m_pendingBreakpoint;
+            ppPendingBreakpoint = _pendingBreakpoint;
             return VSConstants.S_OK;
         }
 
-        // 
         int IDebugBoundBreakpoint2.GetState(enum_BP_STATE[] pState)
         {
             pState[0] = 0;
 
-            if (m_deleted)
+            if (_deleted)
             {
                 pState[0] = enum_BP_STATE.BPS_DELETED;
             }
-            else if (m_enabled)
+            else if (_enabled)
             {
                 pState[0] = enum_BP_STATE.BPS_ENABLED;
             }
-            else if (!m_enabled)
+            else if (!_enabled)
             {
                 pState[0] = enum_BP_STATE.BPS_DISABLED;
             }
@@ -90,35 +123,35 @@ namespace NPLTools.Debugger.DebugEngine
             return VSConstants.S_OK;
         }
 
-        // The sample engine does not support hit counts on breakpoints. A real-world debugger will want to keep track 
-        // of how many times a particular bound breakpoint has been hit and return it here.
-        int IDebugBoundBreakpoint2.GetHitCount(out uint pdwHitCount)
-        {
-            pdwHitCount = 0;
-            return VSConstants.E_NOTIMPL;
-        }
-
-        // The sample engine does not support conditions on breakpoints.
-        // A real-world debugger will use this to specify when a breakpoint will be hit
-        // and when it should be ignored.
         int IDebugBoundBreakpoint2.SetCondition(BP_CONDITION bpCondition)
         {
-            throw new NotImplementedException();
+            TaskHelpers.RunSynchronouslyOnUIThread(ct => _breakpoint.SetConditionAsync(bpCondition.styleCondition.ToLua(), bpCondition.bstrCondition, ct));
+            return VSConstants.S_OK;
         }
 
-        // The sample engine does not support hit counts on breakpoints. A real-world debugger will want to keep track 
-        // of how many times a particular bound breakpoint has been hit. The debugger calls SetHitCount when the user 
-        // resets a breakpoint's hit count.
+        int IDebugBoundBreakpoint2.GetHitCount(out uint pdwHitCount)
+        {
+
+            pdwHitCount = (uint)TaskHelpers.RunSynchronouslyOnUIThread(async ct =>
+            {
+                var timeoutToken = CancellationTokens.After1s;
+                var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(ct, timeoutToken);
+                return await _breakpoint.GetHitCountAsync(linkedSource.Token);
+            });
+
+            return VSConstants.S_OK;
+        }
+
         int IDebugBoundBreakpoint2.SetHitCount(uint dwHitCount)
         {
-            throw new NotImplementedException();
+            TaskHelpers.RunSynchronouslyOnUIThread(ct => _breakpoint.SetHitCountAsync((int)dwHitCount, ct));
+            return VSConstants.S_OK;
         }
 
-        // The sample engine does not support pass counts on breakpoints.
-        // This is used to specify the breakpoint hit count condition.
         int IDebugBoundBreakpoint2.SetPassCount(BP_PASSCOUNT bpPassCount)
         {
-            throw new NotImplementedException();
+            TaskHelpers.RunSynchronouslyOnUIThread(ct => _breakpoint.SetPassCountAsync(bpPassCount.stylePassCount.ToLua(), (int)bpPassCount.dwPassCount, ct));
+            return VSConstants.S_OK;
         }
 
         #endregion

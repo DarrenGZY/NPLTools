@@ -105,7 +105,7 @@ local function merge_paths(path1, path2)
 end
 
 local function debug_hook(event, line)
-	print(event..tostring(line))
+	--print(event..tostring(line))
 	if event == "call" then
 		stack_level = stack_level + 1
 	elseif event == "return" then
@@ -140,7 +140,9 @@ local function debugger_loop(server)
 	local eval_env = {}
 
 	while true do
+		print("in debug loop: waiting for command...")
 		local line, status = server:receive()
+		print("receive a command: "..line)
 		command = string.sub(line, string.find(line, "^[A-Z]+"))
 		print("command: "..command)
 		if command == "SETB" then

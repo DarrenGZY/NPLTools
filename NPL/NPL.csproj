@@ -59,6 +59,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Debugger\CancellationTokens.cs" />
     <Compile Include="Debugger\DebugEngine\AD7BoundBreakpoint.cs" />
     <Compile Include="Debugger\DebugEngine\AD7BreakpointResolution.cs" />
     <Compile Include="Debugger\DebugEngine\AD7DocumentContext.cs" />
@@ -78,8 +79,10 @@
     <Compile Include="Debugger\DebugEngine\BreakpointManager.cs" />
     <Compile Include="Debugger\DebugEngine\EngineConstants.cs" />
     <Compile Include="Debugger\DebugEngine\EngineUtils.cs" />
+    <Compile Include="Debugger\LuaBreakpoint.cs" />
     <Compile Include="Debugger\LuaModule.cs" />
     <Compile Include="Debugger\LuaProcess.cs" />
+    <Compile Include="Debugger\TaskHelpers.cs" />
     <Compile Include="Guids.cs" />
     <Compile Include="Intellisense\AnalysisEntry.cs" />
     <Compile Include="Intellisense\AnalysisEntryInitializer.cs" />

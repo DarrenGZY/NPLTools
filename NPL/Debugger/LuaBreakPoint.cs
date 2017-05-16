@@ -78,25 +78,25 @@ namespace NPLTools.Debugger
         /// Requests the remote process enable the break point.  An event will be raised on the process
         /// when the break point is received.
         /// </summary>
-        //public async Task AddAsync(CancellationToken ct)
-        //{
-        //    await _process.BindBreakpointAsync(this, ct);
-        //}
+        public async Task AddAsync(CancellationToken ct)
+        {
+            await _process.BindBreakpointAsync(this, ct);
+        }
 
         public bool IsDjangoBreakpoint => _isDjangoBreakpoint;
 
         /// <summary>
         /// Removes the provided break point
         /// </summary>
-        //public Task RemoveAsync(CancellationToken ct)
-        //{
-        //    return _process.RemoveBreakpointAsync(this, ct);
-        //}
+        public Task RemoveAsync(CancellationToken ct)
+        {
+            return _process.RemoveBreakpointAsync(this, ct);
+        }
 
-        //public Task DisableAsync(CancellationToken ct)
-        //{
-        //    return _process.DisableBreakpointAsync(this, ct);
-        //}
+        public Task DisableAsync(CancellationToken ct)
+        {
+            return _process.DisableBreakpointAsync(this, ct);
+        }
 
         internal int Id => _breakpointId;
 
@@ -112,28 +112,28 @@ namespace NPLTools.Debugger
 
         public int PassCount => _passCount;
 
-        //internal Task SetConditionAsync(LuaBreakpointConditionKind kind, string condition, CancellationToken ct)
-        //{
-        //    _conditionKind = kind;
-        //    _condition = condition;
-        //    return _process.SetBreakpointConditionAsync(this, ct);
-        //}
+        internal Task SetConditionAsync(LuaBreakpointConditionKind kind, string condition, CancellationToken ct)
+        {
+            _conditionKind = kind;
+            _condition = condition;
+            return _process.SetBreakpointConditionAsync(this, ct);
+        }
 
-        //internal Task SetPassCountAsync(LuaBreakpointPassCountKind kind, int passCount, CancellationToken ct)
-        //{
-        //    _passCountKind = kind;
-        //    _passCount = passCount;
-        //    return _process.SetBreakpointPassCountAsync(this, ct);
-        //}
+        internal Task SetPassCountAsync(LuaBreakpointPassCountKind kind, int passCount, CancellationToken ct)
+        {
+            _passCountKind = kind;
+            _passCount = passCount;
+            return _process.SetBreakpointPassCountAsync(this, ct);
+        }
 
-        //internal Task<int> GetHitCountAsync(CancellationToken ct = default(CancellationToken))
-        //{
-        //    return _process.GetBreakpointHitCountAsync(this, ct);
-        //}
+        internal Task<int> GetHitCountAsync(CancellationToken ct = default(CancellationToken))
+        {
+            return _process.GetBreakpointHitCountAsync(this, ct);
+        }
 
-        //internal Task SetHitCountAsync(int count, CancellationToken ct = default(CancellationToken))
-        //{
-        //    return _process.SetBreakpointHitCountAsync(this, count, ct);
-        //}
+        internal Task SetHitCountAsync(int count, CancellationToken ct = default(CancellationToken))
+        {
+            return _process.SetBreakpointHitCountAsync(this, count, ct);
+        }
     }
 }

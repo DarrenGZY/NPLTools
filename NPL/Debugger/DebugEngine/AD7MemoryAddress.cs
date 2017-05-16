@@ -1,30 +1,50 @@
+// Python Tools for Visual Studio
+// Copyright(c) Microsoft Corporation
+// All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the License); you may not use
+// this file except in compliance with the License. You may obtain a copy of the
+// License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// THIS CODE IS PROVIDED ON AN  *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS
+// OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY
+// IMPLIED WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+// MERCHANTABLITY OR NON-INFRINGEMENT.
+//
+// See the Apache Version 2.0 License for specific language governing
+// permissions and limitations under the License.
+
 using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.VisualStudio.Debugger.Interop;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Debugger.Interop;
 
 namespace NPLTools.Debugger.DebugEngine
 {
-    // And implementation of IDebugCodeContext2 and IDebugMemoryContext2. 
-    // IDebugMemoryContext2 represents a position in the address space of the machine running the program being debugged.
-    // IDebugCodeContext2 represents the starting position of a code instruction. 
-    // For most run-time architectures today, a code context can be thought of as an address in a program's execution stream.
-    class AD7MemoryAddress : IDebugCodeContext2, IDebugCodeContext100
+    // An implementation of IDebugCodeContext2. 
+    // Represents the starting position of a code instruction. 
+    // For Python, this is fundamentally a specific line in the source code.
+    public class AD7MemoryAddress : IDebugCodeContext2, IDebugCodeContext100
     {
-        readonly AD7Engine m_engine;
-        readonly uint m_address;
-        IDebugDocumentContext2 m_documentContext;
-        
-        public AD7MemoryAddress(AD7Engine engine, uint address)
+        private readonly AD7Engine _engine;
+        private readonly uint _lineNo;
+        private readonly string _filename;
+        //private readonly LuaStackFrame _frame;
+        private IDebugDocumentContext2 _documentContext;
+
+        public AD7MemoryAddress(AD7Engine engine, string filename, uint lineno)
         {
-            m_engine = engine;
-            m_address = address;
+            _engine = engine;
+            _lineNo = (uint)lineno;
+            _filename = filename;
+            //_frame = frame;
+
+            var pos = new TEXT_POSITION { dwLine = lineno, dwColumn = 0 };
+            _documentContext = new AD7DocumentContext(filename, pos, pos, this);
         }
 
         public void SetDocumentContext(IDebugDocumentContext2 docContext)
         {
-            m_documentContext = docContext;
+            _documentContext = docContext;
         }
 
         #region IDebugMemoryContext2 Members
@@ -32,7 +52,7 @@ namespace NPLTools.Debugger.DebugEngine
         // Adds a specified value to the current context's address to create a new context.
         public int Add(ulong dwCount, out IDebugMemoryContext2 newAddress)
         {
-            newAddress = new AD7MemoryAddress(m_engine, (uint)dwCount + m_address);
+            newAddress = new AD7MemoryAddress(_engine, _filename, (uint)dwCount + _lineNo);
             return VSConstants.S_OK;
         }
 
@@ -42,120 +62,124 @@ namespace NPLTools.Debugger.DebugEngine
         {
             foundIndex = uint.MaxValue;
 
-            try
+            enum_CONTEXT_COMPARE contextCompare = (enum_CONTEXT_COMPARE)uContextCompare;
+
+            for (uint c = 0; c < compareToLength; c++)
             {
-                enum_CONTEXT_COMPARE contextCompare = (enum_CONTEXT_COMPARE)uContextCompare;
-
-                for (uint c = 0; c < compareToLength; c++)
+                AD7MemoryAddress compareTo = compareToItems[c] as AD7MemoryAddress;
+                if (compareTo == null)
                 {
-                    AD7MemoryAddress compareTo = compareToItems[c] as AD7MemoryAddress;
-                    if (compareTo == null)
-                    {
-                        continue;
-                    }
-
-                    if (!AD7Engine.ReferenceEquals(this.m_engine, compareTo.m_engine))
-                    {
-                        continue;
-                    }
-
-                    bool result;
-
-                    switch (contextCompare)
-                    {
-                        case enum_CONTEXT_COMPARE.CONTEXT_EQUAL:
-                            result = (this.m_address == compareTo.m_address);
-                            break;
-
-                        case enum_CONTEXT_COMPARE.CONTEXT_LESS_THAN:
-                            result = (this.m_address < compareTo.m_address);
-                            break;
-
-                        case enum_CONTEXT_COMPARE.CONTEXT_GREATER_THAN:
-                            result = (this.m_address > compareTo.m_address);
-                            break;
-
-                        case enum_CONTEXT_COMPARE.CONTEXT_LESS_THAN_OR_EQUAL:
-                            result = (this.m_address <= compareTo.m_address);
-                            break;
-
-                        case enum_CONTEXT_COMPARE.CONTEXT_GREATER_THAN_OR_EQUAL:
-                            result = (this.m_address >= compareTo.m_address);
-                            break;
-
-                        // The sample debug engine doesn't understand scopes or functions
-                        case enum_CONTEXT_COMPARE.CONTEXT_SAME_SCOPE:
-                        case enum_CONTEXT_COMPARE.CONTEXT_SAME_FUNCTION:
-                            result = (this.m_address == compareTo.m_address);
-                            break;
-
-                        case enum_CONTEXT_COMPARE.CONTEXT_SAME_MODULE:
-                            result = (this.m_address == compareTo.m_address);
-                            break;
-
-                        case enum_CONTEXT_COMPARE.CONTEXT_SAME_PROCESS:
-                            result = true;
-                            break;
-
-                        default:
-                            // A new comparison was invented that we don't support
-                            return VSConstants.E_NOTIMPL;
-                    }
-
-                    if (result)
-                    {
-                        foundIndex = c;
-                        return VSConstants.S_OK;
-                    }
+                    continue;
                 }
 
-                return VSConstants.S_FALSE;
+                if (!AD7Engine.ReferenceEquals(this._engine, compareTo._engine))
+                {
+                    continue;
+                }
+
+                bool result;
+
+                switch (contextCompare)
+                {
+                    case enum_CONTEXT_COMPARE.CONTEXT_EQUAL:
+                        result = (this._lineNo == compareTo._lineNo);
+                        break;
+
+                    case enum_CONTEXT_COMPARE.CONTEXT_LESS_THAN:
+                        result = (this._lineNo < compareTo._lineNo);
+                        break;
+
+                    case enum_CONTEXT_COMPARE.CONTEXT_GREATER_THAN:
+                        result = (this._lineNo > compareTo._lineNo);
+                        break;
+
+                    case enum_CONTEXT_COMPARE.CONTEXT_LESS_THAN_OR_EQUAL:
+                        result = (this._lineNo <= compareTo._lineNo);
+                        break;
+
+                    case enum_CONTEXT_COMPARE.CONTEXT_GREATER_THAN_OR_EQUAL:
+                        result = (this._lineNo >= compareTo._lineNo);
+                        break;
+
+                    case enum_CONTEXT_COMPARE.CONTEXT_SAME_SCOPE:
+                    case enum_CONTEXT_COMPARE.CONTEXT_SAME_FUNCTION:
+                        result = true;
+                        //if (_frame != null)
+                        //{
+                        //    result = compareTo._filename == _filename && (compareTo._lineNo + 1) >= _frame.StartLine && (compareTo._lineNo + 1) <= _frame.EndLine;
+                        //}
+                        //else if (compareTo._frame != null)
+                        //{
+                        //    result = compareTo._filename == _filename && (_lineNo + 1) >= compareTo._frame.StartLine && (compareTo._lineNo + 1) <= compareTo._frame.EndLine;
+                        //}
+                        //else
+                        //{
+                        //    result = this._lineNo == compareTo._lineNo && this._filename == compareTo._filename;
+                        //}
+                        break;
+
+                    case enum_CONTEXT_COMPARE.CONTEXT_SAME_MODULE:
+                        result = _filename == compareTo._filename;
+                        break;
+
+                    case enum_CONTEXT_COMPARE.CONTEXT_SAME_PROCESS:
+                        result = true;
+                        break;
+
+                    default:
+                        // A new comparison was invented that we don't support
+                        return VSConstants.E_NOTIMPL;
+                }
+
+                if (result)
+                {
+                    foundIndex = c;
+                    return VSConstants.S_OK;
+                }
             }
-            catch (Exception e)
+
+            return VSConstants.S_FALSE;
+        }
+
+        public uint LineNumber
+        {
+            get
             {
-                return VSConstants.S_OK;
+                return _lineNo;
             }
         }
 
         // Gets information that describes this context.
         public int GetInfo(enum_CONTEXT_INFO_FIELDS dwFields, CONTEXT_INFO[] pinfo)
-        {           
-            try
+        {
+            pinfo[0].dwFields = 0;
+
+            if ((dwFields & enum_CONTEXT_INFO_FIELDS.CIF_ADDRESS) != 0)
             {
-                pinfo[0].dwFields = 0;
-
-                if ((dwFields & enum_CONTEXT_INFO_FIELDS.CIF_ADDRESS) != 0)
-                {
-                    pinfo[0].bstrAddress = m_address.ToString();
-                    pinfo[0].dwFields |= enum_CONTEXT_INFO_FIELDS.CIF_ADDRESS;
-                }
-
-                // Fields not supported by the sample
-                if ((dwFields & enum_CONTEXT_INFO_FIELDS.CIF_ADDRESSOFFSET) != 0){}
-                if ((dwFields & enum_CONTEXT_INFO_FIELDS.CIF_ADDRESSABSOLUTE) != 0){}
-                if ((dwFields & enum_CONTEXT_INFO_FIELDS.CIF_MODULEURL) != 0){}
-                if ((dwFields & enum_CONTEXT_INFO_FIELDS.CIF_FUNCTION) != 0) {}
-                if ((dwFields & enum_CONTEXT_INFO_FIELDS.CIF_FUNCTIONOFFSET) != 0) {}
-
-                return VSConstants.S_OK;
+                pinfo[0].bstrAddress = _lineNo.ToString();
+                pinfo[0].dwFields |= enum_CONTEXT_INFO_FIELDS.CIF_ADDRESS;
             }
-            catch (Exception e)
+
+            if ((dwFields & enum_CONTEXT_INFO_FIELDS.CIF_FUNCTION) != 0)
             {
-                return VSConstants.S_OK;
+                pinfo[0].bstrFunction = "unknown function";
+                pinfo[0].dwFields |= enum_CONTEXT_INFO_FIELDS.CIF_FUNCTION;
             }
+
+            return VSConstants.S_OK;
         }
 
-        // Gets the user-displayable name for this context
-        // This is not supported by the sample engine.
+        // Gets the user-displayable name for this context. Not supported for Python.
         public int GetName(out string pbstrName)
         {
-            throw new NotImplementedException();
+            pbstrName = null;
+            return VSConstants.E_NOTIMPL;
         }
 
         // Subtracts a specified value from the current context's address to create a new context.
         public int Subtract(ulong dwCount, out IDebugMemoryContext2 ppMemCxt)
         {
-            ppMemCxt = new AD7MemoryAddress(m_engine, (uint)dwCount - m_address);
+            ppMemCxt = new AD7MemoryAddress(_engine, _filename, (uint)dwCount - _lineNo);
             return VSConstants.S_OK;
         }
 
@@ -166,16 +190,16 @@ namespace NPLTools.Debugger.DebugEngine
         // Gets the document context for this code-context
         public int GetDocumentContext(out IDebugDocumentContext2 ppSrcCxt)
         {
-            ppSrcCxt = m_documentContext;
+            ppSrcCxt = _documentContext;
             return VSConstants.S_OK;
         }
 
         // Gets the language information for this code context.
         public int GetLanguageInfo(ref string pbstrLanguage, ref Guid pguidLanguage)
         {
-            if (m_documentContext != null)
+            if (_documentContext != null)
             {
-                m_documentContext.GetLanguageInfo(ref pbstrLanguage, ref pguidLanguage);
+                _documentContext.GetLanguageInfo(ref pbstrLanguage, ref pguidLanguage);
                 return VSConstants.S_OK;
             }
             else
@@ -188,12 +212,11 @@ namespace NPLTools.Debugger.DebugEngine
 
         #region IDebugCodeContext100 Members
 
-        // Returns the program being debugged. In the case of this sample
-        // debug engine, AD7Engine implements IDebugProgram2 which represents
-        // the program being debugged.
+        // Returns the program being debugged. For Python debug engine, AD7Engine
+        // implements IDebugProgram2 which represents the program being debugged.
         int IDebugCodeContext100.GetProgram(out IDebugProgram2 pProgram)
         {
-            pProgram = m_engine;
+            pProgram = _engine;
             return VSConstants.S_OK;
         }
 
