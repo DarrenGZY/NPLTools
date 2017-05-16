@@ -71,7 +71,7 @@ namespace NPLTools.Debugger.DebugEngine
         int IDebugDocumentContext2.GetLanguageInfo(ref string pbstrLanguage, ref Guid pguidLanguage)
         {
             pbstrLanguage = "C++";
-            pguidLanguage = AD7Guids.guidLanguageCpp;
+            pguidLanguage = AD7Guids.guidLanguageLua;
             return VSConstants.S_OK;
         }
 

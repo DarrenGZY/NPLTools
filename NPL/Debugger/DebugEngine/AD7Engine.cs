@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.Debugger.Interop;
 using System.Diagnostics;
 using System.Threading;
+using System.Linq;
 using Microsoft.VisualStudio;
 
 namespace NPLTools.Debugger.DebugEngine
@@ -37,6 +38,8 @@ namespace NPLTools.Debugger.DebugEngine
         // This object facilitates calling from this thread into the worker thread of the engine. This is necessary because the Win32 debugging
         // api requires thread affinity to several operations.
         //WorkerThread m_pollThread;
+        private Dictionary<LuaThread, AD7Thread> _threads = new Dictionary<LuaThread, AD7Thread>();
+
         public const string DebugEngineId = EngineConstants.EngineId;
         public const string DebugEngineName = "Lua";
         // This object manages breakpoints in the sample engine.
@@ -218,29 +221,6 @@ namespace NPLTools.Debugger.DebugEngine
             return VSConstants.S_OK;
         }
 
-        private void OnBreakPointHit(object sender, EventArgs e)
-        {
-            var boundBreakpoints = new[] { _breakpointManager.GetBreakpoint() };
-
-            // An engine that supports more advanced breakpoint features such as hit counts, conditions and filters
-            // should notify each bound breakpoint that it has been hit and evaluate conditions here.
-
-            Send(new AD7BreakpointEvent(new AD7BoundBreakpointsEnum(boundBreakpoints)), AD7BreakpointEvent.IID, null);
-        }
-
-        private void OnModuleLoad(object sender, EventArgs e)
-        {
-            var adModule = new AD7Module(new LuaModule(0, "test.lua"));
-            SendModuleLoaded(adModule);
-        }
-
-        private void SendModuleLoaded(AD7Module ad7Module)
-        {
-            AD7ModuleLoadEvent eventObject = new AD7ModuleLoadEvent(ad7Module, true);
-
-            Send(eventObject, AD7ModuleLoadEvent.IID, null);
-        }
-
         // Resume a process launched by IDebugEngineLaunch2.LaunchSuspended
         int IDebugEngineLaunch2.ResumeProcess(IDebugProcess2 process)
         {
@@ -270,6 +250,12 @@ namespace NPLTools.Debugger.DebugEngine
                 Debug.Fail("Unexpected problem -- IDebugEngine2.Attach wasn't called");
                 return VSConstants.E_FAIL;
             }
+
+            // debug only
+            var luaThread = new LuaThread(0, false);
+            var newThread = new AD7Thread(this, new LuaThread(0, false));
+            _threads.Add(luaThread, newThread);
+            Send(new AD7ThreadCreateEvent(), AD7ThreadCreateEvent.IID, newThread);
 
             Debug.WriteLine("ResumeProcess return S_OK");
             return VSConstants.S_OK;
@@ -340,7 +326,19 @@ namespace NPLTools.Debugger.DebugEngine
         // EnumThreads is called by the debugger when it needs to enumerate the threads in the program.
         public int EnumThreads(out IEnumDebugThreads2 ppEnum)
         {
-            ppEnum = null;
+            AD7Thread[] threadObjects = new AD7Thread[_threads.Count];
+            int i = 0;
+            foreach (var keyValue in _threads)
+            {
+                var thread = keyValue.Key;
+                var adThread = keyValue.Value;
+
+                Debug.Assert(adThread != null);
+                threadObjects[i++] = adThread;
+            }
+
+            ppEnum = new AD7ThreadEnum(threadObjects);
+
             return VSConstants.S_OK;
         }
 
@@ -518,6 +516,35 @@ namespace NPLTools.Debugger.DebugEngine
         internal void Send(IDebugEvent2 eventObject, string iidEvent, IDebugThread2 thread)
         {
             Send(eventObject, iidEvent, this, thread);
+        }
+
+        private void OnBreakPointHit(object sender, EventArgs e)
+        {
+            var boundBreakpoints = new[] { _breakpointManager.GetBreakpoint() };
+
+            // An engine that supports more advanced breakpoint features such as hit counts, conditions and filters
+            // should notify each bound breakpoint that it has been hit and evaluate conditions here.
+
+            Send(new AD7BreakpointEvent(new AD7BoundBreakpointsEnum(boundBreakpoints)), AD7BreakpointEvent.IID, _threads.First().Value);
+        }
+
+        private void OnModuleLoad(object sender, EventArgs e)
+        {
+            var adModule = new AD7Module(new LuaModule(0, "test.lua"));
+            SendModuleLoaded(adModule);
+        }
+
+        private void SendModuleLoaded(AD7Module ad7Module)
+        {
+            AD7ModuleLoadEvent eventObject = new AD7ModuleLoadEvent(ad7Module, true);
+
+            Send(eventObject, AD7ModuleLoadEvent.IID, null);
+        }
+
+        private void OnThreadCreated(object sender, EventArgs e)
+        {
+            var newThread = new AD7Thread(this, new LuaThread(0, false));
+            Send(new AD7ThreadCreateEvent(), AD7ThreadCreateEvent.IID, newThread);
         }
         #endregion
 
