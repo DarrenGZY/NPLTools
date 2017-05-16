@@ -123,9 +123,9 @@ namespace NPLTools.Debugger.DebugEngine
                     TaskHelpers.RunSynchronouslyOnUIThread(ct => bp.AddAsync(ct));
                 }
 
-                //_engine.Process.SendRequest("STEP\n");
-                _engine.Process.SendRequest("SETB " + @"C:\Users\Zhiyuan\Documents\NPL_Projects\NPLTools\NPL\test.lua" + " " + "10" + "\n");
-                //_engine.Process.SendRequest("RUN\n");
+                _engine.Process.SendRequest("STEP\n");
+                _engine.Process.SendRequest("SETB " + @"test.lua" + " " + "6" + "\n");
+                _engine.Process.SendRequest("RUN\n");
             }
             return VSConstants.S_OK;
         }

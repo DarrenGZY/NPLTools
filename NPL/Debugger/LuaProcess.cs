@@ -36,6 +36,7 @@ namespace NPLTools.Debugger
         public int Id => _pid;
 
         public event EventHandler<EventArgs> ModuleLoad;
+        public event EventHandler<EventArgs> BreakPointHit;
 
         public LuaProcess(string exe, string args, string dir, string env)
         {
@@ -105,6 +106,8 @@ namespace NPLTools.Debugger
                 {
                     if (res == "moduleload")
                         ModuleLoad?.Invoke(this, new EventArgs());
+                    else if (res == "breakpointhit")
+                        BreakPointHit?.Invoke(this, new EventArgs());
                 }
             }
         }

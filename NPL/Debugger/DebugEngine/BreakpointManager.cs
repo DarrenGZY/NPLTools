@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.Debugger.Interop;
 using System.Collections.Generic;
-
+using System.Linq;
 namespace NPLTools.Debugger.DebugEngine
 {
     // This class manages breakpoints for the engine. 
@@ -47,6 +47,11 @@ namespace NPLTools.Debugger.DebugEngine
         public AD7BoundBreakpoint GetBreakpoint(LuaBreakpoint breakpoint)
         {
             return _breakpointMap[breakpoint];
+        }
+
+        public AD7BoundBreakpoint GetBreakpoint()
+        {
+            return _breakpointMap.First().Value;
         }
     }
 }

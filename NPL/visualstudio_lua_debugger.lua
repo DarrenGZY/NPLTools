@@ -105,7 +105,7 @@ local function merge_paths(path1, path2)
 end
 
 local function debug_hook(event, line)
-	--print(event..tostring(line))
+	print(event..tostring(line))
 	if event == "call" then
 		stack_level = stack_level + 1
 	elseif event == "return" then
@@ -209,7 +209,9 @@ local function debugger_loop(server)
 			print("running...")
 			eval_env = vars
 			if ev == events.BREAK then
-				server:send("202 Paused " .. file .. " " .. line .. "\n")
+				--server:send("202 Paused " .. file .. " " .. line .. "\n")
+				socket.sleep(10)
+				server:send("breakpointhit\n")
 			elseif ev == events.WATCH then
 				server:send("203 Paused " .. file .. " " .. line .. " " .. idx_watch .. "\n")
 			else

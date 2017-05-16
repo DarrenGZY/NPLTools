@@ -206,6 +206,7 @@ namespace NPLTools.Debugger.DebugEngine
 
             _process = new LuaProcess(exe, args, dir, env);
             _process.ModuleLoad += OnModuleLoad;
+            _process.BreakPointHit += OnBreakPointHit;
             _process.Start();
 
             AD_PROCESS_ID adProcessId = new AD_PROCESS_ID();
@@ -215,6 +216,16 @@ namespace NPLTools.Debugger.DebugEngine
             port.GetProcess(adProcessId, out process);
 
             return VSConstants.S_OK;
+        }
+
+        private void OnBreakPointHit(object sender, EventArgs e)
+        {
+            var boundBreakpoints = new[] { _breakpointManager.GetBreakpoint() };
+
+            // An engine that supports more advanced breakpoint features such as hit counts, conditions and filters
+            // should notify each bound breakpoint that it has been hit and evaluate conditions here.
+
+            Send(new AD7BreakpointEvent(new AD7BoundBreakpointsEnum(boundBreakpoints)), AD7BreakpointEvent.IID, null);
         }
 
         private void OnModuleLoad(object sender, EventArgs e)
