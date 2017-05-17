@@ -251,7 +251,7 @@ namespace NPLTools.Debugger.DebugEngine
                 return VSConstants.E_FAIL;
             }
 
-            // debug only
+            // debug only, use OnThreadCreat()
             var luaThread = new LuaThread(0, false);
             var newThread = new AD7Thread(this, new LuaThread(0, false));
             _threads.Add(luaThread, newThread);
@@ -526,6 +526,12 @@ namespace NPLTools.Debugger.DebugEngine
             // should notify each bound breakpoint that it has been hit and evaluate conditions here.
 
             Send(new AD7BreakpointEvent(new AD7BoundBreakpointsEnum(boundBreakpoints)), AD7BreakpointEvent.IID, _threads.First().Value);
+        }
+
+        public void OnBreakpointBound(AD7PendingBreakpoint pendingBreakpoint, AD7BoundBreakpoint boundBreakpoint)
+        {
+            AD7BreakpointBoundEvent eventObject = new AD7BreakpointBoundEvent(pendingBreakpoint, boundBreakpoint);
+            Send(eventObject, AD7BreakpointBoundEvent.IID, null);
         }
 
         private void OnModuleLoad(object sender, EventArgs e)

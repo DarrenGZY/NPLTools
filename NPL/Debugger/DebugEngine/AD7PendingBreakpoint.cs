@@ -117,6 +117,7 @@ namespace NPLTools.Debugger.DebugEngine
                 AD7BoundBreakpoint boundBreakpoint = new AD7BoundBreakpoint(_engine, bp, this, breakpointResolution, _enabled);
                 _boundBreakpoints.Add(boundBreakpoint);
                 _bpManager.AddBoundBreakpoint(bp, boundBreakpoint);
+                _engine.OnBreakpointBound(this, boundBreakpoint);
 
                 if (_enabled)
                 {

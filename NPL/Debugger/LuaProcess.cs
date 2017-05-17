@@ -172,7 +172,7 @@ namespace NPLTools.Debugger
         internal async Task<int> GetBreakpointHitCountAsync(LuaBreakpoint breakpoint, CancellationToken ct)
         {
             SendRequest("SET breakpoint hit count\n");
-            return 1;
+            return 0;
         }
 
         internal async Task RemoveBreakpointAsync(LuaBreakpoint unboundBreakpoint, CancellationToken ct)
