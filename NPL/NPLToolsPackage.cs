@@ -12,6 +12,7 @@ using Microsoft.VisualStudio;
 using EnvDTE;
 using Microsoft.VisualStudioTools.Project;
 using NPLTools.Debugger.DebugEngine;
+using System.ComponentModel.Design;
 
 namespace NPLTools
 {
@@ -37,14 +38,15 @@ namespace NPLTools
     [ProvideMenuResource("Menus.ctmenu", 1)]
     [Guid(Guids.NPLPackageGuidString)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
-    [ProvideLanguageService(typeof(NPLLanguageInfo), NPLConstants.NPLExtension, 106, RequestStockColors = true, ShowSmartIndent = true, ShowCompletion = true, DefaultToInsertSpaces = true, HideAdvancedMembersByDefault = true, EnableAdvancedMembersOption = true, ShowDropDownOptions = true)]
-    //[ProvideLanguageExtension(typeof(NPLLanguageInfo), ".npl")]
+    [ProvideLanguageService(typeof(NPLLanguageInfo), NPLConstants.LanguageName, 106, RequestStockColors = true, ShowSmartIndent = true, ShowCompletion = true, DefaultToInsertSpaces = true, HideAdvancedMembersByDefault = true, EnableAdvancedMembersOption = true, ShowDropDownOptions = true)]
+    [ProvideLanguageExtension(typeof(NPLLanguageInfo), ".npl")]
+    [ProvideLanguageExtension(typeof(NPLLanguageInfo), ".lua")]
     //[ProvideEditorExtension2(typeof(NPLEditorFactory), NPLConstants.NPLFileExtension, 50, __VSPHYSICALVIEWATTRIBUTES.PVA_SupportsPreview, "*:1", ProjectGuid = LuaConstants.ProjectFactoryGuid, NameResourceID = 3004, DefaultName = "module")]
     //[ProvideEditorExtension2(typeof(NPLEditorFactory), NPLConstants.LuaFileExtension, 50, __VSPHYSICALVIEWATTRIBUTES.PVA_SupportsPreview, "*:1", ProjectGuid = LuaConstants.ProjectFactoryGuid, NameResourceID = 3004, DefaultName = "module")]
     //[ProvideLanguageExtension(typeof(NPLEditorFactory), NPLConstants.NPLFileExtension)]
     //[ProvideLanguageExtension(typeof(NPLEditorFactory), NPLConstants.LuaFileExtension)]
     [ProvideDebugEngine(AD7Engine.DebugEngineName, typeof(AD7ProgramProvider), typeof(AD7Engine), AD7Engine.DebugEngineId, hitCountBp: true)]
-    [ProvideDebugLanguage("Python", "{DA3C7D59-F9E4-4697-BEE7-3A0703AF6BFF}", "{D470C7FA-94E1-41CA-A0E3-E0AB15C0B369}", AD7Engine.DebugEngineId)]
+    [ProvideDebugLanguage("NPL", "{F2621D2D-4D68-4BB2-80F4-FEC6F8B6DFDC}", "{D470C7FA-94E1-41CA-A0E3-E0AB15C0B369}", AD7Engine.DebugEngineId)]
     [ProvideAutoLoad(UIContextGuids80.NoSolution)]
     public sealed class NPLToolsPackage : CommonPackage
     {
@@ -71,6 +73,8 @@ namespace NPLTools
         protected override void Initialize()
         {
             base.Initialize();
+            var services = (IServiceContainer)this;
+            services.AddService(typeof(NPLLanguageInfo), (container, serviceType) => new NPLLanguageInfo(container), true);
         }
 
         private void NPLPackage_OnIdle(object sender, ComponentManagerEventArgs e)

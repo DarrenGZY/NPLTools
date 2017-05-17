@@ -210,7 +210,7 @@ local function debugger_loop(server)
 			eval_env = vars
 			if ev == events.BREAK then
 				--server:send("202 Paused " .. file .. " " .. line .. "\n")
-				socket.sleep(10)
+				socket.sleep(20)
 				server:send("breakpointhit\n")
 			elseif ev == events.WATCH then
 				server:send("203 Paused " .. file .. " " .. line .. " " .. idx_watch .. "\n")

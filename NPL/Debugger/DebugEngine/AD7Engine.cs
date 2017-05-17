@@ -39,6 +39,7 @@ namespace NPLTools.Debugger.DebugEngine
         // api requires thread affinity to several operations.
         //WorkerThread m_pollThread;
         private Dictionary<LuaThread, AD7Thread> _threads = new Dictionary<LuaThread, AD7Thread>();
+        private Dictionary<LuaModule, AD7Module> _modules = new Dictionary<LuaModule, AD7Module>();
 
         public const string DebugEngineId = EngineConstants.EngineId;
         public const string DebugEngineName = "Lua";
@@ -252,6 +253,12 @@ namespace NPLTools.Debugger.DebugEngine
             }
 
             // debug only, use OnThreadCreat()
+
+            var luaModule = new LuaModule(0, "test.lua");
+            var adModule = new AD7Module(luaModule);
+            _modules.Add(luaModule, adModule);
+            SendModuleLoaded(adModule);
+
             var luaThread = new LuaThread(0, false);
             var newThread = new AD7Thread(this, new LuaThread(0, false));
             _threads.Add(luaThread, newThread);
@@ -319,7 +326,17 @@ namespace NPLTools.Debugger.DebugEngine
         // EnumModules is called by the debugger when it needs to enumerate the modules in the program.
         public int EnumModules(out IEnumDebugModules2 ppEnum)
         {
-            ppEnum = null;
+            AD7Module[] moduleObjects = new AD7Module[_modules.Count];
+            int i = 0;
+            foreach (var keyValue in _modules)
+            {
+                var module = keyValue.Key;
+                var adModule = keyValue.Value;
+
+                moduleObjects[i++] = adModule;
+            }
+
+            ppEnum = new AD7ModuleEnum(moduleObjects);
             return VSConstants.S_OK;
         }
 

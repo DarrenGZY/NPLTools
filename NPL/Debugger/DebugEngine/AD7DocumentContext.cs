@@ -70,8 +70,8 @@ namespace NPLTools.Debugger.DebugEngine
         // The language for this sample is always C++
         int IDebugDocumentContext2.GetLanguageInfo(ref string pbstrLanguage, ref Guid pguidLanguage)
         {
-            pbstrLanguage = "C++";
-            pguidLanguage = AD7Guids.guidLanguageLua;
+            pbstrLanguage = "NPL";
+            pguidLanguage = AD7Guids.guidLanguageNPL;
             return VSConstants.S_OK;
         }
 

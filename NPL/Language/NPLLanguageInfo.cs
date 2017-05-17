@@ -51,7 +51,7 @@ namespace NPLTools.Language
         {
             // This is the same extension the language service was
             // registered as supporting.
-            pbstrExtensions = NPLConstants.NPLFileExtension;
+            pbstrExtensions = NPLConstants.NPLFileExtension + ";" + NPLConstants.LuaFileExtension;
             return VSConstants.S_OK;
         }
 
@@ -82,7 +82,7 @@ namespace NPLTools.Language
 
         public int GetLanguageID(IVsTextBuffer pBuffer, int iLine, int iCol, out Guid pguidLanguageID)
         {
-            pguidLanguageID = Guids.NPLDebugLanguage;
+            pguidLanguageID = new Guid("F2621D2D-4D68-4BB2-80F4-FEC6F8B6DFDC");
             return VSConstants.S_OK;
         }
 

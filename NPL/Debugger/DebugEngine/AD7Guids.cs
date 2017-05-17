@@ -45,10 +45,10 @@ namespace NPLTools.Debugger.DebugEngine
         }
 
         // Language guid for Lua. Used when the language for a document context or a stack frame is requested.
-        static private Guid _guidLanguageLua = new Guid("F2621D2D-4D68-4BB2-80F4-FEC6F8B6DFDC");
-        static public Guid guidLanguageLua
+        static private Guid _guidLanguageNPL = new Guid("F2621D2D-4D68-4BB2-80F4-FEC6F8B6DFDC");
+        static public Guid guidLanguageNPL
         {
-            get { return _guidLanguageLua; }
+            get { return _guidLanguageNPL; }
         }
     }
 }
