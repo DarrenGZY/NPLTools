@@ -20,7 +20,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.TextManager.Interop;
 
-namespace NPLTools.Language
+namespace NPLTools.Project
 {
     /// <summary>
     /// Minimal language service.  Implemented directly rather than using the Managed Package

@@ -143,13 +143,13 @@
     <Compile Include="Language\AutoCompletion\NPLCompletionSource.cs" />
     <Compile Include="Language\NPLEditorCommandFilter.cs" />
     <Compile Include="Language\NPLTextViewCreationListener.cs" />
-    <Compile Include="Language\NPLEditorFactory.cs" />
+    <Compile Include="Project\NPLEditorFactory.cs" />
     <Compile Include="Language\NPLExtensions.cs" />
     <Compile Include="Language\Outlining\NPLOutliningTagger.cs" />
     <Compile Include="Language\Tooltip\NPLQuickInfoController.cs" />
     <Compile Include="Language\Tooltip\NPLQuickInfoSource.cs" />
     <Compile Include="NPLConstants.cs" />
-    <Compile Include="Language\NPLLanguageInfo.cs" />
+    <Compile Include="Project\NPLLanguageInfo.cs" />
     <Compile Include="NPLToolsPackage.cs" />
     <Compile Include="Project\Guids.cs" />
     <Compile Include="Project\ILuaProject.cs" />

@@ -42,7 +42,7 @@ namespace NPLTools.Debugger.DebugEngine
         private Dictionary<LuaModule, AD7Module> _modules = new Dictionary<LuaModule, AD7Module>();
 
         public const string DebugEngineId = EngineConstants.EngineId;
-        public const string DebugEngineName = "Lua";
+        public const string DebugEngineName = "NPL";
         // This object manages breakpoints in the sample engine.
         private BreakpointManager _breakpointManager;
 

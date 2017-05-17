@@ -16,6 +16,10 @@ namespace NPLTools.Project
             "AFCF7665-3223-4967-A133-AD0F059C8014";
         public const string ProjectNodeGuid =
             "C0A64257-C203-4F7B-923D-0679CDCA1EA2";
+        public const string NPLEditorFactoryGuidString =
+            "E2FCEC54-5522-453B-81FC-8FB57FAD5E4D";
+        public const string NPLLanguageInfoGuidString =
+            "CF2A07F9-34D8-43A4-B54F-BD796850A0B4";
         public static readonly Guid guidNPLProjectCmdSet =
             new Guid(guidNPLProjectCmdSetString);
         public static readonly Guid NPLProjectFactoryGuid =

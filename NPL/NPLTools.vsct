@@ -87,8 +87,8 @@
         <Strings>
           <ButtonText>Open Command &amp;Prompt Here...</ButtonText>
           <ToolTipText>Opens Command Prompt at the selected file or directory.</ToolTipText>
-          <CanonicalName>.Python.Open Command Prompt Here</CanonicalName>
-          <LocCanonicalName>.Python.Open Command Prompt Here</LocCanonicalName>
+          <CanonicalName>.NPL.Open Command Prompt Here</CanonicalName>
+          <LocCanonicalName>.NPL.Open Command Prompt Here</LocCanonicalName>
         </Strings>
       </Button>
 
