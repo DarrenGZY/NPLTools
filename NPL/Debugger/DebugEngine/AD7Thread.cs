@@ -23,7 +23,7 @@ using Microsoft.VisualStudio.Shell;
 namespace NPLTools.Debugger.DebugEngine
 {
     // This class implements IDebugThread2 which represents a thread running in a program.
-    class AD7Thread : IDisposable, IDebugThread2, IDebugThread100
+    public class AD7Thread : IDisposable, IDebugThread2, IDebugThread100
     {
         private readonly AD7Engine _engine;
         private readonly LuaThread _debuggedThread;
@@ -90,15 +90,17 @@ namespace NPLTools.Debugger.DebugEngine
                 return VSConstants.E_FAIL;
             }
 
-            int numStackFrames = stackFrames.Count;
+            //int numStackFrames = stackFrames.Count;
+
+            int numStackFrames = 2;
 
             var frameInfoArray = new FRAMEINFO[numStackFrames];
 
-            //for (int i = 0; i < numStackFrames; i++)
-            //{
-            //    AD7StackFrame frame = new AD7StackFrame(_engine, this, stackFrames[i]);
-            //    frame.SetFrameInfo(dwFieldSpec, out frameInfoArray[i]);
-            //}
+            for (int i = 0; i < numStackFrames; i++)
+            {
+                AD7StackFrame frame = new AD7StackFrame(_engine, this);
+                frame.SetFrameInfo(dwFieldSpec, out frameInfoArray[i]);
+            }
 
             enumObject = new AD7FrameInfoEnum(frameInfoArray);
             return VSConstants.S_OK;
