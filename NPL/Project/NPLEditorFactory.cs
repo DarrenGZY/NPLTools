@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 
 namespace NPLTools.Project
 {
-    [Guid(Guids.NPLEditorFactoryGuidString)]
+    [Guid(NPLGuids.NPLEditorFactoryGuidString)]
     public class NPLEditorFactory : CommonEditorFactory
     {
         public NPLEditorFactory(CommonProjectPackage package) : base(package) { }
@@ -21,7 +21,7 @@ namespace NPLTools.Project
         public override int CreateEditorInstance(uint createEditorFlags, string documentMoniker, string physicalView, IVsHierarchy hierarchy, uint itemid, IntPtr docDataExisting, out IntPtr docView, out IntPtr docData, out string editorCaption, out Guid commandUIGuid, out int createDocumentWindowFlags)
         {
             var res = base.CreateEditorInstance(createEditorFlags, documentMoniker, physicalView, hierarchy, itemid, docDataExisting, out docView, out docData, out editorCaption, out commandUIGuid, out createDocumentWindowFlags);
-            commandUIGuid = new Guid(Guids.NPLEditorFactoryGuidString);
+            commandUIGuid = new Guid(NPLGuids.NPLEditorFactoryGuidString);
             return res;
         }
     }

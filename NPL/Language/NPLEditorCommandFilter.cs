@@ -59,7 +59,7 @@ namespace NPLTools.Language
                         break;
                 }
             }
-            else if (pguidCmdGroup == NPLTools.Project.Guids.guidNPLProjectCmdSet)
+            else if (pguidCmdGroup == NPLGuids.guidNPLProjectCmdSet)
             {
                 // Set NPL Breakpoint command
                 switch (nCmdID)
@@ -103,7 +103,7 @@ namespace NPLTools.Language
                     }
                 }
             }
-            else if (pguidCmdGroup == NPLTools.Project.Guids.guidNPLProjectCmdSet)
+            else if (pguidCmdGroup == NPLGuids.guidNPLProjectCmdSet)
             {
                 for (int i = 0; i < cCmds; i++)
                 {

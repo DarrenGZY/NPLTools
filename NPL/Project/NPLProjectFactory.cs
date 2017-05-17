@@ -6,7 +6,7 @@ using IOleServiceProvider = Microsoft.VisualStudio.OLE.Interop.IServiceProvider;
 
 namespace NPLTools.Project
 {
-    [Guid(Guids.NPLProjectFactoryGuidString)]
+    [Guid(NPLGuids.NPLProjectFactoryGuidString)]
     class NPLProjectFactory : ProjectFactory
     {
 

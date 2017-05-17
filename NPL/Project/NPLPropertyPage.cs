@@ -39,11 +39,11 @@ namespace NPLTools.Project
 
         public override void Apply()
         {
-            Project.SetProjectProperty(NPLProjectConstants.NPLExePath, _control.nplExePath);
-            Project.SetProjectProperty(NPLProjectConstants.NPLOptions, _control.nplExeOptions);
-            Project.SetProjectProperty(NPLProjectConstants.StartupFile, _control.scriptFile);
-            Project.SetProjectProperty(NPLProjectConstants.Arguments, _control.scriptArguments);
-            Project.SetProjectProperty(NPLProjectConstants.WorkingDirectory, _control.workingDir);
+            Project.SetProjectProperty(NPLConstants.NPLExePath, _control.nplExePath);
+            Project.SetProjectProperty(NPLConstants.NPLOptions, _control.nplExeOptions);
+            Project.SetProjectProperty(NPLConstants.StartupFile, _control.scriptFile);
+            Project.SetProjectProperty(NPLConstants.Arguments, _control.scriptArguments);
+            Project.SetProjectProperty(NPLConstants.WorkingDirectory, _control.workingDir);
             IsDirty = false;
         }
 
@@ -52,11 +52,11 @@ namespace NPLTools.Project
             Loading = true;
             try
             {
-                _control.nplExePath = Project.GetUnevaluatedProperty(NPLProjectConstants.NPLExePath);
-                _control.nplExeOptions = Project.GetUnevaluatedProperty(NPLProjectConstants.NPLOptions);
-                _control.scriptFile = Project.GetUnevaluatedProperty(NPLProjectConstants.StartupFile);
-                _control.scriptArguments = Project.GetUnevaluatedProperty(NPLProjectConstants.Arguments);
-                _control.workingDir = Project.GetUnevaluatedProperty(NPLProjectConstants.WorkingDirectory);
+                _control.nplExePath = Project.GetUnevaluatedProperty(NPLConstants.NPLExePath);
+                _control.nplExeOptions = Project.GetUnevaluatedProperty(NPLConstants.NPLOptions);
+                _control.scriptFile = Project.GetUnevaluatedProperty(NPLConstants.StartupFile);
+                _control.scriptArguments = Project.GetUnevaluatedProperty(NPLConstants.Arguments);
+                _control.workingDir = Project.GetUnevaluatedProperty(NPLConstants.WorkingDirectory);
             }finally
             {
                 Loading = false;

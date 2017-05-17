@@ -41,8 +41,8 @@ namespace NPLTools.Debugger.DebugEngine
         private Dictionary<LuaThread, AD7Thread> _threads = new Dictionary<LuaThread, AD7Thread>();
         private Dictionary<LuaModule, AD7Module> _modules = new Dictionary<LuaModule, AD7Module>();
 
-        public const string DebugEngineId = EngineConstants.EngineId;
-        public const string DebugEngineName = "NPL";
+        public const string DebugEngineId = NPLGuids.EngineId;
+        public const string DebugEngineName = NPLConstants.DebugEngineName;
         // This object manages breakpoints in the sample engine.
         private BreakpointManager _breakpointManager;
 
@@ -135,7 +135,7 @@ namespace NPLTools.Debugger.DebugEngine
         // Gets the GUID of the DE.
         int IDebugEngine2.GetEngineId(out Guid guidEngine)
         {
-            guidEngine = new Guid(EngineConstants.EngineId);
+            guidEngine = NPLGuids.EngineGuid;
             return VSConstants.S_OK;
         }
 
@@ -389,8 +389,8 @@ namespace NPLTools.Debugger.DebugEngine
         // Gets the name and identifier of the debug engine (DE) running this program.
         public int GetEngineInfo(out string engineName, out Guid engineGuid)
         {
-            engineName = "Lua";
-            engineGuid = new Guid(EngineConstants.EngineId);
+            engineName = NPLConstants.DebugEngineName;
+            engineGuid = NPLGuids.EngineGuid;
             return VSConstants.S_OK;
         }
 

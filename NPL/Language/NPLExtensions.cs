@@ -73,7 +73,7 @@ namespace NPLTools.Language
 
         public static IVsProject GetLoadedProject(this IVsSolution solution)
         {
-            var guid = new Guid(NPLTools.Project.Guids.NPLProjectFactoryGuidString);
+            var guid = new Guid(NPLGuids.NPLProjectFactoryGuidString);
             IEnumHierarchies hierarchies;
             ErrorHandler.ThrowOnFailure((solution.GetProjectEnum(
                 (uint)(__VSENUMPROJFLAGS.EPF_MATCHTYPE | __VSENUMPROJFLAGS.EPF_LOADEDINSOLUTION),

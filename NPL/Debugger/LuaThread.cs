@@ -33,7 +33,7 @@ namespace NPLTools.Debugger
             //_process = process;
             _identity = identity;
             _isWorkerThread = isWorkerThread;
-            _name = "";
+            _name = "new thread";
         }
 
         //public Task StepIntoAsync(CancellationToken ct)

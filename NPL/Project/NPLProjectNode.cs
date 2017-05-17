@@ -53,7 +53,7 @@ using Microsoft.VisualStudio.Text;
 
 namespace NPLTools.Project
 {
-    [Guid(Guids.ProjectNodeGuid)]
+    [Guid(NPLGuids.ProjectNodeGuid)]
     internal class NPLProjectNode : CommonProjectNode, ILuaProject
     {
         // For files that are analyzed because they were directly or indirectly referenced in the search path, store the information
@@ -236,7 +236,7 @@ namespace NPLTools.Project
         {
             get
             {
-                return new[] { LuaConstants.FileExtension, ".npl"};
+                return new[] { NPLConstants.LuaFileExtension, NPLConstants.NPLFileExtension};
             }
         }
 
@@ -244,8 +244,8 @@ namespace NPLTools.Project
         {
             var ext = Path.GetExtension(strFileName);
 
-            return String.Equals(ext, LuaConstants.FileExtension, StringComparison.OrdinalIgnoreCase) ||
-                String.Equals(ext, ".npl", StringComparison.OrdinalIgnoreCase);
+            return String.Equals(ext, NPLConstants.LuaFileExtension, StringComparison.OrdinalIgnoreCase) ||
+                String.Equals(ext, NPLConstants.NPLFileExtension, StringComparison.OrdinalIgnoreCase);
         }
 
         public override Type GetProjectFactoryType()
@@ -255,12 +255,12 @@ namespace NPLTools.Project
 
         public override string GetProjectName()
         {
-            return "NPLProject";
+            return NPLConstants.NPLProjectName;
         }
 
         public override string GetFormatList()
         {
-            return LuaConstants.ProjectFileFilter;
+            return NPLConstants.ProjectFileFilter;
         }
 
         public override Type GetGeneralPropertyPageType()
@@ -999,7 +999,7 @@ namespace NPLTools.Project
 
         internal override int QueryStatusOnNode(Guid cmdGroup, uint cmd, IntPtr pCmdText, ref QueryStatusResult result)
         {
-            if (cmdGroup == Guids.guidNPLProjectCmdSet)
+            if (cmdGroup == NPLGuids.guidNPLProjectCmdSet)
             {
                 // Display the custom menu only on the Project node.
                 if (cmd == 256)
@@ -1329,7 +1329,7 @@ namespace NPLTools.Project
         {
             get
             {
-                return Guids.guidNPLProjectCmdSet;
+                return NPLGuids.guidNPLProjectCmdSet;
             }
         }
 

@@ -40,7 +40,7 @@ namespace NPLTools.Project
             VsDebugTargetInfo4[] debugTargets = new VsDebugTargetInfo4[1];
             debugTargets[0].dlo = (uint)DEBUG_LAUNCH_OPERATION.DLO_CreateProcess;
             debugTargets[0].bstrExe = GetExePath();
-            debugTargets[0].guidLaunchDebugEngine = new Guid(NPLTools.Debugger.DebugEngine.EngineConstants.EngineId);
+            debugTargets[0].guidLaunchDebugEngine = NPLGuids.EngineGuid;
             VsDebugTargetProcessInfo[] processInfo = new VsDebugTargetProcessInfo[debugTargets.Length];
 
             debugger.LaunchDebugTargets4(1, debugTargets, processInfo);
@@ -78,17 +78,17 @@ namespace NPLTools.Project
 
         private string GetExePath()
         {
-            return _project.GetProjectProperty(NPLProjectConstants.NPLExePath);
+            return _project.GetProjectProperty(NPLConstants.NPLExePath);
         }
 
         private string GetStartupFile()
         {
-            return _project.GetProjectProperty(NPLProjectConstants.StartupFile);
+            return _project.GetProjectProperty(NPLConstants.StartupFile);
         }
 
         private string GetWorkingDir()
         {
-            string dir = _project.GetProjectProperty(NPLProjectConstants.WorkingDirectory);
+            string dir = _project.GetProjectProperty(NPLConstants.WorkingDirectory);
             if(string.IsNullOrEmpty(dir))
             {
                 dir = _project.ProjectHome;

@@ -15,6 +15,17 @@ namespace NPLTools
         public const string NPLExtension = "NPL";
         public const string LanguageName = "NPL";
 
+        // project constants
+        public const string NPLExePath = "NPLExePath";
+        public const string NPLOptions = "NPLOptions";
+        public const string StartupFile = "StartupFile";
+        public const string Arguments = "Arguments";
+        public const string WorkingDirectory = "WorkingDirectory";
+
+        public const string NPLProjectName = "NPLProject";
+
+        public const string ProjectFileFilter = "NPL Project File (*.nplproj)\n*.nplproj\nAll Files (*.*)\n*.*\n";
+
         // Parse Tree Nodes
         public const string DoBlock = "do block";
         public const string ForBlock = "for block";
@@ -24,5 +35,8 @@ namespace NPLTools
         public const string ConditionBlock = "conditonal block";
         public const string FunctionDeclaration = "function declaration";
         public const string LocalFunctionDeclaration = "local function declaration";
+
+        // Debug Engine
+        public const string DebugEngineName = "NPL";
     }
 }

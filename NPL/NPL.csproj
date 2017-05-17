@@ -66,7 +66,6 @@
     <Compile Include="Debugger\DebugEngine\AD7Engine.cs" />
     <Compile Include="Debugger\DebugEngine\AD7Enums.cs" />
     <Compile Include="Debugger\DebugEngine\AD7Events.cs" />
-    <Compile Include="Debugger\DebugEngine\AD7Guids.cs" />
     <Compile Include="Debugger\DebugEngine\AD7Hresult.cs" />
     <Compile Include="Debugger\DebugEngine\AD7MemoryAddress.cs" />
     <Compile Include="Debugger\DebugEngine\AD7Module.cs" />
@@ -77,7 +76,6 @@
     <Compile Include="Debugger\DebugEngine\AD7StackFrame.cs" />
     <Compile Include="Debugger\DebugEngine\AD7Thread.cs" />
     <Compile Include="Debugger\DebugEngine\BreakpointManager.cs" />
-    <Compile Include="Debugger\DebugEngine\EngineConstants.cs" />
     <Compile Include="Debugger\DebugEngine\EngineUtils.cs" />
     <Compile Include="Debugger\LuaBreakpoint.cs" />
     <Compile Include="Debugger\LuaModule.cs" />
@@ -85,7 +83,6 @@
     <Compile Include="Debugger\LuaStackFrame.cs" />
     <Compile Include="Debugger\LuaThread.cs" />
     <Compile Include="Debugger\TaskHelpers.cs" />
-    <Compile Include="Guids.cs" />
     <Compile Include="Intellisense\AnalysisEntry.cs" />
     <Compile Include="Intellisense\AnalysisEntryInitializer.cs" />
     <Compile Include="Intellisense\AnalysisEntryService.cs" />
@@ -143,6 +140,7 @@
     <Compile Include="Language\AutoCompletion\NPLCompletionSource.cs" />
     <Compile Include="Language\NPLEditorCommandFilter.cs" />
     <Compile Include="Language\NPLTextViewCreationListener.cs" />
+    <Compile Include="NPLGuids.cs" />
     <Compile Include="Project\NPLEditorFactory.cs" />
     <Compile Include="Language\NPLExtensions.cs" />
     <Compile Include="Language\Outlining\NPLOutliningTagger.cs" />
@@ -151,13 +149,10 @@
     <Compile Include="NPLConstants.cs" />
     <Compile Include="Project\NPLLanguageInfo.cs" />
     <Compile Include="NPLToolsPackage.cs" />
-    <Compile Include="Project\Guids.cs" />
     <Compile Include="Project\ILuaProject.cs" />
-    <Compile Include="Project\LuaConstants.cs" />
     <Compile Include="Project\NativeMethods.cs" />
     <Compile Include="Project\NPLFileNode.cs" />
     <Compile Include="Project\NPLFolderNode.cs" />
-    <Compile Include="Project\NPLProjectConstants.cs" />
     <Compile Include="Project\NPLProjectFactory.cs" />
     <Compile Include="Project\NPLProjectLauncher.cs" />
     <Compile Include="Project\NPLProjectNode.cs" />

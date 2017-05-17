@@ -29,7 +29,7 @@ namespace NPLTools.Project
     /// provide a code window manager so that we can have a navigation bar (actually we don't, this
     /// should be switched over to using our TextViewCreationListener instead).
     /// </summary>
-    [Guid(Guids.NPLLanguageInfoGuidString)]
+    [Guid(NPLGuids.NPLLanguageInfoGuidString)]
     internal sealed class NPLLanguageInfo : IVsLanguageInfo, IVsLanguageDebugInfo
     {
         private readonly IServiceProvider _serviceProvider;
@@ -82,7 +82,7 @@ namespace NPLTools.Project
 
         public int GetLanguageID(IVsTextBuffer pBuffer, int iLine, int iCol, out Guid pguidLanguageID)
         {
-            pguidLanguageID = new Guid("F2621D2D-4D68-4BB2-80F4-FEC6F8B6DFDC");
+            pguidLanguageID = NPLGuids.guidLanguageNPL;
             return VSConstants.S_OK;
         }
 
