@@ -60,6 +60,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Debugger\CancellationTokens.cs" />
+    <Compile Include="Debugger\DebugCommands.cs" />
     <Compile Include="Debugger\DebugEngine\AD7BoundBreakpoint.cs" />
     <Compile Include="Debugger\DebugEngine\AD7BreakpointResolution.cs" />
     <Compile Include="Debugger\DebugEngine\AD7DocumentContext.cs" />
@@ -82,6 +83,7 @@
     <Compile Include="Debugger\LuaProcess.cs" />
     <Compile Include="Debugger\LuaStackFrame.cs" />
     <Compile Include="Debugger\LuaThread.cs" />
+    <Compile Include="Debugger\RequesetMessages.cs" />
     <Compile Include="Debugger\TaskHelpers.cs" />
     <Compile Include="Intellisense\AnalysisEntry.cs" />
     <Compile Include="Intellisense\AnalysisEntryInitializer.cs" />

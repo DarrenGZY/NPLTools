@@ -36,7 +36,7 @@ namespace NPLTools.Debugger
         public int Id => _pid;
 
         public event EventHandler<EventArgs> ModuleLoad;
-        public event EventHandler<EventArgs> BreakPointHit;
+        public event EventHandler<BreakpointEventArgs> BreakPointHit;
 
         public LuaProcess(string exe, string args, string dir, string env)
         {
@@ -54,9 +54,9 @@ namespace NPLTools.Debugger
             processInfo.UseShellExecute = false;
             processInfo.RedirectStandardOutput = false;
             processInfo.RedirectStandardInput = false;
-            processInfo.WorkingDirectory = @"C:\Users\Zhiyuan\Documents\NPL_Projects\NPLTools\NPL";
+            processInfo.WorkingDirectory = @"C:\Users\Zhiyuan\Documents\DebuggerTests\EmptyApp\EmptyApp";
             //processInfo.WorkingDirectory = @"C:\Users\Zhiyuan\Documents\Visual Studio 2015\Projects\NPL Express Framework24\NPL Express Framework24";
-            processInfo.Arguments = @"C:\Users\Zhiyuan\Documents\NPL_Projects\NPLTools\NPL\visualstudio_lua_debugger.lua test.lua " + listenerPort;
+            processInfo.Arguments = @"C:\Users\Zhiyuan\Documents\NPL_Projects\NPLTools\NPL\visualstudio_lua_debugger.lua " + args + " " + listenerPort;
             //processInfo.Arguments = @"C:\Users\Zhiyuan\Documents\NPL_Projects\NPLTools\NPL\test.lua";
             _process = new Process();
             _process.StartInfo = processInfo;
@@ -101,13 +101,28 @@ namespace NPLTools.Debugger
         {
             while (true)
             {
-                string res;
-                if ((res = ReceiveRequest()) != String.Empty)
+                string response = ReceiveRequest();
+                string[] responsePieces = response.Split(' ');
+                if (responsePieces.Length > 0)
                 {
-                    if (res == "moduleload")
-                        ModuleLoad?.Invoke(this, new EventArgs());
-                    else if (res == "breakpointhit")
-                        BreakPointHit?.Invoke(this, new EventArgs());
+                    int code;
+                    if (Int32.TryParse(responsePieces[0], out code))
+                    {
+                        switch (code)
+                        {
+                            case BreakpointHitMsg.Code:
+                                if (responsePieces.Length != 2)
+                                    return;
+                                int breakpointId;
+                                if (Int32.TryParse(responsePieces[1], out breakpointId))
+                                {
+                                    LuaBreakpoint breakpoint;
+                                    if (_breakpoints.TryGetValue(breakpointId, out breakpoint))
+                                        BreakPointHit?.Invoke(this, new BreakpointEventArgs(breakpoint));
+                                }
+                                break;
+                        }
+                    }
                 }
             }
         }
@@ -134,44 +149,37 @@ namespace NPLTools.Debugger
         }
 
         #region breakpoints related functions
-        public LuaBreakpoint AddBreakpoint(
-                                string filename,
-                                int lineNo,
-                                LuaBreakpointConditionKind conditionKind = LuaBreakpointConditionKind.Always,
-                                string condition = "",
-                                LuaBreakpointPassCountKind passCountKind = LuaBreakpointPassCountKind.Always,
-                                int passCount = 0
-                             )
+        public LuaBreakpoint AddBreakpoint(string filename, int lineNo)
         {
             int id = _breakpointCounter++;
-            var res = new LuaBreakpoint(this, filename, lineNo, conditionKind, condition, passCountKind, passCount, id);
+            var res = new LuaBreakpoint(this, filename, lineNo,  id);
             _breakpoints[id] = res;
             return res;
         }
 
         internal async Task BindBreakpointAsync(LuaBreakpoint breakpoint, CancellationToken ct)
         {
-            SendRequest("BIND breakpoint\n");
+            //SendRequest("BIND breakpoint\n");
         }
 
         internal async Task SetBreakpointConditionAsync(LuaBreakpoint breakpoint, CancellationToken ct)
         {
-            SendRequest("SET breakpoint condition\n");
+            //SendRequest("SET breakpoint condition\n");
         }
 
         internal async Task SetBreakpointPassCountAsync(LuaBreakpoint breakpoint, CancellationToken ct)
         {
-            SendRequest("SET breakpoint passcount\n");
+            //SendRequest("SET breakpoint passcount\n");
         }
 
         internal async Task SetBreakpointHitCountAsync(LuaBreakpoint breakpoint, int count, CancellationToken ct)
         {
-            SendRequest("SET breakpoint hit count\n");
+            //SendRequest("SET breakpoint hit count\n");
         }
 
         internal async Task<int> GetBreakpointHitCountAsync(LuaBreakpoint breakpoint, CancellationToken ct)
         {
-            SendRequest("SET breakpoint hit count\n");
+            //SendRequest("SET breakpoint hit count\n");
             return 0;
         }
 
@@ -187,7 +195,7 @@ namespace NPLTools.Debugger
             //{
             //    return;
             //}
-            SendRequest("DISABLE breakpoint\n");
+            //SendRequest("DISABLE breakpoint\n");
         }
 
         #endregion

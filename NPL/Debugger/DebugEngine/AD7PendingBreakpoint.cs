@@ -105,13 +105,7 @@ namespace NPLTools.Debugger.DebugEngine
                 EngineUtils.CheckOk(docPosition.GetRange(startPosition, endPosition));
 
                 // bind the breakpoint
-                var bp = _engine.Process.AddBreakpoint(
-                            documentName,
-                            (int)(startPosition[0].dwLine + 1),
-                            _bpRequestInfo.bpCondition.styleCondition.ToLua(),
-                            _bpRequestInfo.bpCondition.bstrCondition,
-                            _bpRequestInfo.bpPassCount.stylePassCount.ToLua(),
-                        (int)_bpRequestInfo.bpPassCount.dwPassCount);
+                LuaBreakpoint bp = _engine.Process.AddBreakpoint(documentName, (int)(startPosition[0].dwLine + 1));
 
                 AD7BreakpointResolution breakpointResolution = new AD7BreakpointResolution(_engine, bp, GetDocumentContext(bp));
                 AD7BoundBreakpoint boundBreakpoint = new AD7BoundBreakpoint(_engine, bp, this, breakpointResolution, _enabled);
@@ -124,9 +118,7 @@ namespace NPLTools.Debugger.DebugEngine
                     TaskHelpers.RunSynchronouslyOnUIThread(ct => bp.AddAsync(ct));
                 }
 
-                _engine.Process.SendRequest("STEP\n");
-                _engine.Process.SendRequest("SETB " + @"test.lua" + " " + "6" + "\n");
-                _engine.Process.SendRequest("RUN\n");
+                _engine.Process.SendRequest(RequesetMessages.SetBreakPoint(documentName, (int)startPosition[0].dwLine + 1));
             }
             return VSConstants.S_OK;
         }

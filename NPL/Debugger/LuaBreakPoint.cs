@@ -42,36 +42,18 @@ namespace NPLTools.Debugger
         private readonly LuaProcess _process;
         private readonly string _filename;
         private readonly int _lineNo, _breakpointId;
-        private readonly bool _isDjangoBreakpoint;
-        private LuaBreakpointConditionKind _conditionKind;
-        private string _condition;
-        private LuaBreakpointPassCountKind _passCountKind;
-        private int _passCount;
 
         public LuaBreakpoint(
             LuaProcess process,
             string filename,
             int lineNo,
-            LuaBreakpointConditionKind conditionKind,
-            string condition,
-            LuaBreakpointPassCountKind passCountKind,
-            int passCount,
-            int breakpointId,
-            bool isDjangoBreakpoint = false
+            int breakpointId
         )
         {
-            Debug.Assert(conditionKind != LuaBreakpointConditionKind.Always || string.IsNullOrEmpty(condition));
-            Debug.Assert(passCountKind != LuaBreakpointPassCountKind.Always || passCount == 0);
-
             _process = process;
             _filename = filename;
             _lineNo = lineNo;
             _breakpointId = breakpointId;
-            _conditionKind = conditionKind;
-            _condition = condition;
-            _passCountKind = passCountKind;
-            _passCount = passCount;
-            _isDjangoBreakpoint = isDjangoBreakpoint;
         }
 
         /// <summary>
@@ -82,8 +64,6 @@ namespace NPLTools.Debugger
         {
             await _process.BindBreakpointAsync(this, ct);
         }
-
-        public bool IsDjangoBreakpoint => _isDjangoBreakpoint;
 
         /// <summary>
         /// Removes the provided break point
@@ -104,25 +84,17 @@ namespace NPLTools.Debugger
 
         public int LineNo => _lineNo;
 
-        public LuaBreakpointConditionKind ConditionKind => _conditionKind;
-
-        public string Condition => _condition;
-
-        public LuaBreakpointPassCountKind PassCountKind => _passCountKind;
-
-        public int PassCount => _passCount;
-
         internal Task SetConditionAsync(LuaBreakpointConditionKind kind, string condition, CancellationToken ct)
         {
-            _conditionKind = kind;
-            _condition = condition;
+            //_conditionKind = kind;
+            //_condition = condition;
             return _process.SetBreakpointConditionAsync(this, ct);
         }
 
         internal Task SetPassCountAsync(LuaBreakpointPassCountKind kind, int passCount, CancellationToken ct)
         {
-            _passCountKind = kind;
-            _passCount = passCount;
+            //_passCountKind = kind;
+            //_passCount = passCount;
             return _process.SetBreakpointPassCountAsync(this, ct);
         }
 

@@ -535,9 +535,9 @@ namespace NPLTools.Debugger.DebugEngine
             Send(eventObject, iidEvent, this, thread);
         }
 
-        private void OnBreakPointHit(object sender, EventArgs e)
+        private void OnBreakPointHit(object sender, BreakpointEventArgs e)
         {
-            var boundBreakpoints = new[] { _breakpointManager.GetBreakpoint() };
+            var boundBreakpoints = new[] { _breakpointManager.GetBreakpoint(e.Breakpoint) };
 
             // An engine that supports more advanced breakpoint features such as hit counts, conditions and filters
             // should notify each bound breakpoint that it has been hit and evaluate conditions here.

@@ -56,7 +56,7 @@ namespace NPLTools.Project
             info.bstrRemoteMachine = null;
             info.fSendStdoutToOutputWindow = 0;
             info.bstrEnv = null;
-            info.bstrArg = "";
+            info.bstrArg = info.bstrCurDir + "\\" + GetStartupFile();
             info.clsidCustom = new Guid(AD7Engine.DebugEngineId);
             info.grfLaunch = (uint)__VSDBGLAUNCHFLAGS.DBGLAUNCH_StopDebuggingOnEnd;
             VsShellUtilities.LaunchDebugger(NPLToolsPackage.Instance, info);

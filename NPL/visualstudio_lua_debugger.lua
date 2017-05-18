@@ -18,13 +18,20 @@ local stack_level = 0
 local controller_host = "localhost"
 local controller_port = 8171
 
-local first_launch = true;
+local responses = {
+	BreakpointHit = tostring(201)
+	
+}
+
+-- number of breakpoints, should be sync as _breakpointCount in LuaProcess.cs
+local breakpointCounter = 0;
 
 local function set_breakpoint(file, line)
 	if not breakpoints[file] then
 		breakpoints[file] = {}
 	end
-	breakpoints[file][line] = true  
+	breakpoints[file][line] = breakpointCounter
+	breakpointCounter = breakpointCounter + 1
 end
 
 local function remove_breakpoint(file, line)
@@ -34,7 +41,11 @@ local function remove_breakpoint(file, line)
 end
 
 local function has_breakpoint(file, line)
-	return breakpoints[file] and breakpoints[file][line]
+	return breakpoints[file] and (breakpoints[file][line] != nil)
+end
+
+local function get_breakpointId(file, line)
+	return breakspoints[file][line]
 end
 
 local function restore_vars(vars)
@@ -105,17 +116,20 @@ local function merge_paths(path1, path2)
 end
 
 local function debug_hook(event, line)
-	print(event..tostring(line))
+	--print(event..tostring(line))
 	if event == "call" then
 		stack_level = stack_level + 1
 	elseif event == "return" then
 		stack_level = stack_level - 1
 	else
 		local file = debug.getinfo(2, "S").source
+		--print("filename: "..file)
 		if string.find(file, "@") == 1 then
 			file = string.sub(file, 2)
 		end
 		--file = merge_paths(lfs.currentdir(), file)
+		-- print(file)
+		-- socket.sleep(5)
 		local vars = capture_vars()
 		table.foreach(watches, function (index, value)
 			setfenv(value, vars)
@@ -125,12 +139,17 @@ local function debug_hook(event, line)
 				restore_vars(vars)
 			end
 		end)
-		--print(file)
-		if step_into or (step_over and stack_level <= step_level) or has_breakpoint(file, line) then
+		
+		if step_into or (step_over and stack_level <= step_level)then
 			step_into = false
 			step_over = false
 			coroutine.resume(coro_debugger, events.BREAK, vars, file, line)
 			restore_vars(vars)
+		end
+		
+		if has_breakpoint(file, line) then
+			local id = get_breakpointId(file, line)
+			coroutine.resume(coro_debugger, events.BREAK, vars, files, line, id)
 		end
 	end
 end
@@ -138,11 +157,62 @@ end
 local function debugger_loop(server)
 	local command
 	local eval_env = {}
+	
+	-- launch the debugger loop at the very first time
+	-- set timeout to 2 seconds
+	print("enter debugger loop...")
+	server:settimeout(10)
+	local line, status = server:receive()
 
+	--socket.sleep(10)
+	if status == "timeout" then
+		print("timeout")
+		server:send("timeout at the launch\n")
+		-- yield the thread, return to execution thread
+		coroutine.yield()
+	end
+	print("command...")
+	-- successfully launched
+	-- the first received command would be set breakpoint at most times
+	command = string.sub(line, string.find(line, "^[A-Z]+"))
+	print("command: "..command)
+	if command == "SETB" then
+		local _, _, _, filename, line = string.find(line, "^([A-Z]+)%s+([%w%p]+)%s+(%d+)$")
+		print(filename)
+		--socket.sleep(10)
+		if filename and line then
+			filename = string.gsub(filename, "%%20", " ")
+			print("filename: "..filename)
+			set_breakpoint(filename, tonumber(line))
+			server:send("200 OK\n")
+		else
+			server:send("400 Bad Request\n")
+		end
+	end
+	
+	print("prepare to launch...")
+	server:send("200 OK\n")
+	local ev, vars, file, line, idx = coroutine.yield()
+	print("running...")
+	eval_env = vars
+	if ev == events.BREAK then
+		--server:send("202 Paused " .. file .. " " .. line .. "\n")
+		socket.sleep(20)
+		server:send(responses.BreakpointHit.." "..idx.."\n")
+	elseif ev == events.WATCH then
+		server:send("203 Paused " .. file .. " " .. line .. " " .. idx_watch .. "\n")
+	else
+		server:send("401 Error in Execution " .. string.len(file) .. "\n")
+		server:send(file)
+	end
+	
+	-- set timeout to indefinite again
+	server:settimeout(-1)
+	
 	while true do
 		print("in debug loop: waiting for command...")
 		local line, status = server:receive()
-		print("receive a command: "..line)
+		print(line)
 		command = string.sub(line, string.find(line, "^[A-Z]+"))
 		print("command: "..command)
 		if command == "SETB" then
@@ -205,15 +275,13 @@ local function debugger_loop(server)
 		elseif command == "RUN" then
 			print("run command received")
 			server:send("200 OK\n")
-			local ev, vars, file, line, idx_watch = coroutine.yield()
+			local ev, vars, file, line, idx = coroutine.yield()
 			print("running...")
 			eval_env = vars
 			if ev == events.BREAK then
-				--server:send("202 Paused " .. file .. " " .. line .. "\n")
-				socket.sleep(20)
-				server:send("breakpointhit\n")
+				server:send(responses.BreakpointHit.." "..idx.."\n")
 			elseif ev == events.WATCH then
-				server:send("203 Paused " .. file .. " " .. line .. " " .. idx_watch .. "\n")
+				server:send("203 Paused " .. file .. " " .. line .. " " .. idx .. "\n")
 			else
 				server:send("401 Error in Execution " .. string.len(file) .. "\n")
 				server:send(file)
@@ -270,9 +338,10 @@ function startDebug(file, port)
 		dofile(file)
 	end
 end
-
+--socket.sleep(20)
 local file = arg[1]
 local port = arg[2]
-
+print(file)
+print(port)
 startDebug(file, port);
-socket.sleep(10);
+socket.sleep(20);
