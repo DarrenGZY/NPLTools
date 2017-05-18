@@ -17,4 +17,16 @@ namespace NPLTools.Debugger
 
         public LuaBreakpoint Breakpoint => _breakpoint;
     }
+
+    public class ModuleLoadEventArgs : EventArgs
+    {
+        private LuaModule _module;
+
+        public ModuleLoadEventArgs(LuaModule module)
+        {
+            _module = module;
+        }
+
+        public LuaModule Module => _module;
+    }
 }

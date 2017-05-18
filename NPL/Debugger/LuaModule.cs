@@ -18,7 +18,7 @@ using System.IO;
 
 namespace NPLTools.Debugger
 {
-    class LuaModule
+    public class LuaModule
     {
         private readonly int _moduleId;
         private readonly string _filename;

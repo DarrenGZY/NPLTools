@@ -213,6 +213,8 @@ namespace NPLTools.Debugger.DebugEngine
             _process.BreakPointHit += OnBreakPointHit;
             _process.Start();
 
+            TaskHelpers.RunSynchronouslyOnUIThread(ct => _process.StartListeningAsync());
+
             AD_PROCESS_ID adProcessId = new AD_PROCESS_ID();
             adProcessId.ProcessIdType = (uint)enum_AD_PROCESS_ID.AD_PROCESS_ID_SYSTEM;
             adProcessId.dwProcessId = (uint)_process.Id;
@@ -253,11 +255,10 @@ namespace NPLTools.Debugger.DebugEngine
             }
 
             // debug only, use OnThreadCreat()
-
-            var luaModule = new LuaModule(0, "test.lua");
-            var adModule = new AD7Module(luaModule);
-            _modules.Add(luaModule, adModule);
-            SendModuleLoaded(adModule);
+            //var luaModule = new LuaModule(0, "test.lua");
+            //var adModule = new AD7Module(luaModule);
+            //_modules.Add(luaModule, adModule);
+            //SendModuleLoaded(adModule);
 
             var luaThread = new LuaThread(0, false);
             var newThread = new AD7Thread(this, new LuaThread(0, false));
@@ -551,9 +552,9 @@ namespace NPLTools.Debugger.DebugEngine
             Send(eventObject, AD7BreakpointBoundEvent.IID, null);
         }
 
-        private void OnModuleLoad(object sender, EventArgs e)
+        private void OnModuleLoad(object sender, ModuleLoadEventArgs e)
         {
-            var adModule = new AD7Module(new LuaModule(0, "test.lua"));
+            var adModule = new AD7Module(e.Module);
             SendModuleLoaded(adModule);
         }
 

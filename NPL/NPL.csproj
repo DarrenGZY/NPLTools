@@ -59,6 +59,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Debugger\EventArgs.cs" />
     <Compile Include="Debugger\CancellationTokens.cs" />
     <Compile Include="Debugger\DebugCommands.cs" />
     <Compile Include="Debugger\DebugEngine\AD7BoundBreakpoint.cs" />
@@ -84,6 +85,7 @@
     <Compile Include="Debugger\LuaStackFrame.cs" />
     <Compile Include="Debugger\LuaThread.cs" />
     <Compile Include="Debugger\RequesetMessages.cs" />
+    <Compile Include="Debugger\ResponseMessages.cs" />
     <Compile Include="Debugger\TaskHelpers.cs" />
     <Compile Include="Intellisense\AnalysisEntry.cs" />
     <Compile Include="Intellisense\AnalysisEntryInitializer.cs" />

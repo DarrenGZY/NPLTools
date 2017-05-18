@@ -90,8 +90,6 @@ namespace NPLTools.Debugger.DebugEngine
                 return VSConstants.E_FAIL;
             }
 
-            //int numStackFrames = stackFrames.Count;
-
             int numStackFrames = 2;
 
             var frameInfoArray = new FRAMEINFO[numStackFrames];

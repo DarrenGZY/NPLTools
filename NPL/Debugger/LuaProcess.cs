@@ -32,10 +32,11 @@ namespace NPLTools.Debugger
         private NetworkStream _networkStream;
         private Thread _eventThread;
         private int _breakpointCounter;
+        private readonly AutoResetEvent _connectedEvent = new AutoResetEvent(false);
         private readonly Dictionary<int, LuaBreakpoint> _breakpoints = new Dictionary<int, LuaBreakpoint>();
-        public int Id => _pid;
 
-        public event EventHandler<EventArgs> ModuleLoad;
+        public int Id => _pid;
+        public event EventHandler<ModuleLoadEventArgs> ModuleLoad;
         public event EventHandler<BreakpointEventArgs> BreakPointHit;
 
         public LuaProcess(string exe, string args, string dir, string env)
@@ -55,9 +56,7 @@ namespace NPLTools.Debugger
             processInfo.RedirectStandardOutput = false;
             processInfo.RedirectStandardInput = false;
             processInfo.WorkingDirectory = @"C:\Users\Zhiyuan\Documents\DebuggerTests\EmptyApp\EmptyApp";
-            //processInfo.WorkingDirectory = @"C:\Users\Zhiyuan\Documents\Visual Studio 2015\Projects\NPL Express Framework24\NPL Express Framework24";
             processInfo.Arguments = @"C:\Users\Zhiyuan\Documents\NPL_Projects\NPLTools\NPL\visualstudio_lua_debugger.lua " + args + " " + listenerPort;
-            //processInfo.Arguments = @"C:\Users\Zhiyuan\Documents\NPL_Projects\NPLTools\NPL\test.lua";
             _process = new Process();
             _process.StartInfo = processInfo;
             _process.EnableRaisingEvents = true;
@@ -84,6 +83,9 @@ namespace NPLTools.Debugger
             }
 
             _networkStream = new NetworkStream(socket, ownsSocket: true);
+
+            _connectedEvent.Set();
+
             _eventThread = new Thread(EventHandlingThread);
             _eventThread.Name = "event handling thread";
             _eventThread.Start();
@@ -102,6 +104,8 @@ namespace NPLTools.Debugger
             while (true)
             {
                 string response = ReceiveRequest();
+                // wait until a response with real content
+                if (response == null || response == String.Empty) continue;
                 string[] responsePieces = response.Split(' ');
                 if (responsePieces.Length > 0)
                 {
@@ -110,7 +114,7 @@ namespace NPLTools.Debugger
                     {
                         switch (code)
                         {
-                            case BreakpointHitMsg.Code:
+                            case BreakpointHitEvent.Code:
                                 if (responsePieces.Length != 2)
                                     return;
                                 int breakpointId;
@@ -120,6 +124,19 @@ namespace NPLTools.Debugger
                                     if (_breakpoints.TryGetValue(breakpointId, out breakpoint))
                                         BreakPointHit?.Invoke(this, new BreakpointEventArgs(breakpoint));
                                 }
+                                break;
+                            case ModuleLoadEvent.Code:
+                                if (responsePieces.Length != 3)
+                                    return;
+                                string filename = responsePieces[1];
+                                int moduleId;
+                                if (Int32.TryParse(responsePieces[2], out moduleId))
+                                {
+                                    LuaModule module = new LuaModule(moduleId, filename);
+                                    ModuleLoad?.Invoke(this, new ModuleLoadEventArgs(module));
+                                }
+                                break;
+                            default:
                                 break;
                         }
                     }
@@ -145,6 +162,19 @@ namespace NPLTools.Debugger
             catch (Exception e)
             {
 
+            }
+        }
+
+        /// <summary>
+        /// Starts listening for debugger communication.  Can be called after Start
+        /// to give time to attach to debugger events.  This waits for the debuggee
+        /// to connect to the socket.
+        /// </summary>
+        public async Task StartListeningAsync(int timeOutMs = 20000)
+        {
+            if (!_connectedEvent.WaitOne(timeOutMs))
+            {
+                throw new Exception("Connection timeout");
             }
         }
 

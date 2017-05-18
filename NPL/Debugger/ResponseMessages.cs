@@ -38,13 +38,13 @@ namespace NPLTools.Debugger
     //    string Name { get; }
     //}
 
-    public class BreakpointHitMsg 
+    public class BreakpointHitEvent 
     {
         //private int _code = 0x01;
         //private readonly string _name = "BREAKPOINTHIT";
         private int _id;
 
-        public BreakpointHitMsg(int id)
+        public BreakpointHitEvent(int id)
         {
             _id = id;
         }
@@ -52,5 +52,23 @@ namespace NPLTools.Debugger
         public const int Code = 201;
         public string Name = "BREAKPOINTHIT";
         public int Id => _id;
+    }
+
+    public class ModuleLoadEvent
+    {
+        //private int _code = 0x01;
+        //private readonly string _name = "BREAKPOINTHIT";
+        private int _id;
+        private string _file;
+        public ModuleLoadEvent(string file, int id)
+        {
+            _file = file;
+            _id = id;
+        }
+
+        public const int Code = 202;
+        public string Name = "ModuleLoad";
+        public int Id => _id;
+        public string File => _file;
     }
 }
