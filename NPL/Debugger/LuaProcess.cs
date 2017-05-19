@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -34,10 +35,11 @@ namespace NPLTools.Debugger
         private int _breakpointCounter;
         private readonly AutoResetEvent _connectedEvent = new AutoResetEvent(false);
         private readonly Dictionary<int, LuaBreakpoint> _breakpoints = new Dictionary<int, LuaBreakpoint>();
-
+        private LuaThread _thread;
         public int Id => _pid;
         public event EventHandler<ModuleLoadEventArgs> ModuleLoad;
         public event EventHandler<BreakpointEventArgs> BreakPointHit;
+        public event EventHandler<FrameListEventArgs> FrameList;
 
         public LuaProcess(string exe, string args, string dir, string env)
         {
@@ -106,41 +108,32 @@ namespace NPLTools.Debugger
                 string response = ReceiveRequest();
                 // wait until a response with real content
                 if (response == null || response == String.Empty) continue;
-                string[] responsePieces = response.Split(' ');
-                if (responsePieces.Length > 0)
-                {
-                    int code;
-                    if (Int32.TryParse(responsePieces[0], out code))
-                    {
-                        switch (code)
-                        {
-                            case BreakpointHitEvent.Code:
-                                if (responsePieces.Length != 2)
-                                    return;
-                                int breakpointId;
-                                if (Int32.TryParse(responsePieces[1], out breakpointId))
-                                {
-                                    LuaBreakpoint breakpoint;
-                                    if (_breakpoints.TryGetValue(breakpointId, out breakpoint))
-                                        BreakPointHit?.Invoke(this, new BreakpointEventArgs(breakpoint));
-                                }
-                                break;
-                            case ModuleLoadEvent.Code:
-                                if (responsePieces.Length != 3)
-                                    return;
-                                string filename = responsePieces[1];
-                                int moduleId;
-                                if (Int32.TryParse(responsePieces[2], out moduleId))
-                                {
-                                    LuaModule module = new LuaModule(moduleId, filename);
-                                    ModuleLoad?.Invoke(this, new ModuleLoadEventArgs(module));
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                }
+                
+            }
+        }
+
+        private void HandleResponse(string response)
+        {
+            JObject obj = JObject.Parse(response);
+            switch(obj["name"].ToObject<string>())
+            {
+                case BreakpointHitEvent.Name:
+                    var breakpoitnId = obj["id"].ToObject<int>();
+                    LuaBreakpoint breakpoint;
+                    if (_breakpoints.TryGetValue(breakpoitnId, out breakpoint))
+                        BreakPointHit?.Invoke(this, new BreakpointEventArgs(breakpoint));
+                    break;
+                case ModuleLoadEvent.Name:
+                    var filename = obj["filename"].ToObject<string>();
+                    var id = obj["id"].ToObject<int>();
+                    LuaModule module = new LuaModule(id, filename);
+                    ModuleLoad?.Invoke(this, new ModuleLoadEventArgs(module));
+                    break;
+                case FrameListEvent.Name:
+
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -157,6 +150,7 @@ namespace NPLTools.Debugger
             try
             {
                 bool success = _process.Start();
+                _thread = new LuaThread(0, false);
                 _pid = _process.Id;
             }
             catch (Exception e)

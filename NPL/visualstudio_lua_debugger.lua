@@ -1,6 +1,7 @@
 local socket = require"socket"
 local lfs = require"lfs"
 local debug = require"debug"
+local json = require"json"
 
 _COPYRIGHT = "2006 - Kepler Project"
 _DESCRIPTION = "Remote Debugger for the Lua programming language"
@@ -14,6 +15,7 @@ local step_into = false
 local step_over = false
 local step_level = 0
 local stack_level = 0
+local cur_frame = {}	
 
 local controller_host = "localhost"
 local controller_port = 8171
@@ -24,6 +26,7 @@ local responses = {
 }
 -- modules in the application
 local Modules = {}
+-- number of modules loaded
 local modulesCounter = 0;
 -- number of breakpoints, should be sync as _breakpointCount in LuaProcess.cs
 local breakpointCounter = 0;
@@ -128,6 +131,10 @@ local function debug_hook(event, line)
 		if string.find(file, "@") == 1 then
 			file = string.sub(file, 2)
 		end
+		
+		-- set the frame
+		cur_frame.lineNo = line
+		cur_frame.filename = file
 		
 		local vars = capture_vars()
 		
@@ -255,9 +262,10 @@ local function debugger_loop(server)
 			print("running...")
 			eval_env = vars
 			if ev == events.BREAK then
-				server:send(responses.BreakpointHit.." "..idx.."\n")
+				Send_FrameList()
+				Send_BreakpointHitEvent(idx)
 			elseif ev == events.MODULELOAD then
-				server:send(responses.ModuleLoad.." "..file.." "..idx.."\n")
+				Send_ModuleLoad(file, idx)
 			elseif ev == events.WATCH then
 				server:send("203 Paused " .. file .. " " .. line .. " " .. idx .. "\n")
 			else
@@ -295,6 +303,31 @@ local function debugger_loop(server)
 			server:send("400 Bad Request\n")
 		end
 	end
+	
+	local function Send_BreakpointHitEvent(id)
+		local msg = {
+			"name" = "BreakpointHit",
+			"id" = id
+		}
+		server:send(json.encode(msg).."\n")
+	end
+	
+	local function Send_FrameList()
+		local msg = {
+			"name" = "FrameList",
+			"frame" = cur_frame
+		}
+		server:send(json.encode(msg).."\n")
+	end
+	
+	local function Send_ModuleLoad(file, id)
+		local msg = {
+			"name" = "ModuleLoad",
+			"filename" = file,
+			"id" = id
+		}
+		server:send(json.encode(msg).."\n")
+	end
 end
 
 coro_debugger = coroutine.create(debugger_loop)
@@ -316,7 +349,7 @@ function startDebug(file, port)
 		dofile(file)
 	end
 end
---socket.sleep(20)
+
 local file = arg[1]
 local port = arg[2]
 print(file)

@@ -211,6 +211,8 @@ namespace NPLTools.Debugger.DebugEngine
             _process = new LuaProcess(exe, args, dir, env);
             _process.ModuleLoad += OnModuleLoad;
             _process.BreakPointHit += OnBreakPointHit;
+            _process.FrameList += OnFrameList;
+
             _process.Start();
 
             TaskHelpers.RunSynchronouslyOnUIThread(ct => _process.StartListeningAsync());
@@ -222,6 +224,11 @@ namespace NPLTools.Debugger.DebugEngine
             port.GetProcess(adProcessId, out process);
 
             return VSConstants.S_OK;
+        }
+
+        private void OnFrameList(object sender, FrameListEventArgs e)
+        {
+            ;
         }
 
         // Resume a process launched by IDebugEngineLaunch2.LaunchSuspended

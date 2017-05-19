@@ -29,4 +29,16 @@ namespace NPLTools.Debugger
 
         public LuaModule Module => _module;
     }
+
+    public class FrameListEventArgs : EventArgs
+    {
+        private IList<LuaStackFrame> _frames;
+
+        public FrameListEventArgs(IList<LuaStackFrame> frames)
+        {
+            _frames = frames;
+        }
+
+        public IList<LuaStackFrame> Frames => _frames;
+    }
 }

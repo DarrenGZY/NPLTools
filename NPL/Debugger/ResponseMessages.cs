@@ -11,24 +11,24 @@ namespace NPLTools.Debugger
     {
         public void Dispatch(string response)
         {
-            string[] pieces = response.Split(' ');
-            if (pieces.Length > 0)
-            {
-                int code; 
-                if (Int32.TryParse(pieces[0], out code))
-                {
-                    switch (code)
-                    {
-                        case BreakpointHitMsg.Code:
-                            if (pieces.Length != 2)
-                                return;
+            //string[] pieces = response.Split(' ');
+            //if (pieces.Length > 0)
+            //{
+            //    int code; 
+            //    if (Int32.TryParse(pieces[0], out code))
+            //    {
+            //        switch (code)
+            //        {
+            //            case BreakpointHitMsg.Code:
+            //                if (pieces.Length != 2)
+            //                    return;
 
-                            break;
+            //                break;
 
-                    }
-                }
+            //        }
+            //    }
                 
-            }
+            //}
         }
     }
 
@@ -43,14 +43,13 @@ namespace NPLTools.Debugger
         //private int _code = 0x01;
         //private readonly string _name = "BREAKPOINTHIT";
         private int _id;
-
         public BreakpointHitEvent(int id)
         {
             _id = id;
         }
 
         public const int Code = 201;
-        public string Name = "BREAKPOINTHIT";
+        public const string Name = "BreakpointHit";
         public int Id => _id;
     }
 
@@ -60,6 +59,7 @@ namespace NPLTools.Debugger
         //private readonly string _name = "BREAKPOINTHIT";
         private int _id;
         private string _file;
+        private const string _name = "ModuleLoad";
         public ModuleLoadEvent(string file, int id)
         {
             _file = file;
@@ -67,7 +67,25 @@ namespace NPLTools.Debugger
         }
 
         public const int Code = 202;
-        public string Name = "ModuleLoad";
+        public const string Name = "ModuleLoad";
+        public int Id => _id;
+        public string File => _file;
+    }
+
+    public class FrameListEvent
+    {
+        //private int _code = 0x01;
+        //private readonly string _name = "BREAKPOINTHIT";
+        private int _id;
+        private string _file;
+        private const string _name = "FrameList";
+        public FrameListEvent()
+        {
+
+        }
+
+        public const int Code = 202;
+        public const string Name = "FrameList";
         public int Id => _id;
         public string File => _file;
     }
