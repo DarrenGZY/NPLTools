@@ -14,5 +14,10 @@ namespace NPLTools.Debugger
         {
             return String.Format("{0} {1} {2}{3}", DebugCommands.SetBreakpoint, file, lineNo, linebreak);
         }
+
+        public static string Run()
+        {
+            return String.Format("{0}{1}", DebugCommands.Run, linebreak);
+        }
     }
 }

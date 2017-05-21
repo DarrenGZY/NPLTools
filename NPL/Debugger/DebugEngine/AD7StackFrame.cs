@@ -14,12 +14,12 @@ namespace NPLTools.Debugger.DebugEngine
         private readonly AD7Thread _thread;
         private int _lineNo;
         private string _fileName;
-        public AD7StackFrame(AD7Engine engine, AD7Thread thread)
+        public AD7StackFrame(AD7Engine engine, AD7Thread thread, string filename, int lineNo)
         {
             _engine = engine;
             _thread = thread;
-            _lineNo = 6; //debug only
-            _fileName = @"C:\Users\Zhiyuan\Documents\Visual Studio 2015\Projects\Empty Application2\Empty Application2\test.lua";
+            _lineNo = lineNo; //debug only
+            _fileName = filename;
         }
 
         public void SetFrameInfo(enum_FRAMEINFO_FLAGS dwFieldSpec, out FRAMEINFO frameInfo)
@@ -31,7 +31,7 @@ namespace NPLTools.Debugger.DebugEngine
             // The optional information is requested by setting flags in the dwFieldSpec parameter.
             if ((dwFieldSpec & enum_FRAMEINFO_FLAGS.FIF_FUNCNAME) != 0)
             {
-                string funcName = "function name";
+                string funcName = Path.GetFileName(_fileName) + " " + _lineNo;
 
                 frameInfo.m_bstrFuncName = funcName;
                 frameInfo.m_dwValidFields |= enum_FRAMEINFO_FLAGS.FIF_FUNCNAME;

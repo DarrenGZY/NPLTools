@@ -90,13 +90,13 @@ namespace NPLTools.Debugger.DebugEngine
                 return VSConstants.E_FAIL;
             }
 
-            int numStackFrames = 2;
+            int numStackFrames = stackFrames.Count;
 
             var frameInfoArray = new FRAMEINFO[numStackFrames];
 
             for (int i = 0; i < numStackFrames; i++)
             {
-                AD7StackFrame frame = new AD7StackFrame(_engine, this);
+                AD7StackFrame frame = new AD7StackFrame(_engine, this, stackFrames[i].FileName, stackFrames[i].LineNo);
                 frame.SetFrameInfo(dwFieldSpec, out frameInfoArray[i]);
             }
 

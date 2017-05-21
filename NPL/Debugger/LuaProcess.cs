@@ -29,7 +29,7 @@ namespace NPLTools.Debugger
         private readonly Process _process;
 
         private int _pid;
-        private Socket _socketHandler;
+        //private Socket _socketHandler;
         private NetworkStream _networkStream;
         private Thread _eventThread;
         private int _breakpointCounter;
@@ -40,6 +40,8 @@ namespace NPLTools.Debugger
         public event EventHandler<ModuleLoadEventArgs> ModuleLoad;
         public event EventHandler<BreakpointEventArgs> BreakPointHit;
         public event EventHandler<FrameListEventArgs> FrameList;
+        public event EventHandler<ThreadCreateEventArgs> ThreadCreate;
+        public event EventHandler<ProcessExitedEventArgs> ProcessExit;
 
         public LuaProcess(string exe, string args, string dir, string env)
         {
@@ -62,6 +64,13 @@ namespace NPLTools.Debugger
             _process = new Process();
             _process.StartInfo = processInfo;
             _process.EnableRaisingEvents = true;
+            _process.Exited += OnProcessExit;
+        }
+
+        private void OnProcessExit(object sender, EventArgs e)
+        {
+            int exitCode = (_process != null && _process.HasExited) ? _process.ExitCode : -1;
+            ProcessExit?.Invoke(this, new ProcessExitedEventArgs(exitCode));
         }
 
         private void AcceptConnection(IAsyncResult iar)
@@ -101,48 +110,65 @@ namespace NPLTools.Debugger
             _networkStream.Flush();
         }
 
-        public void EventHandlingThread()
+        public async void EventHandlingThread()
         {
-            while (true)
+            StreamReader reader = new StreamReader(_networkStream);
+            while (true && !_process.HasExited)
             {
-                string response = ReceiveRequest();
+                string response = reader.ReadLine();
                 // wait until a response with real content
                 if (response == null || response == String.Empty) continue;
-                
+                await HandleResponse(response);
             }
         }
 
-        private void HandleResponse(string response)
+        private Task HandleResponse(string response)
         {
-            JObject obj = JObject.Parse(response);
-            switch(obj["name"].ToObject<string>())
-            {
-                case BreakpointHitEvent.Name:
-                    var breakpoitnId = obj["id"].ToObject<int>();
-                    LuaBreakpoint breakpoint;
-                    if (_breakpoints.TryGetValue(breakpoitnId, out breakpoint))
-                        BreakPointHit?.Invoke(this, new BreakpointEventArgs(breakpoint));
-                    break;
-                case ModuleLoadEvent.Name:
-                    var filename = obj["filename"].ToObject<string>();
-                    var id = obj["id"].ToObject<int>();
-                    LuaModule module = new LuaModule(id, filename);
-                    ModuleLoad?.Invoke(this, new ModuleLoadEventArgs(module));
-                    break;
-                case FrameListEvent.Name:
+            return Task.Run(() => {
+                JObject obj = JObject.Parse(response);
+                switch (obj["name"].ToObject<string>())
+                {
+                    case ResponseType.BreakpointHit:
+                        {
+                            var breakpoitnId = obj["id"].ToObject<int>();
+                            LuaBreakpoint breakpoint;
+                            if (_breakpoints.TryGetValue(breakpoitnId, out breakpoint))
+                                BreakPointHit?.Invoke(this, new BreakpointEventArgs(_thread, breakpoint));
+                            break;
+                        }
+                    case ResponseType.ModuleLoad:
+                        {
+                            var filename = obj["filename"].ToObject<string>();
+                            var id = obj["id"].ToObject<int>();
+                            LuaModule module = new LuaModule(id, filename);
+                            ModuleLoad?.Invoke(this, new ModuleLoadEventArgs(module));
+                            break;
+                        }
+                    case ResponseType.FrameList:
+                        {
+                            var filename = obj["frame"]["filename"].ToObject<string>();
+                            var lineNo = obj["frame"]["lineNo"].ToObject<int>();
+                            LuaStackFrame frame = new LuaStackFrame(filename, lineNo);
+                            _thread.Frames = new List<LuaStackFrame>() { frame };
+                            //FrameList?.Invoke(this, new FrameListEventArgs(_thread));
+                            break;
+                        }
+                    case ResponseType.ThreadCreat:
+                        {
+                            _thread = new LuaThread(0, false);
+                            ThreadCreate?.Invoke(this, new ThreadCreateEventArgs(_thread));
+                            break;
+                        }
+                    case ResponseType.DebugExit:
+                        {
 
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        public string ReceiveRequest()
-        {
-            string received = String.Empty;
-            StreamReader reader = new StreamReader(_networkStream);
-            received = reader.ReadLine();
-            return received;
+                            break;
+                        }
+                    default:
+                        break;
+                }
+            });
+            
         }
 
         public void Start()
@@ -150,12 +176,19 @@ namespace NPLTools.Debugger
             try
             {
                 bool success = _process.Start();
-                _thread = new LuaThread(0, false);
                 _pid = _process.Id;
             }
             catch (Exception e)
             {
 
+            }
+        }
+
+        public void Terminate()
+        {
+            if (_process != null && !_process.HasExited)
+            {
+                _process.Kill();
             }
         }
 
@@ -179,6 +212,11 @@ namespace NPLTools.Debugger
             var res = new LuaBreakpoint(this, filename, lineNo,  id);
             _breakpoints[id] = res;
             return res;
+        }
+
+        public void Resume()
+        {
+            SendRequest(RequesetMessages.Run());
         }
 
         internal async Task BindBreakpointAsync(LuaBreakpoint breakpoint, CancellationToken ct)

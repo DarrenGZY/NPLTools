@@ -7,6 +7,9 @@ _COPYRIGHT = "2006 - Kepler Project"
 _DESCRIPTION = "Remote Debugger for the Lua programming language"
 _VERSION = "1.0"
 
+-- current 
+local system_file = nil
+
 local coro_debugger
 local events = { BREAK = 1, WATCH = 2, MODULELOAD = 3 }
 local breakpoints = {}
@@ -21,13 +24,19 @@ local controller_host = "localhost"
 local controller_port = 8171
 
 local responses = {
-	BreakpointHit = tostring(201)
+	BreakpointHit = tostring(201),
 	ModuleLoad = tostring(202)
 }
 -- modules in the application
 local Modules = {}
 -- number of modules loaded
 local modulesCounter = 0;
+-- threads in the application
+local Threads = {}
+-- number of threads 
+local threadsCounter = 0;
+-- if the thread is created
+local isThreadCreated = false;
 -- number of breakpoints, should be sync as _breakpointCount in LuaProcess.cs
 local breakpointCounter = 0;
 
@@ -107,6 +116,11 @@ local function break_dir(path)
 	return paths
 end
 
+local function get_filename(path)
+	local paths = break_dir(path)
+	return paths[#paths]
+end
+
 local function merge_paths(path1, path2)
 	local paths1 = break_dir(path1)
 	local paths2 = break_dir(path2)
@@ -137,14 +151,22 @@ local function debug_hook(event, line)
 		cur_frame.filename = file
 		
 		local vars = capture_vars()
+		--print(get_filename(file))
+		--print(lfs.currentdir().."visualstudio_lua_debugger.lua")
+		print("before module load attempt")
+		--socket.sleep(10)
 		
-		if Modules[file] == nil then
+		if Modules[file] == nil and get_filename(file) ~= "visualstudio_lua_debugger.lua" then
+			print("module loading...")
 			local id = modulesCounter
 			Modules[file] = id
 			modulesCounter = modulesCounter + 1
 			coroutine.resume(coro_debugger, events.MODULELOAD, vars, file, line, id)
+			restore_vars(vars)
 		end
 		
+		print("after module load attempt")
+		--socket.sleep(10)
 		table.foreach(watches, function (index, value)
 			setfenv(value, vars)
 			local status, res = pcall(value)
@@ -169,8 +191,53 @@ local function debug_hook(event, line)
 end
 
 local function debugger_loop(server)
+	local function Send_BreakpointHitEvent(id)
+		print("send breakpoint hit")
+		--socket.sleep(10)
+		local msg = {
+			name = "BreakpointHit",
+			id = id,
+		}
+		server:send(json.encode(msg).."\n")
+	end
+	
+	local function Send_FrameList()
+		print("send frame list")
+		--socket.sleep(20)
+		--server:send("first frame list\n")
+		print(cur_frame.filename)
+		--socket.sleep(10)
+		local msg = {
+			name = "FrameList",
+			frame = cur_frame
+		}
+		--server:send("frame list\n")
+		server:send(json.encode(msg).."\n")
+	end
+	
+	local function Send_ModuleLoad(file, id)
+		print("send module load")
+		--socket.sleep(10)
+		local msg = {
+			name = "ModuleLoad",
+			filename = file,
+			id = id
+		}
+		server:send(json.encode(msg).."\n")
+	end
+	
+	local function Send_ThreadCreate()
+		print("send thread create")
+		--socket.sleep(10)
+		local msg = {
+			name = "ThreadCreate"
+		}
+		server:send(json.encode(msg).."\n")
+	end
+	
 	local command
 	local eval_env = {}
+	local continue_running= false
 	
 	local first_launched, second_launched = false, false
 	
@@ -188,11 +255,19 @@ local function debugger_loop(server)
 			end
 			server:settimeout(-1)
 			first_launched = true
+			print("first launch...")
 		elseif not second_launched then
 			line = "RUN"
 			second_launched = true
+			print("second launch...")
 		else
-			line, status = server:receive()
+			print("normal waiting...")
+			if continue_running then
+				line = "RUN"
+				continue_running = false
+			else
+				line, status = server:receive()
+			end
 		end
 		
 		print(line)
@@ -203,17 +278,17 @@ local function debugger_loop(server)
 			if filename and line then
 				filename = string.gsub(filename, "%%20", " ")
 				set_breakpoint(filename, tonumber(line))
-				server:send("200 OK\n")
+				--server:send("200 OK\n")
 			else
-				server:send("400 Bad Request\n")
+				--server:send("400 Bad Request\n")
 			end
 		elseif command == "DELB" then
 			local _, _, _, filename, line = string.find(line, "^([A-Z]+)%s+([%w%p]+)%s+(%d+)$")
 			if filename and line then
 				remove_breakpoint(filename, tonumber(line))
-				server:send("200 OK\n")
+				--server:send("200 OK\n")
 			else
-				server:send("400 Bad Request\n")
+				--server:send("400 Bad Request\n")
 			end
 		elseif command == "EXEC" then
 			local _, _, chunk = string.find(line, "^[A-Z]+%s+(.+)$")
@@ -226,11 +301,11 @@ local function debugger_loop(server)
 				end
 				res = tostring(res)
 				if status then
-					server:send("200 OK " .. string.len(res) .. "\n") 
-					server:send(res)
+					--server:send("200 OK " .. string.len(res) .. "\n") 
+					--server:send(res)
 				else
-					server:send("401 Error in Expression " .. string.len(res) .. "\n")
-					server:send(res)
+					--server:send("401 Error in Expression " .. string.len(res) .. "\n")
+					--server:send(res)
 				end
 			else
 				server:send("400 Bad Request\n")
@@ -242,22 +317,22 @@ local function debugger_loop(server)
 				local newidx = table.getn(watches) + 1
 				watches[newidx] = func
 				table.setn(watches, newidx)
-				server:send("200 OK " .. newidx .. "\n") 
+				--server:send("200 OK " .. newidx .. "\n") 
 			else
-				server:send("400 Bad Request\n")
+				--server:send("400 Bad Request\n")
 			end
 		elseif command == "DELW" then
 			local _, _, index = string.find(line, "^[A-Z]+%s+(%d+)$")
 			index = tonumber(index)
 			if index then
 				watches[index] = nil
-				server:send("200 OK\n") 
+				--server:send("200 OK\n") 
 			else
-				server:send("400 Bad Request\n")
+				--server:send("400 Bad Request\n")
 			end
 		elseif command == "RUN" then
 			print("run command received")
-			server:send("200 OK\n")
+			--server:send("200 OK\n")
 			local ev, vars, file, line, idx = coroutine.yield()
 			print("running...")
 			eval_env = vars
@@ -265,68 +340,49 @@ local function debugger_loop(server)
 				Send_FrameList()
 				Send_BreakpointHitEvent(idx)
 			elseif ev == events.MODULELOAD then
+				print("prapering to send module load event...")
 				Send_ModuleLoad(file, idx)
+				if (not isThreadCreated) then
+					Send_ThreadCreate()
+					isThreadCreated = true
+				end
+				continue_running = true
 			elseif ev == events.WATCH then
-				server:send("203 Paused " .. file .. " " .. line .. " " .. idx .. "\n")
+				--server:send("203 Paused " .. file .. " " .. line .. " " .. idx .. "\n")
 			else
-				server:send("401 Error in Execution " .. string.len(file) .. "\n")
+				--server:send("401 Error in Execution " .. string.len(file) .. "\n")
 				server:send(file)
 			end
 		elseif command == "STEP" then
-			server:send("200 OK\n")
+			--server:send("200 OK\n")
 			step_into = true
 			local ev, vars, file, line, idx_watch = coroutine.yield()
 			eval_env = vars
 			if ev == events.BREAK then
-				server:send("202 Paused " .. file .. " " .. line .. "\n")
+				--server:send("202 Paused " .. file .. " " .. line .. "\n")
 			elseif ev == events.WATCH then
-				server:send("203 Paused " .. file .. " " .. line .. " " .. idx_watch .. "\n")
+				--server:send("203 Paused " .. file .. " " .. line .. " " .. idx_watch .. "\n")
 			else
-				server:send("401 Error in Execution " .. string.len(file) .. "\n")
+				--server:send("401 Error in Execution " .. string.len(file) .. "\n")
 				server:send(file)
 			end
 		elseif command == "OVER" then
-			server:send("200 OK\n")
+			--server:send("200 OK\n")
 			step_over = true
 			step_level = stack_level
 			local ev, vars, file, line, idx_watch = coroutine.yield()
 			eval_env = vars
 			if ev == events.BREAK then
-				server:send("202 Paused " .. file .. " " .. line .. "\n")
+				--server:send("202 Paused " .. file .. " " .. line .. "\n")
 			elseif ev == events.WATCH then
-				server:send("203 Paused " .. file .. " " .. line .. " " .. idx_watch .. "\n")
+				--server:send("203 Paused " .. file .. " " .. line .. " " .. idx_watch .. "\n")
 			else
-				server:send("401 Error in Execution " .. string.len(file) .. "\n")
+				--server:send("401 Error in Execution " .. string.len(file) .. "\n")
 				server:send(file)
 			end
 		else
-			server:send("400 Bad Request\n")
+			--server:send("400 Bad Request\n")
 		end
-	end
-	
-	local function Send_BreakpointHitEvent(id)
-		local msg = {
-			"name" = "BreakpointHit",
-			"id" = id
-		}
-		server:send(json.encode(msg).."\n")
-	end
-	
-	local function Send_FrameList()
-		local msg = {
-			"name" = "FrameList",
-			"frame" = cur_frame
-		}
-		server:send(json.encode(msg).."\n")
-	end
-	
-	local function Send_ModuleLoad(file, id)
-		local msg = {
-			"name" = "ModuleLoad",
-			"filename" = file,
-			"id" = id
-		}
-		server:send(json.encode(msg).."\n")
 	end
 end
 
@@ -334,12 +390,10 @@ coro_debugger = coroutine.create(debugger_loop)
 
 function startDebug(file, port)
 	local server = socket.connect("localhost", port)
-	print(file.." : "..port)
-	print(server)
 	if server then
 		_TRACEBACK = function (message) 
 			local err = debug.traceback(message)
-			server:send("401 Error in Execution " .. string.len(err) .. "\n")
+			--server:send("401 Error in Execution " .. string.len(err) .. "\n")
 			server:send(err)
 			server:close()
 			return err
@@ -352,7 +406,6 @@ end
 
 local file = arg[1]
 local port = arg[2]
-print(file)
-print(port)
+
 startDebug(file, port);
 socket.sleep(20);

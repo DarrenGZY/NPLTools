@@ -210,8 +210,10 @@ namespace NPLTools.Debugger.DebugEngine
 
             _process = new LuaProcess(exe, args, dir, env);
             _process.ModuleLoad += OnModuleLoad;
+            _process.ThreadCreate += OnThreadCreate;
             _process.BreakPointHit += OnBreakPointHit;
             _process.FrameList += OnFrameList;
+            _process.ProcessExit += OnProcessExited;
 
             _process.Start();
 
@@ -224,6 +226,13 @@ namespace NPLTools.Debugger.DebugEngine
             port.GetProcess(adProcessId, out process);
 
             return VSConstants.S_OK;
+        }
+
+        private void OnThreadCreate(object sender, ThreadCreateEventArgs e)
+        {
+            var ad7Thread = new AD7Thread(this, e.Thread);
+            _threads.Add(e.Thread, ad7Thread);
+            Send(new AD7ThreadCreateEvent(), AD7ThreadCreateEvent.IID, ad7Thread);
         }
 
         private void OnFrameList(object sender, FrameListEventArgs e)
@@ -267,10 +276,7 @@ namespace NPLTools.Debugger.DebugEngine
             //_modules.Add(luaModule, adModule);
             //SendModuleLoaded(adModule);
 
-            var luaThread = new LuaThread(0, false);
-            var newThread = new AD7Thread(this, new LuaThread(0, false));
-            _threads.Add(luaThread, newThread);
-            Send(new AD7ThreadCreateEvent(), AD7ThreadCreateEvent.IID, newThread);
+
 
             Debug.WriteLine("ResumeProcess return S_OK");
             return VSConstants.S_OK;
@@ -280,6 +286,7 @@ namespace NPLTools.Debugger.DebugEngine
         // The debugger will call IDebugEngineLaunch2::CanTerminateProcess before calling this method.
         int IDebugEngineLaunch2.TerminateProcess(IDebugProcess2 process)
         {
+            _process.Terminate();
             return VSConstants.S_OK;
         }
 
@@ -458,7 +465,7 @@ namespace NPLTools.Debugger.DebugEngine
         // stepping state cleared.
         public int ExecuteOnThread(IDebugThread2 pThread)
         {
-
+            _process.Resume();
             return VSConstants.S_OK;
         }
 
@@ -576,6 +583,18 @@ namespace NPLTools.Debugger.DebugEngine
         {
             var newThread = new AD7Thread(this, new LuaThread(0, false));
             Send(new AD7ThreadCreateEvent(), AD7ThreadCreateEvent.IID, newThread);
+        }
+
+        private void OnProcessExited(object sender, ProcessExitedEventArgs e)
+        {
+            try
+            {
+                Send(new AD7ProgramDestroyEvent((uint)e.ExitCode), AD7ProgramDestroyEvent.IID, null);
+            }
+            catch (InvalidOperationException)
+            {
+                // we can race at shutdown and deliver the event after the debugger is shutting down.
+            }
         }
         #endregion
 

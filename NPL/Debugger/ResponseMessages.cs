@@ -7,36 +7,14 @@ using System.Threading.Tasks;
 
 namespace NPLTools.Debugger
 {
-    public class ResponseMessages
+    public class ResponseType
     {
-        public void Dispatch(string response)
-        {
-            //string[] pieces = response.Split(' ');
-            //if (pieces.Length > 0)
-            //{
-            //    int code; 
-            //    if (Int32.TryParse(pieces[0], out code))
-            //    {
-            //        switch (code)
-            //        {
-            //            case BreakpointHitMsg.Code:
-            //                if (pieces.Length != 2)
-            //                    return;
-
-            //                break;
-
-            //        }
-            //    }
-                
-            //}
-        }
+        public const string BreakpointHit = "BreakpointHit";
+        public const string ModuleLoad = "ModuleLoad";
+        public const string FrameList = "FrameList";
+        public const string ThreadCreat = "ThreadCreate";
+        public const string DebugExit = "DebugExit";
     }
-
-    //public interface BasicMsg
-    //{
-    //    static int Code { get; }
-    //    string Name { get; }
-    //}
 
     public class BreakpointHitEvent 
     {
@@ -66,7 +44,6 @@ namespace NPLTools.Debugger
             _id = id;
         }
 
-        public const int Code = 202;
         public const string Name = "ModuleLoad";
         public int Id => _id;
         public string File => _file;
@@ -84,9 +61,13 @@ namespace NPLTools.Debugger
 
         }
 
-        public const int Code = 202;
         public const string Name = "FrameList";
         public int Id => _id;
         public string File => _file;
+    }
+
+    public class ThreadCreateEvent
+    {
+        public const string Name = "ThreadCreate";
     }
 }
