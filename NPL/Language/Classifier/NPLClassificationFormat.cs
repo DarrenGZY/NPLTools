@@ -100,7 +100,8 @@ namespace NPLTools.Language.Classifier
         public NPLSelf()
         {
             DisplayName = "NPLSelf";
-            ForegroundColor = Colors.Tomato;
+            ForegroundColor = Colors.DarkBlue;
+            IsBold = true;
         }
     }
 
@@ -114,7 +115,8 @@ namespace NPLTools.Language.Classifier
         public NPLFunctionName()
         {
             DisplayName = "NPLNumber";
-            ForegroundColor = Colors.DarkRed;
+            ForegroundColor = Colors.Maroon;
+            IsBold = true;
         }
     }
 }

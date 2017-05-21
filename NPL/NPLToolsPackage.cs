@@ -43,6 +43,7 @@ namespace NPLTools
     //[ProvideLanguageExtension(typeof(NPLEditorFactory), NPLConstants.NPLFileExtension)]
     //[ProvideLanguageExtension(typeof(NPLEditorFactory), NPLConstants.LuaFileExtension)]
     //[ProvideAutoLoad(UIContextGuids80.NoSolution)]
+    //[ProvideBraceCompletion(NPLConstants.ContentType)]
     public sealed class NPLToolsPackage : CommonPackage
     {
         public static NPLToolsPackage Instance;

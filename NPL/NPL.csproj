@@ -145,6 +145,7 @@
       <DependentUpon>NPLPropertyPageControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ProvideBraceCompletionAttribute.cs" />
     <Compile Include="ProvideEditorExtension2Attribute.cs" />
     <Compile Include="Tests\AssignGrammar.cs" />
     <Compile Include="Tests\ParserTest.cs" />
@@ -196,7 +197,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="ProjectTemplates\EmptyApp.zip">
+    <Content Include="ProjectTemplates\ConsoleApplication.zip">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
