@@ -12,8 +12,8 @@ namespace NPLTools.IronyParser.Ast
     public class LuaFunctionDefNode : LuaNode, IDeclaration
     {
         public LuaFuncIdentifierNode NameNode;
-        public LuaNode Parameters;
-        public LuaNode Body;
+        public LuaIdentifierNodeList Parameters;
+        public LuaBlockNode Body;
         public FunctionType Type;
         public string Description;
 
@@ -45,8 +45,10 @@ namespace NPLTools.IronyParser.Ast
             }
             var name = NameNode.AsString;
 
-            Parameters = AddChild("Parameters", treeNode.ChildNodes[i-2]) as LuaNode;
-            Body = AddChild("Body", treeNode.ChildNodes[i-1]) as LuaNode;
+            if (treeNode.ChildNodes[i-2].ChildNodes.Count > 0 &&
+                treeNode.ChildNodes[i-2].ChildNodes[0].AstNode is LuaIdentifierNodeList)
+                Parameters = treeNode.ChildNodes[i - 2].ChildNodes[0].AstNode as LuaIdentifierNodeList;
+            Body = AddChild("Body", treeNode.ChildNodes[i-1]) as LuaBlockNode;
             
             if (treeNode.Comments.Count > 0)
             {
@@ -62,6 +64,16 @@ namespace NPLTools.IronyParser.Ast
 
         public void GetDeclarations(LuaBlockNode block, LuaModel model)
         {
+            // add parameter declaration
+            if (Parameters != null && Body != null)
+            {
+                foreach (var identifier in Parameters.Identifiers)
+                {
+                    Body.Locals.Add(new Declaration(identifier.Identifier, String.Empty, model.FilePath,
+                        new ScopeSpan(identifier.Span.EndPosition, identifier.EndLine, Body.Span.EndPosition, Body.EndLine)));
+                }
+            }
+
             // Anonymous Function
             if (Type == FunctionType.Anonymous)
                 return;
