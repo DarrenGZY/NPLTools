@@ -30,6 +30,8 @@ namespace NPLTools.IronyParser.Ast
         /// </summary>
         public Declaration NameSpace;
 
+        public LuaDeclarationType Type;
+
         /// <summary>
         /// The equals of declaration
         /// @example: local a = b
@@ -68,6 +70,7 @@ namespace NPLTools.IronyParser.Ast
             Description = description;
             FilePath = filepath;
             Scope = new ScopeSpan();
+            Type = LuaDeclarationType.Unknown;
             NameSpace = null;
         }
 
@@ -85,6 +88,7 @@ namespace NPLTools.IronyParser.Ast
             Description = description;
             FilePath = filepath;
             Scope = scope;
+            Type = LuaDeclarationType.Unknown;
             NameSpace = null;
         }
 
@@ -94,6 +98,7 @@ namespace NPLTools.IronyParser.Ast
             Description = description;
             FilePath = filepath;
             Scope = scope;
+            Type = LuaDeclarationType.Unknown;
             NameSpace = nameSpace;
         }
 
@@ -165,5 +170,13 @@ namespace NPLTools.IronyParser.Ast
         {
             Siblings.Add(sibling);
         }
+    }
+
+    public enum LuaDeclarationType
+    {
+        Function = 1,
+        Identifier = 2,
+        Table = 3,
+        Unknown = 4
     }
 }

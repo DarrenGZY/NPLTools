@@ -269,9 +269,9 @@ namespace NPLTools.Intellisense
             return null;
         }
 
-        internal void GetCompletionSourceFromPredefined(HashSet<string> res)
+        internal void GetCompletionSourceFromPredefined(HashSet<Declaration> res)
         {
-            var founded = _predefinedDeclarations.Select((defined) => defined.Name);
+            var founded = _predefinedDeclarations;
             res.UnionWith(founded);
         }
 

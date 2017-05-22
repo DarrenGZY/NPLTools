@@ -87,7 +87,6 @@ namespace NPLTools.IronyParser.Ast
             }
         }
 
-
         public static Declaration BuildDeclaration(string name, ScopeSpan span)
         {
             int index = name.LastIndexOf('.');

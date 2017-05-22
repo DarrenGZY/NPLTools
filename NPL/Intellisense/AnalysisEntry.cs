@@ -142,9 +142,9 @@ namespace NPLTools.Intellisense
         /// </summary>
         /// <param name="triggerPosition"></param>
         /// <returns></returns>
-        internal HashSet<string> GetCompletionSource(int triggerPosition)
+        internal HashSet<Declaration> GetCompletionSource(int triggerPosition)
         {
-            HashSet<string> res = new HashSet<string>();
+            HashSet<Declaration> res = new HashSet<Declaration>();
             if (_analyzer != null)
             {
                 _analyzer.GetCompletionSourceFromPredefined(res);

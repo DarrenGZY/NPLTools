@@ -94,12 +94,12 @@ namespace NPLTools.Intellisense
             return null;
         }
 
-        public void WalkASTForCompletionSource(int triggerPosition, HashSet<string> res)
+        public void WalkASTForCompletionSource(int triggerPosition, HashSet<Declaration> res)
         {
             WalkASTForCompletionSource(_root, triggerPosition, res);
         }
 
-        private void WalkASTForCompletionSource(LuaNode node, int triggerPosition, HashSet<string> res)
+        private void WalkASTForCompletionSource(LuaNode node, int triggerPosition, HashSet<Declaration> res)
         {
             if (node == null)
                 return;
@@ -111,7 +111,7 @@ namespace NPLTools.Intellisense
                     foreach (var declaration in ((LuaBlockNode)node).Locals)
                     {
                         if (triggerPosition > declaration.Scope.StartPosition)
-                            res.Add(declaration.Name);
+                            res.Add(declaration);
                     }
                 }
                 else
@@ -120,19 +120,19 @@ namespace NPLTools.Intellisense
                     {
                         if (triggerPosition > declaration.Scope.StartPosition &&
                             triggerPosition < declaration.Scope.EndPosition)
-                            res.Add(declaration.Name);
+                            res.Add(declaration);
                     }
                 }
 
                 foreach (var declaration in ((LuaBlockNode)node).Globals)
                 {
                     if (triggerPosition > declaration.Scope.StartPosition)
-                        res.Add(declaration.Name);
+                        res.Add(declaration);
                 }
 
                 foreach (var declaration in ((LuaBlockNode)node).Requires)
                 {
-                        res.Add(declaration.Name);
+                        res.Add(declaration);
                 }
             }
             foreach (AstNode child in node.ChildNodes)

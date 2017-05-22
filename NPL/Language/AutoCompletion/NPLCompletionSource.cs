@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Utilities;
 using NPLTools.Intellisense;
 using Microsoft.VisualStudio.Shell;
+using NPLTools.IronyParser.Ast;
 
 namespace NPLTools.Language.AutoCompletion
 {
@@ -31,13 +32,13 @@ namespace NPLTools.Language.AutoCompletion
             SnapshotPoint? triggerPoint = session.GetTriggerPoint(_textBuffer.CurrentSnapshot);
 
             if (!triggerPoint.HasValue) return;
-            List<string> strList = _analysisEntry.GetCompletionSource(triggerPoint.Value.Position).ToList();
+            List<Declaration> strList = _analysisEntry.GetCompletionSource(triggerPoint.Value.Position).ToList();
 
-            strList.Sort();
+            strList = strList.OrderBy(i => i.Name).ToList();
 
             _compList = new List<Completion>();
-            foreach (string str in strList)
-                _compList.Add(new Completion(str, str, str, null, null));
+            foreach (var str in strList)
+                _compList.Add(new Completion(str.Name, str.Name, str.Name, _provider.GetImageSource(str.Type), null));
 
             completionSets.Add(new CompletionSet(
                 "Tokens",
@@ -55,6 +56,7 @@ namespace NPLTools.Language.AutoCompletion
             TextExtent extent = navigator.GetExtentOfWord(currentPoint);
             return currentPoint.Snapshot.CreateTrackingSpan(extent.Span, SpanTrackingMode.EdgeInclusive);
         }
+
 
         private bool _isDisposed;
 
@@ -79,9 +81,27 @@ namespace NPLTools.Language.AutoCompletion
         [Import]
         internal SVsServiceProvider ServiceProvider { get; private set; }
 
+        [Import]
+        IGlyphService GlyphService { get; set; }
+
         public ICompletionSource TryCreateCompletionSource(ITextBuffer textBuffer)
         {
             return new NPLCompletionSource(this, textBuffer);
+        }
+
+        public System.Windows.Media.ImageSource GetImageSource(LuaDeclarationType type)
+        {
+            StandardGlyphGroup group;
+            StandardGlyphItem item = StandardGlyphItem.GlyphItemPublic;
+            switch (type)
+            {
+                case LuaDeclarationType.Table: group = StandardGlyphGroup.GlyphGroupClass; break;
+                case LuaDeclarationType.Function: group = StandardGlyphGroup.GlyphGroupMethod; break;
+                case LuaDeclarationType.Unknown: group = StandardGlyphGroup.GlyphGroupField; break;
+                default:
+                    group = StandardGlyphGroup.GlyphGroupVariable; break;
+            }
+            return GlyphService.GetGlyph(group, item);
         }
     }
 }
