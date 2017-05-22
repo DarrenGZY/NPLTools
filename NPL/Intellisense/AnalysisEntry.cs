@@ -23,6 +23,7 @@ namespace NPLTools.Intellisense
         private LuaModel _model;
         private AnalysysMode _mode;
         private readonly Parser _parser;
+        private object _parselock = new object(); 
         
 
         public AnalysisEntry(ProjectAnalyzer analyzer, string path, int fileId)
@@ -46,12 +47,15 @@ namespace NPLTools.Intellisense
         public async void InitModel()
         {
             await Task.Run(()=> {
-                string source = File.ReadAllText(_path);
-                ParseTree parseTree = _parser.Parse(source);
-                _model = new LuaModel(parseTree, this);
+                lock(_parselock)
+                {
+                    string source = File.ReadAllText(_path);
+                    ParseTree parseTree = _parser.Parse(source);
+                    _model = new LuaModel(parseTree, this);
 
-                if (NewParseTree != null)
-                    NewParseTree(this, new ParseTreeChangedEventArgs(parseTree));
+                    if (NewParseTree != null)
+                        NewParseTree(this, new ParseTreeChangedEventArgs(parseTree));
+                }
             });
         }
 
@@ -59,13 +63,16 @@ namespace NPLTools.Intellisense
         {
             return Task.Run(() =>
             {
-                ParseTree parseTree = _parser.Parse(source);
+                lock(_parselock)
+                {
+                    ParseTree parseTree = _parser.Parse(source);
 
-                if (parseTree.Root != null)
-                    _model.Update(parseTree);
+                    if (parseTree.Root != null)
+                        _model.Update(parseTree);
 
-                if (NewParseTree != null)
-                    NewParseTree(this, new ParseTreeChangedEventArgs(parseTree));
+                    if (NewParseTree != null)
+                        NewParseTree(this, new ParseTreeChangedEventArgs(parseTree));
+                }
             });
         }
         
