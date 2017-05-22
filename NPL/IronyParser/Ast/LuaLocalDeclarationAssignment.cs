@@ -54,13 +54,20 @@ namespace NPLTools.IronyParser.Ast
                 if (i < ExpressionList.Count)
                 {
                     if (ExpressionList[i] is LuaTableNode)
+                    {
+                        declaration.Type = LuaDeclarationType.Table;
                         AddDeclarationsForTableField(block, model, declaration, ExpressionList[i]);
+                    }
+                        
                     else if (ExpressionList[i] is LuaIdentifierNode ||
                         ExpressionList[i] is LuaTableAccessNode)
                     {
                         Declaration sibling = null;
                         if (DeclarationHelper.TryGetExpressionDeclaration(ExpressionList[i], block, model, out sibling))
+                        {
+                            declaration.Type = sibling.Type;
                             sibling.AddSibling(declaration);
+                        }    
                     }
                 }
 

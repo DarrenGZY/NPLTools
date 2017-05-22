@@ -83,7 +83,7 @@ namespace NPLTools.IronyParser.Ast
                 if (NameNode.Namespaces == null)
                 {
                     block.Globals.Add(new Declaration(NameNode.Name, Description, model.FilePath,
-                        new ScopeSpan(NameNode.Span.EndPosition, NameNode.EndLine, int.MaxValue, int.MaxValue)));
+                        new ScopeSpan(NameNode.Span.EndPosition, NameNode.EndLine, int.MaxValue, int.MaxValue), LuaDeclarationType.Function));
                 }
                 else
                 {
@@ -93,7 +93,7 @@ namespace NPLTools.IronyParser.Ast
                         if (local.Equal(BuildDeclaration(NameNode.Namespaces)))
                         {
                             block.Locals.Add(new Declaration(NameNode.Name, Description, model.FilePath,
-                                new ScopeSpan(NameNode.Span.EndPosition, NameNode.EndLine, block.Span.EndPosition, block.EndLine), local));
+                                new ScopeSpan(NameNode.Span.EndPosition, NameNode.EndLine, block.Span.EndPosition, block.EndLine), LuaDeclarationType.Function, local));
                             break;
                         }
                     }
@@ -103,7 +103,7 @@ namespace NPLTools.IronyParser.Ast
                         if (global.Equal(BuildDeclaration(NameNode.Namespaces)))
                         {
                             block.Globals.Add(new Declaration(NameNode.Name, Description, model.FilePath,
-                                new ScopeSpan(NameNode.Span.EndPosition, NameNode.EndLine, block.Span.EndPosition, block.EndLine), global));
+                                new ScopeSpan(NameNode.Span.EndPosition, NameNode.EndLine, block.Span.EndPosition, block.EndLine), LuaDeclarationType.Function, global));
                             break;
                         }
                     }
@@ -113,7 +113,7 @@ namespace NPLTools.IronyParser.Ast
             else if (Type == FunctionType.LocalDeclaration)
             {
                 Declaration declaration = new Declaration(NameNode.Name, Description, model.FilePath, 
-                        new ScopeSpan(NameNode.Span.EndPosition, NameNode.EndLine, block.Span.EndPosition, block.EndLine));
+                        new ScopeSpan(NameNode.Span.EndPosition, NameNode.EndLine, block.Span.EndPosition, block.EndLine), LuaDeclarationType.Function);
 
                 //foreach (var local in block.Locals)
                 //{

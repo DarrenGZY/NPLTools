@@ -92,6 +92,16 @@ namespace NPLTools.IronyParser.Ast
             NameSpace = null;
         }
 
+        public Declaration(string name, string description, string filepath, ScopeSpan scope, LuaDeclarationType type)
+        {
+            Name = name;
+            Description = description;
+            FilePath = filepath;
+            Scope = scope;
+            Type = type;
+            NameSpace = null;
+        }
+
         public Declaration(string name, string description, string filepath, ScopeSpan scope, Declaration nameSpace)
         {
             Name = name;
@@ -99,6 +109,16 @@ namespace NPLTools.IronyParser.Ast
             FilePath = filepath;
             Scope = scope;
             Type = LuaDeclarationType.Unknown;
+            NameSpace = nameSpace;
+        }
+
+        public Declaration(string name, string description, string filepath, ScopeSpan scope, LuaDeclarationType type, Declaration nameSpace)
+        {
+            Name = name;
+            Description = description;
+            FilePath = filepath;
+            Scope = scope;
+            Type = type;
             NameSpace = nameSpace;
         }
 

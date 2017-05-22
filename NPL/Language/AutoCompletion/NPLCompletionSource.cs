@@ -57,7 +57,6 @@ namespace NPLTools.Language.AutoCompletion
             return currentPoint.Snapshot.CreateTrackingSpan(extent.Span, SpanTrackingMode.EdgeInclusive);
         }
 
-
         private bool _isDisposed;
 
         public void Dispose()
