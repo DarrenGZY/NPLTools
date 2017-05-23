@@ -5,9 +5,8 @@ using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.Utilities;
-using NPLTools;
 
-namespace Microsoft.PythonTools.Editor
+namespace NPLTools.Language
 {
     [Export(typeof(ISmartIndentProvider))]
     [ContentType(NPLConstants.ContentType)]
