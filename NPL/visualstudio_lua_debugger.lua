@@ -3,10 +3,6 @@ local lfs = require"lfs"
 local debug = require"debug"
 local json = require"json"
 
-_COPYRIGHT = "2006 - Kepler Project"
-_DESCRIPTION = "Remote Debugger for the Lua programming language"
-_VERSION = "1.0"
-
 -- current 
 local system_file = nil
 
@@ -18,10 +14,7 @@ local step_into = false
 local step_over = false
 local step_level = 0
 local stack_level = 0
-local cur_frame = {}	
-
-local controller_host = "localhost"
-local controller_port = 8171
+local cur_frame = { parent = {} }	
 
 local responses = {
 	BreakpointHit = tostring(201),
@@ -60,6 +53,13 @@ end
 
 local function get_breakpointId(file, line)
 	return breakpoints[file][line]
+end
+
+local function table_copy(obj)
+  if type(obj) ~= 'table' then return obj end
+  local res = {}
+  for k, v in pairs(obj) do res[table_copy(k)] = table_copy(v) end
+  return res
 end
 
 local function restore_vars(vars)
@@ -134,13 +134,40 @@ local function merge_paths(path1, path2)
 	return table.concat(paths1, "/")
 end
 
+local function dumpInfo(event)
+	local info = debug.getinfo(3, "Sl")
+	--print(info.what)
+	print(string.format("[%s]: %s %d '%s'", event, info.short_src, info.currentline, info.what))
+end
+
+local function dumpFrameInfo(frame)
+	if frame.filename and frame.lineNo then
+		print(string.format("[%s]: %d", frame.filename, frame.lineNo))
+	end
+end
+
 local function debug_hook(event, line)
 	--socket.sleep(5)
 	if event == "call" then
 		stack_level = stack_level + 1
+		dumpInfo("call")
+		local info = debug.getinfo(2, "Sl")
+		if info.what == "Lua" then
+			dumpFrameInfo(cur_frame)
+			local tmp_frame = table_copy(cur_frame)
+			tmp_frame.parent = cur_frame
+			cur_frame = tmp_frame
+		end
 	elseif event == "return" then
 		stack_level = stack_level - 1
+		dumpInfo("return")
+		local info = debug.getinfo(2, "Sl")
+		if info.what == "Lua" then
+			dumpFrameInfo(cur_frame)
+			cur_frame = table_copy(cur_frame.parent)
+		end
 	else
+		dumpInfo("line")
 		local file = debug.getinfo(2, "S").source
 		if string.find(file, "@") == 1 then
 			file = string.sub(file, 2)
@@ -206,11 +233,20 @@ local function debugger_loop(server)
 		--socket.sleep(20)
 		--server:send("first frame list\n")
 		print(cur_frame.filename)
+		print(cur_frame.lineNo)
+		--cur_frame.parent = { lineNo = 3}
+		print(cur_frame.parent.filename)
+		print(cur_frame.parent.lineNo)
+		
+		--print(cur_frame.parent.parent)
+		--print(cur_frame.parent.parent.filename)
+		--print(cur_frame.parent.parent.lineNo)
 		--socket.sleep(10)
 		local msg = {
 			name = "FrameList",
 			frame = cur_frame
 		}
+		print(json.encode(msg))
 		--server:send("frame list\n")
 		server:send(json.encode(msg).."\n")
 	end
@@ -239,26 +275,37 @@ local function debugger_loop(server)
 	local eval_env = {}
 	local continue_running= false
 	
-	local first_launched, second_launched = false, false
+	local first_launch, second_launch = true, false
 	
 	while true do
 		print("in debug loop: waiting for command...")
-		local line, status
-		if not first_launched then
-			server:settimeout(10)
-			line, status = server:receive()
-			if status == "timeout" then
-				print("timeout")
-				server:send("timeout at the launch\n")
-				--yield the thread, return to execution thread
-				coroutine.yield()
+		if first_launch then 
+			while true do
+				local line, status
+				server:settimeout(5)
+				line, status = server:receive()
+				if status == "timeout" then
+					print("timeout")
+					break
+				end
+				command = string.sub(line, string.find(line, "^[A-Z]+"))
+				if command == "SETB" then
+					local _, _, _, filename, line = string.find(line, "^([A-Z]+)%s+([%w%p]+)%s+(%d+)$")
+					if filename and line then
+						filename = string.gsub(filename, "%%20", " ")
+						set_breakpoint(filename, tonumber(line))
+					end
+				end
 			end
 			server:settimeout(-1)
-			first_launched = true
-			print("first launch...")
-		elseif not second_launched then
+			first_launch = false
+			second_launch = true
+		end
+		
+		local line, status
+		if second_launch then
 			line = "RUN"
-			second_launched = true
+			second_launch = false
 			print("second launch...")
 		else
 			print("normal waiting...")
@@ -408,4 +455,4 @@ local file = arg[1]
 local port = arg[2]
 
 startDebug(file, port);
-socket.sleep(20);
+socket.sleep(120);

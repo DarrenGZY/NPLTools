@@ -20,4 +20,11 @@ namespace NPLTools.Debugger
         public string FileName => _filename;
         public int LineNo => _lineNo;
     }
+
+    public class Frame
+    {
+        public int LineNo;
+        public string FileName;
+        public Frame Parent;
+    }
 }

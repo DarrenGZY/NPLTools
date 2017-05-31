@@ -59,7 +59,7 @@ namespace NPLTools.Debugger
             processInfo.UseShellExecute = false;
             processInfo.RedirectStandardOutput = false;
             processInfo.RedirectStandardInput = false;
-            processInfo.WorkingDirectory = @"C:\Users\Zhiyuan\Documents\DebuggerTests\EmptyApp\EmptyApp";
+            processInfo.WorkingDirectory = dir;
             processInfo.Arguments = @"C:\Users\Zhiyuan\Documents\NPL_Projects\NPLTools\NPL\visualstudio_lua_debugger.lua " + args + " " + listenerPort;
             _process = new Process();
             _process.StartInfo = processInfo;
@@ -146,10 +146,15 @@ namespace NPLTools.Debugger
                         }
                     case ResponseType.FrameList:
                         {
-                            var filename = obj["frame"]["filename"].ToObject<string>();
-                            var lineNo = obj["frame"]["lineNo"].ToObject<int>();
-                            LuaStackFrame frame = new LuaStackFrame(filename, lineNo);
-                            _thread.Frames = new List<LuaStackFrame>() { frame };
+                            List<LuaStackFrame> frames = new List<LuaStackFrame>();
+                            Frame currentFrame = obj["frame"].ToObject<Frame>();
+                            while (currentFrame.FileName != null && currentFrame.LineNo != 0)
+                            {
+                                LuaStackFrame frame = new LuaStackFrame(currentFrame.FileName, currentFrame.LineNo);
+                                frames.Add(frame);
+                                currentFrame = currentFrame.Parent;
+                            }
+                            _thread.Frames = frames;
                             //FrameList?.Invoke(this, new FrameListEventArgs(_thread));
                             break;
                         }

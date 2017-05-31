@@ -38,7 +38,7 @@ namespace NPLTools.Debugger.DebugEngine
 
                 if ((dwFieldSpec & enum_FRAMEINFO_FLAGS.FIF_FUNCNAME_LINES) != 0)
                 {
-                    frameInfo.m_bstrFuncName = "formatui function name";
+                    frameInfo.m_bstrFuncName = funcName;
                     frameInfo.m_dwValidFields |= enum_FRAMEINFO_FLAGS.FIF_FUNCNAME_LINES;
                 }
             }
