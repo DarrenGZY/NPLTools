@@ -42,6 +42,7 @@ namespace NPLTools.Debugger
         public event EventHandler<FrameListEventArgs> FrameList;
         public event EventHandler<ThreadCreateEventArgs> ThreadCreate;
         public event EventHandler<ProcessExitedEventArgs> ProcessExit;
+        public event EventHandler<EventArgs> StepComplete;
 
         public LuaProcess(string exe, string args, string dir, string env)
         {
@@ -136,6 +137,11 @@ namespace NPLTools.Debugger
                                 BreakPointHit?.Invoke(this, new BreakpointEventArgs(_thread, breakpoint));
                             break;
                         }
+                    case ResponseType.StepComplete:
+                        {
+                            StepComplete?.Invoke(this, new EventArgs());
+                            break;
+                        }
                     case ResponseType.ModuleLoad:
                         {
                             var filename = obj["filename"].ToObject<string>();
@@ -222,6 +228,16 @@ namespace NPLTools.Debugger
         public void Resume()
         {
             SendRequest(RequesetMessages.Run());
+        }
+
+        public void SendStepIntoRequest()
+        {
+            SendRequest(RequesetMessages.StepInto());
+        }
+
+        public void SendStepOverRequest()
+        {
+            SendRequest(RequesetMessages.StepOver());
         }
 
         internal async Task BindBreakpointAsync(LuaBreakpoint breakpoint, CancellationToken ct)

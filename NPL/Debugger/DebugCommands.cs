@@ -13,7 +13,7 @@ namespace NPLTools.Debugger
         public const string SetWatch = "SETW";
         public const string DeleteWatch = "DELW";
         public const string StepInto = "STEP";
-        public const string StepOver = "Over";
+        public const string StepOver = "OVER";
         public const string Execute = "EXEC";
         public const string Run = "RUN";
 

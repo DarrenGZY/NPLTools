@@ -14,6 +14,7 @@ namespace NPLTools.Debugger
         public const string FrameList = "FrameList";
         public const string ThreadCreat = "ThreadCreate";
         public const string DebugExit = "DebugExit";
+        public const string StepComplete = "StepComplete";
     }
 
     public class BreakpointHitEvent 

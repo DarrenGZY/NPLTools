@@ -202,6 +202,12 @@ namespace NPLTools.Debugger.DebugEngine
         public const string IID = "c7405d1d-e24b-44e0-b707-d8a5a4e1641b";
     }
 
+    // This interface tells the session debug manager (SDM) that an asynchronous break has been successfully completed.
+    sealed class AD7SteppingCompleteEvent : AD7StoppingEvent, IDebugStepCompleteEvent2
+    {
+        public const string IID = "0F7F24C1-74D9-4EA6-A3EA-7EDB2D81441D";
+    }
+
     // This interface is sent by the debug engine (DE) to the session debug manager (SDM) to output a string for debug tracing.
     sealed class AD7OutputDebugStringEvent : AD7AsynchronousEvent, IDebugOutputStringEvent2  
     {

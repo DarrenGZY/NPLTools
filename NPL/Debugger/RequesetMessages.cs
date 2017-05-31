@@ -19,5 +19,15 @@ namespace NPLTools.Debugger
         {
             return String.Format("{0}{1}", DebugCommands.Run, linebreak);
         }
+
+        public static string StepInto()
+        {
+            return String.Format("{0}{1}", DebugCommands.StepInto, linebreak);
+        }
+
+        public static string StepOver()
+        {
+            return String.Format("{0}{1}", DebugCommands.StepOver, linebreak);
+        }
     }
 }

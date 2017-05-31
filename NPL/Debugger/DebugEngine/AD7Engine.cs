@@ -214,6 +214,7 @@ namespace NPLTools.Debugger.DebugEngine
             _process.BreakPointHit += OnBreakPointHit;
             _process.FrameList += OnFrameList;
             _process.ProcessExit += OnProcessExited;
+            _process.StepComplete += OnStepComplete;
 
             _process.Start();
 
@@ -226,6 +227,11 @@ namespace NPLTools.Debugger.DebugEngine
             port.GetProcess(adProcessId, out process);
 
             return VSConstants.S_OK;
+        }
+
+        private void OnStepComplete(object sender, EventArgs e)
+        {
+            Send(new AD7SteppingCompleteEvent(), AD7SteppingCompleteEvent.IID, _threads.First().Value);
         }
 
         private void OnThreadCreate(object sender, ThreadCreateEventArgs e)
@@ -439,6 +445,16 @@ namespace NPLTools.Debugger.DebugEngine
         // This method is deprecated. Use the IDebugProcess3::Step method instead.
         public int Step(IDebugThread2 pThread, enum_STEPKIND sk, enum_STEPUNIT Step)
         {
+            var thread = ((AD7Thread)pThread).GetDebuggedThread();
+            switch (sk)
+            {
+                case enum_STEPKIND.STEP_INTO:
+                    _process.SendStepIntoRequest();
+                    break;
+                case enum_STEPKIND.STEP_OVER:
+                    _process.SendStepOverRequest();
+                    break;
+            }
             return VSConstants.S_OK;
         }
 

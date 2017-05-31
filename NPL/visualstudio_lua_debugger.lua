@@ -228,6 +228,15 @@ local function debugger_loop(server)
 		server:send(json.encode(msg).."\n")
 	end
 	
+	local function Send_StepCompleteEvent()
+		print("send step complete")
+		--socket.sleep(10)
+		local msg = {
+			name = "StepComplete",
+		}
+		server:send(json.encode(msg).."\n")
+	end
+	
 	local function Send_FrameList()
 		print("send frame list")
 		--socket.sleep(20)
@@ -403,10 +412,11 @@ local function debugger_loop(server)
 		elseif command == "STEP" then
 			--server:send("200 OK\n")
 			step_into = true
-			local ev, vars, file, line, idx_watch = coroutine.yield()
+			local ev, vars, file, line, idx = coroutine.yield()
 			eval_env = vars
 			if ev == events.BREAK then
-				--server:send("202 Paused " .. file .. " " .. line .. "\n")
+				Send_FrameList()
+				Send_StepCompleteEvent()
 			elseif ev == events.WATCH then
 				--server:send("203 Paused " .. file .. " " .. line .. " " .. idx_watch .. "\n")
 			else
@@ -417,9 +427,11 @@ local function debugger_loop(server)
 			--server:send("200 OK\n")
 			step_over = true
 			step_level = stack_level
-			local ev, vars, file, line, idx_watch = coroutine.yield()
+			local ev, vars, file, line, idx= coroutine.yield()
 			eval_env = vars
 			if ev == events.BREAK then
+				Send_FrameList()
+				Send_StepCompleteEvent()
 				--server:send("202 Paused " .. file .. " " .. line .. "\n")
 			elseif ev == events.WATCH then
 				--server:send("203 Paused " .. file .. " " .. line .. " " .. idx_watch .. "\n")
