@@ -146,6 +146,12 @@ local function dumpFrameInfo(frame)
 	end
 end
 
+local function dumpVarInfo(vars)
+	for k, v in pairs(vars) do
+		print(k, v)
+	end
+end
+
 local function debug_hook(event, line)
 	--socket.sleep(5)
 	if event == "call" then
@@ -178,6 +184,7 @@ local function debug_hook(event, line)
 		cur_frame.filename = file
 		
 		local vars = capture_vars()
+		dumpVarInfo(vars);
 		--print(get_filename(file))
 		--print(lfs.currentdir().."visualstudio_lua_debugger.lua")
 		print("before module load attempt")
@@ -239,24 +246,12 @@ local function debugger_loop(server)
 	
 	local function Send_FrameList()
 		print("send frame list")
-		--socket.sleep(20)
-		--server:send("first frame list\n")
-		print(cur_frame.filename)
-		print(cur_frame.lineNo)
-		--cur_frame.parent = { lineNo = 3}
-		print(cur_frame.parent.filename)
-		print(cur_frame.parent.lineNo)
 		
-		--print(cur_frame.parent.parent)
-		--print(cur_frame.parent.parent.filename)
-		--print(cur_frame.parent.parent.lineNo)
-		--socket.sleep(10)
 		local msg = {
 			name = "FrameList",
 			frame = cur_frame
 		}
 		print(json.encode(msg))
-		--server:send("frame list\n")
 		server:send(json.encode(msg).."\n")
 	end
 	
